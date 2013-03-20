@@ -8,22 +8,23 @@ bool readGenome(Genome* g, FILE* inputFilePointer) {
   bool iHaveReadSomething = false;
 
   while(true) {
-    fpos_t* prevPos = NULL;
-    fgetpos(inputFilePointer, prevPos);
-
+    fpos_t prevPos;
+    //printf("%p\n", inputFilePointer);
+    fgetpos(inputFilePointer, &prevPos);
+    //puts("tu");
     if (!fgets(buffer, sizeof buffer, inputFilePointer)) {
       break;
     }
 
     if (iHaveReadSomething && buffer[0] == '>') {
       // beginning of a new genome, rollback the file pointer and break
-      fsetpos(inputFilePointer, prevPos);
+      fsetpos(inputFilePointer, &prevPos);
       break;
     }
 
     iHaveReadSomething = true;
     string tmp = buffer;
-    if (buffer[0] == '>') g->name_ = tmp;
+    if (buffer[0] == '>') g->name_ = trim(tmp);
     else g->data_ += trim(tmp);
   }
 

@@ -1,10 +1,15 @@
 #include "database.h"
+#include <cstdlib>
 using namespace std;
 
-const size_t kMaxBlockSize = 10000000;
+const size_t kMaxBlockSize = 100000000;
 
 Database::Database(const string& databasePath) {
   inputFilePointer_ = fopen(databasePath.c_str(), "rt");
+  if (!inputFilePointer_) {
+    fprintf(stderr, "Failed to read database!");
+    exit(1);
+  }
 }
 
 Database::~Database() {
@@ -13,7 +18,7 @@ Database::~Database() {
 
 bool Database::readNextBlock() {
   species_.clear();
-  size_t blockSize = 0;
+  currentBlockNoBytes_ = 0;
 
   while (true) {
     Genome g;
@@ -22,11 +27,18 @@ bool Database::readNextBlock() {
     }
 
     species_.push_back(g);
-    blockSize += g.data_.size();
-    if (blockSize > kMaxBlockSize) {
+    currentBlockNoBytes_ += g.name_.size();
+    currentBlockNoBytes_ += g.data_.size();
+    if (currentBlockNoBytes_ > kMaxBlockSize) {
       break;
     }
   }
 
   return species_.size() > 0;
+}
+
+void Database::printNames() {
+  for (auto x : species_) {
+    printf("%s\n", x.name_.c_str());
+  }
 }
