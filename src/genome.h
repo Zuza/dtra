@@ -12,6 +12,10 @@
 
 class Genome {
  public:
+
+  const std::string& name() const { return name_; }
+  const std::string& data() const { return data_; }
+  const int size() const { return data_.size(); }
   
   //private:
   std::string name_;

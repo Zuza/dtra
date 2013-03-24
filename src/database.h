@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "genome.h"
+#include "index.h"
 
 class Database {
  public:
@@ -21,6 +22,7 @@ class Database {
 
  private:
   std::vector<Genome> species_;
+  std::vector<Index> speciesIndex_;
 
   FILE* inputFilePointer_;
   size_t currentBlockNoBytes_;
