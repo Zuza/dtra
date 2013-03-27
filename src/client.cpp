@@ -36,11 +36,14 @@ int main(int argc, char* argv[]) {
   Database db(databasePath, indexFilePath, 
 	      command == "index");
 
+  size_t minByteLen = 1000000000000LL;
   size_t maxByteLen = 0;
   size_t totalRead = 0;
 
+  unsigned long long checksum = 0;
+
   for (int blockNumber = 0; db.readNextBlock(); ++blockNumber) {
-    //if (blockNumber >= 30) break; // TODO: makni
+    if (blockNumber >= 10) break; // TODO: makni
 
     size_t byteLen = db.getCurrentBlockNoBytes();
 
@@ -48,11 +51,14 @@ int main(int argc, char* argv[]) {
       // TODO: ovdje sad radim nesto s readovima
     }
     totalRead += byteLen;
+    minByteLen = min(minByteLen, byteLen);
     maxByteLen = max(maxByteLen, byteLen);
     fprintf(stderr, "Read %0.3lf Gb.\n", totalRead/1e9);
-    //fprintf(stderr, "Checksum: %llu\n", db.checksum());
+    checksum = checksum * 10007 + db.checksum();
   }
+  fprintf(stderr, "Min gene length: %lld bytes.\n", (long long)minByteLen);
   fprintf(stderr, "Max gene length: %lld bytes.\n", (long long)maxByteLen);
+  fprintf(stderr, "DB checksum: %llu\n", checksum);
 
   return 0;
 }

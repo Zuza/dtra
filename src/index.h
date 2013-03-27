@@ -11,7 +11,9 @@
 #include "genome.h"
 
 typedef unsigned long long keyType;
-typedef unsigned long long indexType; // mozda ce i int biti dovoljan
+
+// u nt bazi najdulji gen je dugacak 150M pa pozicije stanu u int
+typedef int indexType;
 
 class Index {
 public:
@@ -26,16 +28,13 @@ public:
   
   void readNextFromBinaryFile(FILE* indexInputFile);
 
-  unsigned long long checksum() {
-    unsigned long long ret = seedLength_;
-    for (int i = 0; i < (int)positions_.size(); ++i) {
-      ret = ret * 10007 + positions_[i].first;
-      ret = ret * 3137  + positions_[i].second;
-    }
-    return ret;
-  }
+  unsigned long long checksum();
+
 private:
-  std::vector<std::pair<keyType, indexType> > positions_;
+  //std::vector<std::pair<keyType, indexType> > positions_;
+  std::vector<std::pair<unsigned, std::pair<int, int> > > leftHashRanges_;
+  std::vector<unsigned> rightHash_;
+  std::vector<int> positions_;
 
   int seedLength_;
 };

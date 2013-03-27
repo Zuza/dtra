@@ -29,7 +29,7 @@ Database::~Database() {
   fclose(indexFilePointer_);
 }
 
-bool Database::readNextBlock() {
+bool Database::readNextBlock() { 
   species_.clear();
   speciesIndex_.clear();
   currentBlockNoBytes_ = 0;
