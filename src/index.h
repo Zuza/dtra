@@ -10,25 +10,34 @@
 
 #include "genome.h"
 
+typedef unsigned long long keyType;
+typedef unsigned long long indexType; // mozda ce i int biti dovoljan
+
 class Index {
 public:
   // Creates index for a given genome. 'seed_length' determines the
   // indexed unit length (substring) and 'max_seed_positions' the
   // number of seed hits beyond which results are ignored.
-  Index(Genome* genome, int seed_length, int max_seed_positions);
+  Index(int seedLength);
 
-  // Finds all positions in the genome for the given seed. If the
-  // number of results exceeds 'max_seed_positions' or is 0, function
-  // returns 'false'. Otherwise it returns 'true' with all positions
-  // in 'ret'.  
-  bool Query(const std::string& seed, std::vector<int>* res);
+  void create(Genome* genome);
+  
+  void appendToBinaryFile(FILE* fileToAppend);
+  
+  void readNextFromBinaryFile(FILE* indexInputFile);
+
+  unsigned long long checksum() {
+    unsigned long long ret = seedLength_;
+    for (int i = 0; i < (int)positions_.size(); ++i) {
+      ret = ret * 10007 + positions_[i].first;
+      ret = ret * 3137  + positions_[i].second;
+    }
+    return ret;
+  }
 private:
-  void CreateIndex(Genome* genome);
+  std::vector<std::pair<keyType, indexType> > positions_;
 
-  std::tr1::unordered_multimap<std::string, int> index_;
-
-  int seed_length_;
-  int max_seed_positions_;
+  int seedLength_;
 };
 
 

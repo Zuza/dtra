@@ -4,18 +4,29 @@ using namespace std;
 
 const size_t kMaxBlockSize = 10000000;
 const int kSeedLen = 20;
-const int kMaxHits = 1000000;
 
-Database::Database(const string& databasePath) {
-  inputFilePointer_ = fopen(databasePath.c_str(), "rt");
-  if (!inputFilePointer_) {
-    fprintf(stderr, "Failed to read database!");
+Database::Database(const string& databasePath,
+		   const string& indexFilePath,
+		   const bool createIndex) : createIndex_(createIndex) {
+  dbFilePointer_ = fopen(databasePath.c_str(), "rt");
+  if (!dbFilePointer_) {
+    fprintf(stderr, "Failed to read database!\n");
+    exit(1);
+  }
+  
+  // TODO: mozda kasnije vidjeti je li potrebna ideja ili
+  //       korisno imati index zapisan kao binarni file
+  indexFilePointer_ = fopen(indexFilePath.c_str(), 
+			    createIndex_ ? "wb": "rb");
+  if (!indexFilePointer_) {
+    fprintf(stderr, "Failed to open index file!\n");
     exit(1);
   }
 }
 
 Database::~Database() {
-  fclose(inputFilePointer_);
+  fclose(dbFilePointer_);
+  fclose(indexFilePointer_);
 }
 
 bool Database::readNextBlock() {
@@ -24,18 +35,25 @@ bool Database::readNextBlock() {
   currentBlockNoBytes_ = 0;
 
   while (true) {
-    Genome g;
-    if (!readGenome(&g, inputFilePointer_)) {
+    shared_ptr<Genome> g(new Genome());
+    if (!readGenome(g.get(), dbFilePointer_)) {
       break;
     }
 
     species_.push_back(g);
-    speciesIndex_.push_back(Index(&g,
-    				  kSeedLen,
-    				  kMaxHits));
 
-    currentBlockNoBytes_ += g.name_.size();
-    currentBlockNoBytes_ += g.data_.size();
+    shared_ptr<Index> in(new Index(kSeedLen));
+    if (createIndex_) {
+      in->create(g.get());
+      in->appendToBinaryFile(indexFilePointer_);
+    } else {
+      in->readNextFromBinaryFile(indexFilePointer_);
+    }
+    //printf("%llu\n", in->checksum());
+    speciesIndex_.push_back(in);
+
+    currentBlockNoBytes_ += g->name_.size();
+    currentBlockNoBytes_ += g->data_.size();
     if (currentBlockNoBytes_ > kMaxBlockSize) {
       break;
     }
@@ -46,6 +64,6 @@ bool Database::readNextBlock() {
 
 void Database::printNames() {
   for (auto x : species_) {
-    printf("%s\n", x.name_.c_str());
+    printf("%s\n", x->name_.c_str());
   }
 }
