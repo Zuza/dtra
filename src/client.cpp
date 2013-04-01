@@ -9,17 +9,54 @@
 #include <cstdlib>
 #include <algorithm>
 #include <string>
+#include <iostream>
+
+#include "ThreadPool.h"
 #include "database.h"
+#include "read.h"
 using namespace std;
 
+// readovi se citaju sa stdin-a i salju na stdout
 void usage() {
   printf("client index <database location> <index output location>\n");
   printf("-- creates index and dumps it into a file\n");
   puts("");
   printf("client solve <database location> <index file location>\n");
   printf("-- solves with precomputed index\n");
-  printf("-- if <index file location> == stdin, index is read from stdin\n");
   exit(1);
+}
+
+void inputReads(vector<shared_ptr<Read> >& reads, const int limit) {
+  int noReads = 0;
+  Read tmp;
+
+  for ( ; noReads < limit && tmp.readFromStdin(); ++noReads) {
+    shared_ptr<Read> newRead(new Read());
+    *newRead = tmp;
+    reads.push_back(newRead);
+  }
+}
+
+int solveRead(Database& db, shared_ptr<Read> read) {
+  static mutex m;
+  m.lock();
+  cout << "Begin thread # " << std::this_thread::get_id() << endl;
+  read->print();
+  cout << "End thread # " << std::this_thread::get_id() << endl;
+  m.unlock();
+  return 0;
+}
+
+void processReads(Database& db, vector<shared_ptr<Read> >& reads) {
+  ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
+                      // ili da bude jednako broju jezgara na clusteru (to je 8)
+
+  vector<future<int> > results;
+  for (int i = 0; i < reads.size(); ++i) {
+    results.push_back(pool.enqueue<int>([i, &db, &reads] {
+  	  return solveRead(db, reads[i]);
+  	}));
+  } 
 }
 
 int main(int argc, char* argv[]) {
@@ -33,6 +70,11 @@ int main(int argc, char* argv[]) {
 
   assert(command == "index" || command == "solve");
 
+  vector<shared_ptr<Read> > reads;
+  if (command == "solve") {
+    inputReads(reads, 6); // TODO: remove input limit
+  }
+
   Database db(databasePath, indexFilePath, 
 	      command == "index");
 
@@ -43,13 +85,14 @@ int main(int argc, char* argv[]) {
   unsigned long long checksum = 0;
 
   for (int blockNumber = 0; db.readNextBlock(); ++blockNumber) {
-    if (blockNumber >= 10) break; // TODO: makni
+    if (blockNumber >= 1) break; // TODO: makni limit
 
     size_t byteLen = db.getCurrentBlockNoBytes();
 
     if (command == "solve") {
-      // TODO: ovdje sad radim nesto s readovima
+      processReads(db, reads);
     }
+
     totalRead += byteLen;
     minByteLen = min(minByteLen, byteLen);
     maxByteLen = max(maxByteLen, byteLen);

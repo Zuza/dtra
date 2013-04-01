@@ -1,6 +1,6 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := 
+LD_FLAGS := -pthread
 CC_FLAGS := -O2 --std=c++0x -Wno-unused-result
 
 client: $(OBJ_FILES)
