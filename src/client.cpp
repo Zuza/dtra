@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   unsigned long long checksum = 0;
 
   for (int blockNumber = 0; db.readNextBlock(); ++blockNumber) {
-    if (blockNumber >= 1) break; // TODO: makni limit
+    //    if (blockNumber >= 1) break; // TODO: makni limit
 
     size_t byteLen = db.getCurrentBlockNoBytes();
 
