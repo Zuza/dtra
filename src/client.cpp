@@ -14,10 +14,11 @@
 #include "ThreadPool.h"
 #include "database.h"
 #include "read.h"
+#include "mapping.h"
 using namespace std;
 
 // readovi se citaju sa stdin-a i salju na stdout
-void usage() {
+void printUsageAndExit() {
   printf("client index <database location> <index output location>\n");
   printf("-- creates index and dumps it into a file\n");
   puts("");
@@ -37,23 +38,24 @@ void inputReads(vector<shared_ptr<Read> >& reads, const int limit) {
   }
 }
 
-int solveRead(Database& db, shared_ptr<Read> read) {
+MappingResult solveRead(Database& db, shared_ptr<Read> read) {
   static mutex m;
+  MappingResult result;
   m.lock();
   cout << "Begin thread # " << std::this_thread::get_id() << endl;
   read->print();
   cout << "End thread # " << std::this_thread::get_id() << endl;
   m.unlock();
-  return 0;
+  return result;
 }
 
 void processReads(Database& db, vector<shared_ptr<Read> >& reads) {
   ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
                       // ili da bude jednako broju jezgara na clusteru (to je 8)
 
-  vector<future<int> > results;
+  vector<future<MappingResult> > results;
   for (int i = 0; i < reads.size(); ++i) {
-    results.push_back(pool.enqueue<int>([i, &db, &reads] {
+    results.push_back(pool.enqueue<MappingResult>([i, &db, &reads] {
   	  return solveRead(db, reads[i]);
   	}));
   } 
@@ -61,7 +63,7 @@ void processReads(Database& db, vector<shared_ptr<Read> >& reads) {
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
-    usage();
+    printUsageAndExit();
   }
 
   string command = argv[1];
