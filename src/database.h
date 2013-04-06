@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 
+#include "BufferedBinaryReader.h"
 #include "genome.h"
 #include "index.h"
 
@@ -46,6 +47,13 @@ class Database {
   FILE* indexFilePointer_;
   size_t currentBlockNoBytes_;
   bool createIndex_;
+
+  // koristi se kod izgradnje indeksa
+  std::shared_ptr<BufferedBinaryWriter> bufferedWriter_;
+
+  // koristi se kod ucitavanja indeksa
+  std::shared_ptr<BufferedBinaryReader> bufferedReader_;
+
 };
 
 #endif

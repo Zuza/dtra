@@ -89,48 +89,47 @@ void Index::create(Genome* genome) {
   }
 }
 
-// TODO: buffered output
-void Index::appendToBinaryFile(FILE* out) { 
+void Index::appendToBufferedBinaryWriter(BufferedBinaryWriter& writer) { 
   int leftSize = leftHashRanges_.size();
-  fwrite(&leftSize, 4, 1, out);
+
+  writer.writeSigned32(leftSize);
   for (int i = 0; i < leftSize; ++i) {
-    fwrite(&leftHashRanges_[i].first, 4, 1, out);
-    fwrite(&leftHashRanges_[i].second.first, 4, 1, out);
-    fwrite(&leftHashRanges_[i].second.second, 4, 1, out);
+    writer.writeUnsigned32(leftHashRanges_[i].first);
+    writer.writeSigned32(leftHashRanges_[i].second.first);
+    writer.writeSigned32(leftHashRanges_[i].second.second);
   }
   
   int rightSize = rightHash_.size();
-  fwrite(&rightSize, 4, 1, out);
+  writer.writeSigned32(rightSize);
   for (int i = 0; i < rightSize; ++i) {
-    fwrite(&rightHash_[i], 4, 1, out);
+    writer.writeUnsigned32(rightHash_[i]);
   }
   for (int i = 0; i < rightSize; ++i) {
-    fwrite(&positions_[i], 4, 1, out);
+    writer.writeSigned32(positions_[i]);
   }
+  
+  writer.flushBuffer(true);
 }
 
-// TODO: buffered input
-void Index::readNextFromBinaryFile(FILE* in) {
-  int leftSize;
-  fread(&leftSize, 4, 1, in);
+void Index::readNextFromBufferedReader(BufferedBinaryReader& reader) {
+  int leftSize; reader.readSigned32(&leftSize);
   leftHashRanges_.resize(leftSize);
-
+  
   for (int i = 0; i < leftSize; ++i) {
-    fread(&leftHashRanges_[i].first, 4, 1, in);
-    fread(&leftHashRanges_[i].second.first, 4, 1, in);
-    fread(&leftHashRanges_[i].second.second, 4, 1, in);
+    reader.readUnsigned32(&leftHashRanges_[i].first);
+    reader.readSigned32(&leftHashRanges_[i].second.first);
+    reader.readSigned32(&leftHashRanges_[i].second.second);
   }
 
-  int rightSize; 
-  fread(&rightSize, 4, 1, in);
+  int rightSize; reader.readSigned32(&rightSize);
   rightHash_.resize(rightSize);
-  positions_.resize(rightSize);
-
   for (int i = 0; i < rightSize; ++i) {
-    fread(&rightHash_[i], 4, 1, in);
+    reader.readUnsigned32(&rightHash_[i]);
   }
+
+  positions_.resize(rightSize);
   for (int i = 0; i < rightSize; ++i) {
-    fread(&positions_[i], 4, 1, in);
+    reader.readSigned32(&positions_[i]);
   }
 }
 

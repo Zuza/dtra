@@ -22,6 +22,14 @@ Database::Database(const string& databasePath,
     fprintf(stderr, "Failed to open index file!\n");
     exit(1);
   }
+
+  if (!createIndex) { // initialize BufferedReader
+    bufferedReader_ = shared_ptr<BufferedBinaryReader>(
+                          new BufferedBinaryReader(indexFilePointer_));
+  } else {
+    bufferedWriter_ = shared_ptr<BufferedBinaryWriter>(
+		          new BufferedBinaryWriter(indexFilePointer_));
+  }
 }
 
 Database::~Database() {
@@ -34,24 +42,22 @@ bool Database::readNextBlock() {
   speciesIndex_.clear();
   currentBlockNoBytes_ = 0;
 
-  while (true) {
+  for (int iter = 0; ; ++iter) {
     shared_ptr<Genome> g(new Genome());
     if (!readGenome(g.get(), dbFilePointer_)) {
       break;
     }
-
     species_.push_back(g);
 
     shared_ptr<Index> in(new Index(kSeedLen));
     if (createIndex_) {
       in->create(g.get());
-      in->appendToBinaryFile(indexFilePointer_);
+      in->appendToBufferedBinaryWriter(*bufferedWriter_);
     } else {
-      in->readNextFromBinaryFile(indexFilePointer_);
+      in->readNextFromBufferedReader(*bufferedReader_);
     }
     //printf("%llu\n", in->checksum());
     speciesIndex_.push_back(in);
-
     currentBlockNoBytes_ += g->name_.size();
     currentBlockNoBytes_ += g->data_.size();
     if (currentBlockNoBytes_ > kMaxBlockSize) {

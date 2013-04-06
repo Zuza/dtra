@@ -8,6 +8,8 @@
 #include <utility>
 #include <tr1/unordered_map>
 
+#include "BufferedBinaryReader.h"
+#include "BufferedBinaryWriter.h"
 #include "genome.h"
 
 typedef unsigned long long keyType;
@@ -24,9 +26,9 @@ public:
 
   void create(Genome* genome);
   
-  void appendToBinaryFile(FILE* fileToAppend);
+  void appendToBufferedBinaryWriter(BufferedBinaryWriter& writer);
   
-  void readNextFromBinaryFile(FILE* indexInputFile);
+  void readNextFromBufferedReader(BufferedBinaryReader& reader);
 
   unsigned long long checksum();
 

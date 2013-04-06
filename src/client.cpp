@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 
   vector<shared_ptr<Read> > reads;
   if (command == "solve") {
-    inputReads(reads, 6); // TODO: remove input limit
+    //inputReads(reads, 6); // TODO: remove input limit
   }
 
   Database db(databasePath, indexFilePath, 
@@ -87,12 +87,11 @@ int main(int argc, char* argv[]) {
   unsigned long long checksum = 0;
 
   for (int blockNumber = 0; db.readNextBlock(); ++blockNumber) {
-    //    if (blockNumber >= 1) break; // TODO: makni limit
-
+    if (blockNumber >= 1) break; // TODO: makni limit
     size_t byteLen = db.getCurrentBlockNoBytes();
 
     if (command == "solve") {
-      processReads(db, reads);
+      //processReads(db, reads);
     }
 
     totalRead += byteLen;
