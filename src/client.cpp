@@ -41,11 +41,12 @@ void inputReads(vector<shared_ptr<Read> >& reads, const int limit) {
 MappingResult solveRead(Database& db, shared_ptr<Read> read) {
   static mutex m;
   MappingResult result;
-  m.lock();
-  cout << "Begin thread # " << std::this_thread::get_id() << endl;
-  read->print();
-  cout << "End thread # " << std::this_thread::get_id() << endl;
-  m.unlock();
+  performMapping(&result, db, read);
+  // m.lock();
+  // cout << "Begin thread # " << std::this_thread::get_id() << endl;
+  // read->print();
+  // cout << "End thread # " << std::this_thread::get_id() << endl;
+  // m.unlock();
   return result;
 }
 
@@ -74,34 +75,38 @@ int main(int argc, char* argv[]) {
 
   vector<shared_ptr<Read> > reads;
   if (command == "solve") {
-    //inputReads(reads, 6); // TODO: remove input limit
+    inputReads(reads, 6);
   }
 
   Database db(databasePath, indexFilePath, 
+	      16,
 	      command == "index");
 
-  size_t minByteLen = 1000000000000LL;
-  size_t maxByteLen = 0;
+  size_t minLen = 1000000000000LL;
+  size_t maxLen = 0;
   size_t totalRead = 0;
 
   unsigned long long checksum = 0;
 
   for (int blockNumber = 0; db.readNextBlock(); ++blockNumber) {
-    if (blockNumber >= 1) break; // TODO: makni limit
+    if (blockNumber >= 10) break; // TODO: makni limit
     size_t byteLen = db.getCurrentBlockNoBytes();
 
     if (command == "solve") {
-      //processReads(db, reads);
+      processReads(db, reads);
     }
 
     totalRead += byteLen;
-    minByteLen = min(minByteLen, byteLen);
-    maxByteLen = max(maxByteLen, byteLen);
+    db.getMinMaxGeneLength(&minLen, &maxLen);
     fprintf(stderr, "Read %0.3lf Gb.\n", totalRead/1e9);
+    fprintf(stderr, "U ovom bloku je bilo %d gena.\n", 
+	    (int)db.getCurrentBlockNoGenes());
+    fprintf(stderr, "Prosjecna duljina gena je %lf.\n",
+	    db.getAverageGeneLength());
     checksum = checksum * 10007 + db.checksum();
   }
-  fprintf(stderr, "Min gene length: %lld bytes.\n", (long long)minByteLen);
-  fprintf(stderr, "Max gene length: %lld bytes.\n", (long long)maxByteLen);
+  fprintf(stderr, "Min gene length: %lld bytes.\n", (long long)minLen);
+  fprintf(stderr, "Max gene length: %lld bytes.\n", (long long)maxLen);
   fprintf(stderr, "DB checksum: %llu\n", checksum);
 
   return 0;

@@ -6,7 +6,10 @@
 #include <memory>
 
 struct MappingResult {
-  int a;
+  int databaseId;
+  int pos;
+  bool isReverseComplemented;
+  double score;
 };
 
 void performMapping(MappingResult* mappingResult,

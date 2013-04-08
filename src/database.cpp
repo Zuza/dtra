@@ -3,11 +3,12 @@
 using namespace std;
 
 const size_t kMaxBlockSize = 10000000;
-const int kSeedLen = 20;
 
 Database::Database(const string& databasePath,
 		   const string& indexFilePath,
-		   const bool createIndex) : createIndex_(createIndex) {
+		   const int seedLen,
+		   const bool createIndex) : seedLen_(seedLen), 
+					     createIndex_(createIndex) {
   dbFilePointer_ = fopen(databasePath.c_str(), "rt");
   if (!dbFilePointer_) {
     fprintf(stderr, "Failed to read database!\n");
@@ -49,7 +50,7 @@ bool Database::readNextBlock() {
     }
     species_.push_back(g);
 
-    shared_ptr<Index> in(new Index(kSeedLen));
+    shared_ptr<Index> in(new Index(seedLen_));
     if (createIndex_) {
       in->create(g.get());
       in->appendToBufferedBinaryWriter(*bufferedWriter_);
