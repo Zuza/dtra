@@ -20,7 +20,7 @@ void reduceNtDatabase(char* ntFilePath) {
   FILE* ntInputFile = fopen(ntFilePath, "rt");
 
   for (Genome g; readGenome(&g, ntInputFile); ) {
-    if (throwCoin(1)) {
+    if (throwCoin(0.1)) {
       printGenome(&g);
     }
   }
