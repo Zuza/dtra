@@ -11,10 +11,10 @@
 #include <string>
 #include <iostream>
 
-#include "ThreadPool.h"
-#include "database.h"
-#include "read.h"
-#include "mapping.h"
+#include "core/ThreadPool.h"
+#include "core/database.h"
+#include "core/read.h"
+#include "core/mapping.h"
 using namespace std;
 
 // readovi se citaju sa stdin-a i salju na stdout
