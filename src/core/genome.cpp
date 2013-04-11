@@ -9,9 +9,7 @@ bool readGenome(Genome* g, FILE* inputFilePointer) {
 
   while(true) {
     fpos_t prevPos;
-    //printf("%p\n", inputFilePointer);
     fgetpos(inputFilePointer, &prevPos);
-    //puts("tu");
     if (!fgets(buffer, sizeof buffer, inputFilePointer)) {
       break;
     }
