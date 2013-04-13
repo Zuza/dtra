@@ -2,4 +2,6 @@
 *.o~
 *.o
 *.h~
+client
+reducer
 

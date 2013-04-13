@@ -5,40 +5,49 @@
 #ifndef MAPPER_INDEX
 #define MAPPER_INDEX
 
-#include <utility>
-#include <tr1/unordered_map>
+#include <vector>
 
 #include "BufferedBinaryReader.h"
 #include "BufferedBinaryWriter.h"
 #include "genome.h"
 
-typedef unsigned long long keyType;
-
-// u nt bazi najdulji gen je dugacak 150M pa pozicije stanu u int
-typedef int indexType;
+// typedef unsigned long long keyType;
 
 class Index {
 public:
-  // Creates index for a given genome. 'seed_length' determines the
-  // indexed unit length (substring) and 'max_seed_positions' the
-  // number of seed hits beyond which results are ignored.
+  // Create index for a set of genes. 'seed_length' determines the
+  // indexed unit length (substring).
+
   Index(int seedLength);
 
-  void create(Genome* genome);
-  
-  void appendToBufferedBinaryWriter(BufferedBinaryWriter& writer);
-  
-  void readNextFromBufferedReader(BufferedBinaryReader& reader);
+  void insertGenome(Genome* genome);
+  void prepareIndex(); // sort the hashes
 
-  unsigned long long checksum();
+  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, unsigned int hash); // hash_t
+
+  // serialize & deserialize
+  void writeIndex(BufferedBinaryWriter& writer);
+  void readIndex(BufferedBinaryReader& reader);
+
+  //  unsigned long long checksum();
 
 private:
-  //std::vector<std::pair<keyType, indexType> > positions_;
-  std::vector<std::pair<unsigned, std::pair<int, int> > > leftHashRanges_;
-  std::vector<unsigned> rightHash_;
-  std::vector<int> positions_;
+  std::pair<unsigned int, unsigned int> position_to_gene_position(unsigned int position);
 
+  struct Entry {
+    unsigned int position;
+    unsigned int hash; // hash_t
+
+    friend bool operator < (const Entry& a, const Entry& b) {
+      return a.hash < b.hash;
+    }
+  };
+
+  std::vector<int> geneStartingPos_;
+  std::vector<Index::Entry> index_;
+  int startingPos_;
   int seedLength_;
+  bool indexPrepared_;
 };
 
 

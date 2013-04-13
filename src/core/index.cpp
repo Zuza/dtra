@@ -2,38 +2,34 @@
 #include "core/bioinf_util.h"
 #include <ctime>
 #include <cstdlib>
-
 #include <algorithm>
+
+#include "BufferedBinaryWriter.h"
+
 using namespace std;
 
-namespace {
-  unsigned leftPart(unsigned long long hsh) {
-    return hsh >> 32;
-  }
-  unsigned rightPart(unsigned long long hsh) {
-    return hsh & ((1LL<<32)-1);
-  }
-}
-
 Index::Index(int seedLength) : seedLength_(seedLength) {
-  assert(seedLength_ <= 32); // because we want the hash to fit 64bit integer
+  indexPrepared_ = false;
+  startingPos_ = 0;
+  assert(seedLength_ <= 16); // currently unsigned int
+  assert(seedLength_ <= 32); // maybe later: because we want the hash to fit 64bit integer ?
 }
 
-unsigned long long Index::checksum() {
-  unsigned long long ret = seedLength_;
-  for (int i = 0; i < (int)leftHashRanges_.size(); ++i) {
-    ret = ret * 3137 + leftHashRanges_[i].first;
-    ret = ret * 3137 + leftHashRanges_[i].second.first;
-    ret = ret * 3137 + leftHashRanges_[i].second.second;
-  }
-  for (int i = 0; i < (int)rightHash_.size(); ++i) {
-    ret = ret * 17 + rightHash_[i];
-  }
-  return ret;
-}
+// unsigned long long Index::checksum() {
+//   unsigned long long ret = seedLength_;
+//   for (int i = 0; i < (int)leftHashRanges_.size(); ++i) {
+//     ret = ret * 3137 + leftHashRanges_[i].first;
+//     ret = ret * 3137 + leftHashRanges_[i].second.first;
+//     ret = ret * 3137 + leftHashRanges_[i].second.second;
+//   }
+//   for (int i = 0; i < (int)rightHash_.size(); ++i) {
+//     ret = ret * 17 + rightHash_[i];
+//   }
+//   return ret;
+// }
 
-void Index::create(Genome* genome) { 
-  vector<pair<unsigned long long, int> > positions;
+void Index::insertGenome(Genome* genome) { 
+  // TODO: prealociraj sve!
 
   unsigned long long subtractPower = 1;
   for (int i = 0; i < seedLength_; ++i) {
@@ -51,86 +47,54 @@ void Index::create(Genome* genome) {
     }
 
     if (i+1 >= seedLength_) {
-      positions.push_back(make_pair(rollingHash,
-				    i+1-seedLength_));
+      Index::Entry tmp;
+      tmp.position = startingPos_ + i+1 - seedLength_;
+      tmp.hash = rollingHash;
+      index_.push_back(tmp);
     }
   }
 
-  sort(positions.begin(), positions.end());
+  geneStartingPos_.push_back(startingPos_);
+  startingPos_ += genome->size();
+}
 
-  leftHashRanges_.clear();
-  rightHash_.clear();
-  positions_.clear();
+pair<unsigned int, unsigned int> Index::position_to_gene_position(unsigned int position) {
+  auto it = upper_bound(geneStartingPos_.begin(), geneStartingPos_.end(), position);
+  assert(it != geneStartingPos_.begin());
+  --it;
+  return make_pair<unsigned int, unsigned int>(it - geneStartingPos_.begin(), position - *it);
+}
 
-  if (positions.empty()) {
-    // toliko je kratak da ni nema seedova
-    return;
-  }
-
-  int first = 0;
-  for (int i = 0; ; ++i) {
-    if (i == (int)positions.size() ||
-	leftPart(positions[first].first) != leftPart(positions[i].first)) {
-      //assert(first < positions.size());
-      leftHashRanges_.push_back(
-      	make_pair(
-      	  leftPart(positions[first].first),
-      	  make_pair(first, i-1)
-      	)
-      );
-      first = i;
-      if (first == (int)positions.size()) {
-	break;
-      }
-    }
-    //assert(i<positions.size());
-    rightHash_.push_back(rightPart(positions[i].first));
-    positions_.push_back(positions[i].second);
+void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, unsigned int hash) {
+  assert(indexPrepared_);
+  assert(retVal->empty());
+  Entry tmp; tmp.hash = hash;
+  auto pair_lb_ub = equal_range(index_.begin(), index_.end(), tmp);
+  for ( ; pair_lb_ub.first != pair_lb_ub.second; ++pair_lb_ub.first) {
+    Entry& entry = *pair_lb_ub.first;
+    retVal->push_back(position_to_gene_position(entry.position));
   }
 }
 
-void Index::appendToBufferedBinaryWriter(BufferedBinaryWriter& writer) { 
-  int leftSize = leftHashRanges_.size();
-
-  writer.writeSigned32(leftSize);
-  for (int i = 0; i < leftSize; ++i) {
-    writer.writeUnsigned32(leftHashRanges_[i].first);
-    writer.writeSigned32(leftHashRanges_[i].second.first);
-    writer.writeSigned32(leftHashRanges_[i].second.second);
-  }
-  
-  int rightSize = rightHash_.size();
-  writer.writeSigned32(rightSize);
-  for (int i = 0; i < rightSize; ++i) {
-    writer.writeUnsigned32(rightHash_[i]);
-  }
-  for (int i = 0; i < rightSize; ++i) {
-    writer.writeSigned32(positions_[i]);
-  }
-  
-  writer.flushBuffer(true);
+void Index::prepareIndex() {
+  sort(index_.begin(), index_.end());
+  indexPrepared_ = true;
 }
 
-void Index::readNextFromBufferedReader(BufferedBinaryReader& reader) {
-  int leftSize; reader.readSigned32(&leftSize);
-  leftHashRanges_.resize(leftSize);
-  
-  for (int i = 0; i < leftSize; ++i) {
-    reader.readUnsigned32(&leftHashRanges_[i].first);
-    reader.readSigned32(&leftHashRanges_[i].second.first);
-    reader.readSigned32(&leftHashRanges_[i].second.second);
-  }
-
-  int rightSize; reader.readSigned32(&rightSize);
-  rightHash_.resize(rightSize);
-  for (int i = 0; i < rightSize; ++i) {
-    reader.readUnsigned32(&rightHash_[i]);
-  }
-
-  positions_.resize(rightSize);
-  for (int i = 0; i < rightSize; ++i) {
-    reader.readSigned32(&positions_[i]);
-  }
+void Index::writeIndex(BufferedBinaryWriter& writer) {
+  assert(indexPrepared_);
+  writer.writeSigned32(seedLength_);
+  writer.writeVector(geneStartingPos_);
+  writer.writeVector(index_);
 }
+
+void Index::readIndex(BufferedBinaryReader& reader) {
+  indexPrepared_ = true;
+  int storedSeedLength; reader.readSigned32(&storedSeedLength);
+  assert(seedLength_ == storedSeedLength);
+  reader.readVector(geneStartingPos_);
+  reader.readVector(index_);
+}
+
 
 

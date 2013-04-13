@@ -11,67 +11,62 @@
 
 class Database {
  public:
-  /**
-   * @param createIndex denotes whether index should be
-   *                    read from previously made index file
-   *                    or the purpose of this instance is
-   *                    to create index and dump it into a file
-   *                    (in both cases location is in indexFilePath)
-   */
-  Database(const std::string& databasePath,
-	   const std::string& indexFilePath,
-	   const int seedLen,
-	   const bool createIndex);
+
+  // read from database and store in index
+  Database(const std::string& databasePath, // pass anything if you're only reading index files
+           const std::string& indexFilePath,
+           const int seedLen);
+
+  // read from previously created index
+  Database(const std::string& indexFolderPath,
+           const int seedLen);
+
   ~Database();
 
-  bool readNextBlock();
-  void printNames();
+  bool readDbStoreIndex();
+  int getIndexFilesCount();
+  std::shared_ptr<Index> readIndexFile(int which);
+
   size_t getCurrentBlockNoBytes() {
     return currentBlockNoBytes_;
   }
   size_t getCurrentBlockNoGenes() {
-    return species_.size();
+    return numGenes_;
   }
   double getAverageGeneLength() {
-    double avg = 0;
-    for (int i = 0; i < (int)species_.size(); ++i) {
-      avg += species_[i]->data().size();
-    }
-    return avg / getCurrentBlockNoGenes();
+    return double(sizeSum_) / numGenes_;
   }
   void getMinMaxGeneLength(size_t* minLen, size_t* maxLen) {
-    *minLen = 1000000000000LL;
-    *maxLen = 0;
-    for (int i = 0; i < (int)species_.size(); ++i) {
-      size_t len = species_[i]->data().size();
-      *minLen = std::min(*minLen, len);
-      *maxLen = std::max(*maxLen, len);
-    }
+    *minLen = minSize_;
+    *maxLen = maxSize_;
   }
 
-  unsigned long long checksum() {
-    unsigned long long ret = 0;
-    for (int i = 0; i < speciesIndex_.size(); ++i) {
-      ret = ret * 1000000007 + speciesIndex_[i]->checksum();
-    }
-    return ret;
-  }
+  /* unsigned long long checksum() { */
+  /*   unsigned long long ret = 0; */
+  /*   for (int i = 0; i < speciesIndex_.size(); ++i) { */
+  /*     ret = ret * 1000000007 + speciesIndex_[i]->checksum(); */
+  /*   } */
+  /*   return ret; */
+  /* } */
 
   const int& getSeedLen() const {
     return seedLen_;
   }
 
  private:
+  void update_statistics(Genome* genome);
+  void clear_statistics();
 
- private:
-  std::vector<std::shared_ptr<Genome> > species_;
-  std::vector<std::shared_ptr<Index> > speciesIndex_;
+  //  std::vector<std::shared_ptr<Genome> > species_;
+  //  std::vector<std::shared_ptr<Index> > speciesIndex_;
 
   FILE* dbFilePointer_;
-  FILE* indexFilePointer_;
   size_t currentBlockNoBytes_;
   bool createIndex_;
   int seedLen_;
+  int currentIndex_;
+
+  std::string indexFolderPath_;
 
   // koristi se kod izgradnje indeksa
   std::shared_ptr<BufferedBinaryWriter> bufferedWriter_;
@@ -79,6 +74,9 @@ class Database {
   // koristi se kod ucitavanja indeksa
   std::shared_ptr<BufferedBinaryReader> bufferedReader_;
 
+  unsigned long long sizeSum_;
+  unsigned long long minSize_, maxSize_;
+  unsigned long long numGenes_;
 };
 
 #endif

@@ -2,63 +2,51 @@
 #include <cstdlib>
 using namespace std;
 
-const size_t kMaxBlockSize = 10000000;
+const size_t kMaxBlockSize = 10000000; // 10 MB
+
+Database::Database(const string& indexFolderPath,
+                   const int seedLen) : seedLen_(seedLen),
+                                        indexFolderPath_(indexFolderPath)
+{
+  assert(indexFolderPath.back() == '/');  
+  dbFilePointer_ = NULL;
+}
+
 
 Database::Database(const string& databasePath,
-		   const string& indexFilePath,
-		   const int seedLen,
-		   const bool createIndex) : seedLen_(seedLen), 
-					     createIndex_(createIndex) {
-  dbFilePointer_ = fopen(databasePath.c_str(), "rt");
-  if (!dbFilePointer_) {
-    fprintf(stderr, "Failed to read database!\n");
-    exit(1);
-  }
-  
-  // TODO: mozda kasnije vidjeti je li potrebna ideja ili
-  //       korisno imati index zapisan kao binarni file
-  indexFilePointer_ = fopen(indexFilePath.c_str(), 
-			    createIndex_ ? "wb": "rb");
-  if (!indexFilePointer_) {
-    fprintf(stderr, "Failed to open index file!\n");
-    exit(1);
-  }
+                   const string& indexFolderPath,
+                   const int seedLen) : seedLen_(seedLen),
+                                        indexFolderPath_(indexFolderPath)                                        
+{
+  assert(indexFolderPath.back() == '/');
 
-  if (!createIndex) { // initialize BufferedReader
-    bufferedReader_ = shared_ptr<BufferedBinaryReader>(
-                          new BufferedBinaryReader(indexFilePointer_));
-  } else {
-    bufferedWriter_ = shared_ptr<BufferedBinaryWriter>(
-		          new BufferedBinaryWriter(indexFilePointer_));
-  }
+  dbFilePointer_ = fopen(databasePath.c_str(), "rt");
+  assert(dbFilePointer_);
+
+  currentIndex_ = 0;
 }
 
 Database::~Database() {
-  fclose(dbFilePointer_);
-  fclose(indexFilePointer_);
+  if (dbFilePointer_) {
+    fclose(dbFilePointer_);
+  }
 }
 
-bool Database::readNextBlock() { 
-  species_.clear();
-  speciesIndex_.clear();
+bool Database::readDbStoreIndex() { 
+  clear_statistics();
   currentBlockNoBytes_ = 0;
+
+  shared_ptr<Index> in(new Index(seedLen_));
 
   for (int iter = 0; ; ++iter) {
     shared_ptr<Genome> g(new Genome());
     if (!readGenome(g.get(), dbFilePointer_)) {
       break;
     }
-    species_.push_back(g);
 
-    shared_ptr<Index> in(new Index(seedLen_));
-    if (createIndex_) {
-      in->create(g.get());
-      in->appendToBufferedBinaryWriter(*bufferedWriter_);
-    } else {
-      in->readNextFromBufferedReader(*bufferedReader_);
-    }
-    //printf("%llu\n", in->checksum());
-    speciesIndex_.push_back(in);
+    in->insertGenome(g.get());
+    update_statistics(g.get());
+
     currentBlockNoBytes_ += g->name_.size();
     currentBlockNoBytes_ += g->data_.size();
     if (currentBlockNoBytes_ > kMaxBlockSize) {
@@ -66,11 +54,62 @@ bool Database::readNextBlock() {
     }
   }
 
-  return species_.size() > 0;
+  if (currentBlockNoBytes_ == 0) {
+    char filename[100]; sprintf(filename, "%scount.txt", indexFolderPath_.c_str()); 
+    FILE* out = fopen(filename, "w"); // write out how many index files there are
+    assert(out);
+    fprintf(out, "%d", currentIndex_);
+    fclose(out);
+    return false;
+  }
+
+  in->prepareIndex();
+  assert(indexFolderPath_.size() < 90);
+  char filename[100]; sprintf(filename, "%s%d", indexFolderPath_.c_str(), currentIndex_); 
+  ++currentIndex_;
+  
+  FILE* indexFile = fopen(filename, "wb");
+  assert(indexFile);
+  BufferedBinaryWriter writer(indexFile);
+  in->writeIndex(writer);
+  fclose(indexFile);
+  
+  return true;
 }
 
-void Database::printNames() {
-  for (auto x : species_) {
-    printf("%s\n", x->name_.c_str());
-  }
+shared_ptr<Index> Database::readIndexFile(int which) {
+  char filename[100]; sprintf(filename, "%s%d", indexFolderPath_.c_str(), which); 
+  FILE* indexFile = fopen(filename, "rb");
+  BufferedBinaryReader reader(indexFile);
+
+  shared_ptr<Index> ptr(new Index(seedLen_));
+  ptr->readIndex(reader);
+  
+  fclose(indexFile);
+  assert(indexFile);
+  return ptr;
+}
+
+int Database::getIndexFilesCount() {
+  char filename[100]; sprintf(filename, "%scount.txt", indexFolderPath_.c_str()); 
+  FILE* in = fopen(filename, "r"); // write out how many index files there are
+  assert(in);
+  int count; fscanf(in, "%d", &count);
+  fclose(in);
+  return count;
+}
+
+void Database::clear_statistics() {
+  sizeSum_ = 0;
+  minSize_ = 0-1; // OVERFLOW, MAX VALUE
+  maxSize_ = 0;
+  numGenes_ = 0;
+}
+
+void Database::update_statistics(Genome* genome) {
+  size_t sz = genome->size();
+  minSize_ = min<unsigned long long>(minSize_, sz);
+  maxSize_ = max<unsigned long long>(maxSize_, sz);
+  sizeSum_ += sz;
+  ++numGenes_;
 }

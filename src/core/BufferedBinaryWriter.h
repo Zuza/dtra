@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <vector>
 
 class BufferedBinaryWriter {
  public:
@@ -22,8 +23,16 @@ class BufferedBinaryWriter {
     delete[] buffer_;
   }
 
-  void writeUnsigned32(const unsigned int& a);
-  void writeSigned32(const int& a);
+  void writeUnsigned64(const unsigned long int a);
+  void writeUnsigned32(const unsigned int a);
+  void writeSigned32(const int a);
+
+  template<typename T> void writeVector(const std::vector<T>& v) {
+    writeUnsigned64(v.size());
+    flushBuffer(true);
+    fwrite((void*)&v[0], sizeof(T), v.size(), outputFile_);
+  }
+
   void flushBuffer(bool forceFlush = false);
 
  private:
