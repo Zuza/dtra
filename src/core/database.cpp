@@ -6,9 +6,10 @@ const size_t kMaxBlockSize = 10000000; // 10 MB
 
 Database::Database(const string& indexFolderPath,
                    const int seedLen) : seedLen_(seedLen),
-                                        indexFolderPath_(indexFolderPath)
-{
-  assert(indexFolderPath.back() == '/');  
+                                        indexFolderPath_(indexFolderPath) {
+  if (indexFolderPath_.back() != '/') {
+    indexFolderPath_ += "/";
+  }
   dbFilePointer_ = NULL;
 }
 
@@ -16,9 +17,12 @@ Database::Database(const string& indexFolderPath,
 Database::Database(const string& databasePath,
                    const string& indexFolderPath,
                    const int seedLen) : seedLen_(seedLen),
-                                        indexFolderPath_(indexFolderPath)                                        
-{
-  assert(indexFolderPath.back() == '/');
+                                        indexFolderPath_(indexFolderPath) {
+  if (indexFolderPath_.back() != '/') {
+    indexFolderPath_ += "/";
+  }
+
+  system(("mkdir -p " + indexFolderPath_).c_str());
 
   dbFilePointer_ = fopen(databasePath.c_str(), "rt");
   assert(dbFilePointer_);
@@ -80,20 +84,25 @@ bool Database::readDbStoreIndex() {
 shared_ptr<Index> Database::readIndexFile(int which) {
   char filename[100]; sprintf(filename, "%s%d", indexFolderPath_.c_str(), which); 
   FILE* indexFile = fopen(filename, "rb");
-  BufferedBinaryReader reader(indexFile);
+  assert(indexFile);
 
+  BufferedBinaryReader reader(indexFile);
   shared_ptr<Index> ptr(new Index(seedLen_));
   ptr->readIndex(reader);
   
   fclose(indexFile);
-  assert(indexFile);
   return ptr;
 }
 
 int Database::getIndexFilesCount() {
-  char filename[100]; sprintf(filename, "%scount.txt", indexFolderPath_.c_str()); 
+  char filename[100]; sprintf(filename, "%scount.txt", indexFolderPath_.c_str());
   FILE* in = fopen(filename, "r"); // write out how many index files there are
-  assert(in);
+
+  if (!in) {
+    fprintf(stderr, "FAILED reading number of index files from %s\n", filename);
+    exit(1);
+  }
+
   int count; fscanf(in, "%d", &count);
   fclose(in);
   return count;

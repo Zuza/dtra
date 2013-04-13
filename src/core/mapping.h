@@ -3,6 +3,7 @@
 
 #include "database.h"
 #include "read.h"
+#include "index.h"
 #include <memory>
 
 struct MappingResult {
@@ -17,6 +18,6 @@ struct MappingResult {
 };
 
 void performMapping(MappingResult* mappingResult,
-		    const Database& db, std::shared_ptr<Read> read);
+		    std::shared_ptr<Index> idx, std::shared_ptr<Read> read);
 
 #endif

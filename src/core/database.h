@@ -57,9 +57,6 @@ class Database {
   void update_statistics(Genome* genome);
   void clear_statistics();
 
-  //  std::vector<std::shared_ptr<Genome> > species_;
-  //  std::vector<std::shared_ptr<Index> > speciesIndex_;
-
   FILE* dbFilePointer_;
   size_t currentBlockNoBytes_;
   bool createIndex_;

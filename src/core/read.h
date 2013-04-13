@@ -9,21 +9,19 @@
 
 #include <string>
 
-using namespace std;
-
 class Read {
 public:
-  int readFromStdin();
+  bool read(FILE* fi);
   void print();
 
-  const string& id() const { return id_; }
-  const string& data() const { return data_; }
+  const std::string& id() const { return id_; }
+  const std::string& data() const { return data_; }
   const int size() const { return data_.size(); }
   const char& operator [] (const size_t& i) { return data_[i]; }
 
 private:
-  string id_;
-  string data_;
+  std::string id_;
+  std::string data_;
 };
 
 #endif  // MAPPER_READ

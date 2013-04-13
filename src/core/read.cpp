@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstring>
 
 #include <fstream>
@@ -9,17 +10,17 @@
 
 using namespace std;
 
-int Read::readFromStdin() {
+bool Read::read(FILE* fi) {
   static char id[100000];
   static char data[100000];
   static char nesto[100000]; // TODO: sta je treca linija, za sad ignore
   static char kvaliteta[100000]; // TODO: cetvrta valjda kvalitetu oznacava, 
                                  // ignore za sada
 
-  if (scanf("%s", id) != 1) return 0;
-  if (scanf("%s", data) != 1) return 0;
-  if (scanf("%s", nesto) != 1) return 0;
-  if (scanf("%s", kvaliteta) != 1) return 0;
+  if (fscanf(fi, "%s", id) != 1) return 0;
+  if (fscanf(fi, "%s", data) != 1) return 0;
+  if (fscanf(fi, "%s", nesto) != 1) return 0;
+  if (fscanf(fi, "%s", kvaliteta) != 1) return 0;
   
   this->id_ = id;
   this->data_ = data;

@@ -25,6 +25,8 @@ public:
 
   void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, unsigned int hash); // hash_t
 
+  const int& getSeedLen() { return seedLength_; }
+
   // serialize & deserialize
   void writeIndex(BufferedBinaryWriter& writer);
   void readIndex(BufferedBinaryReader& reader);

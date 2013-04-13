@@ -1,4 +1,5 @@
 #include <cctype>
+#include <mutex>
 #include <utility>
 #include <vector>
 #include "core/mapping.h"
@@ -12,11 +13,14 @@ const int kShortLongBorder = 0;
 namespace {
 
 void performMappingLong(MappingResult* mappingResult,
-			const Database& db, shared_ptr<Read> read) {
-  // unsigned long long hsh = 0;
-  // unsigned long long andMask = (1LL<<(2*db.getSeedLen()))-1;
-
-  // int seedLen = db.getSeedLen();
+			shared_ptr<Index> idx, shared_ptr<Read> read) {
+  // static mutex m;
+  // m.lock();
+  // read->print();
+  // m.unlock();
+  unsigned long long hsh = 0;
+  int seedLen = idx->getSeedLen();
+  unsigned long long andMask = (1LL<<(2*seedLen))-1;
 
   // vector<vector<size_t> > positions(db.getNoGenes());
   // vector<vector<size_t> > lisResults(db.getNoGenes());
@@ -57,10 +61,10 @@ void performMappingLong(MappingResult* mappingResult,
 }
 
 void performMapping(MappingResult* mappingResult,
-		    const Database& db, shared_ptr<Read> read) {
+		    shared_ptr<Index> idx, shared_ptr<Read> read) {
   if (read->size() < kShortLongBorder) {
 
   } else {
-    performMappingLong(mappingResult, db, read);
+    performMappingLong(mappingResult, idx, read);
   }
 }

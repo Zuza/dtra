@@ -14,6 +14,7 @@
 #include "core/ThreadPool.h"
 #include "core/database.h"
 #include "core/read.h"
+#include "core/mapping.h"
 using namespace std;
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -21,45 +22,28 @@ void printUsageAndExit() {
   printf("client index <database location> <index output directory>\n");
   printf("-- creates the index and dumps its parts in the output dir\n");
   puts("");
-  printf("client solve <database location> <index directory>\n");
+  printf("client solve <index directory> <reads input file>\n");
   printf("-- solves with precomputed index\n");
   exit(1);
 }
 
-void inputReads(vector<shared_ptr<Read> >& reads, const int limit) {
+void inputReads(vector<shared_ptr<Read> >* reads, 
+		const string& readsPath, const int limit=-1) {
   int noReads = 0;
   Read tmp;
 
-  for ( ; noReads < limit && tmp.readFromStdin(); ++noReads) {
+  FILE* readsIn = fopen(readsPath.c_str(), "rt");
+  assert(readsIn);
+
+  for ( ; (limit==-1 || noReads<limit) && tmp.read(readsIn); ++noReads) {
     shared_ptr<Read> newRead(new Read());
     *newRead = tmp;
-    reads.push_back(newRead);
+    reads->push_back(newRead);
   }
+
+  fclose(readsIn);
 }
 
-// MappingResult solveRead(Database& db, shared_ptr<Read> read) {
-//   static mutex m;
-//   MappingResult result;
-//   //  performMapping(&result, db, read);
-//   // m.lock();
-//   // cout << "Begin thread # " << std::this_thread::get_id() << endl;
-//   // read->print();
-//   // cout << "End thread # " << std::this_thread::get_id() << endl;
-//   // m.unlock();
-//   return result;
-// }
-
-// void processReads(Database& db, vector<shared_ptr<Read> >& reads) {
-//   ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
-//                       // ili da bude jednako broju jezgara na clusteru (to je 8)
-
-//   vector<future<MappingResult> > results;
-//   for (int i = 0; i < reads.size(); ++i) {
-//     results.push_back(pool.enqueue<MappingResult>([i, &db, &reads] {
-//   	  return solveRead(db, reads[i]);
-//   	}));
-//   } 
-// }
 
 const int seedLen = 16;
 
@@ -87,6 +71,34 @@ void createIndex(string databasePath, string indexFilePath) {
   }
 
   //  fprintf(stderr, "DB checksum: %llu\n", checksum);
+}
+
+MappingResult solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
+  MappingResult result;
+  performMapping(&result, idx, read);
+  return result;
+}
+
+void solveReads(const string& indexFolderPath, 
+		vector<shared_ptr<Read> >& reads) {
+  Database db(indexFolderPath, seedLen);
+
+  for (int indexNo = 0; indexNo < db.getIndexFilesCount(); ++indexNo) {
+    shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
+
+    ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
+                        // ili da bude jednako broju jezgara na clusteru 
+                        // (to je 8)
+
+    vector<future<MappingResult> > results;
+    for (int i = 0; i < reads.size(); ++i) {
+      results.push_back(pool.enqueue<MappingResult>([i, &activeIndex, &reads] {
+	    return solveRead(activeIndex, reads[i]);
+	  }));
+    } 
+
+    // TODO: skupiti rezultate
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -118,9 +130,9 @@ int main(int argc, char* argv[]) {
     if (argc != 4) {
       printUsageAndExit();
     }
-    assert(false);
-    //    vector<shared_ptr<Read> > reads;
-    //    inputReads(reads, 6);
+    vector<shared_ptr<Read> > reads;
+    inputReads(&reads, argv[3]);
+    solveReads(argv[2], reads);
   } else {
     printUsageAndExit();
   }
