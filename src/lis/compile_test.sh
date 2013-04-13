@@ -1,1 +1,0 @@
-g++ -o test -O2 test.cpp lis.cpp

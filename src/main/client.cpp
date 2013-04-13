@@ -11,10 +11,9 @@
 #include <string>
 #include <iostream>
 
-#include "ThreadPool.h"
-#include "database.h"
-#include "read.h"
-#include "mapping.h"
+#include "core/ThreadPool.h"
+#include "core/database.h"
+#include "core/read.h"
 using namespace std;
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -91,6 +90,9 @@ void createIndex(string databasePath, string indexFilePath) {
 }
 
 int main(int argc, char* argv[]) {
+  if (argc <= 1) {
+    printUsageAndExit();
+  }
   string command = argv[1];
 
   if (command == "index") {

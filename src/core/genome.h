@@ -14,8 +14,10 @@ class Genome {
  public:
 
   const std::string& name() const { return name_; }
+  const char& name(size_t i) const { return name_[i]; }
   const std::string& data() const { return data_; }
-  const int size() const { return data_.size(); }
+  const char& data(size_t i) const { return data_[i]; }
+  const size_t size() const { return data_.size(); }
   
   //private:
   std::string name_;
@@ -23,5 +25,6 @@ class Genome {
 };
 
 bool readGenome(Genome* g, FILE* inputFilePointer);
+bool printGenome(Genome* g, FILE* outputFilePointer = stdout, int width = 80);
 
 #endif  // MAPPER_GENOME

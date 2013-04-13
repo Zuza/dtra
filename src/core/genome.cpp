@@ -1,5 +1,5 @@
-#include "genome.h"
-#include "util.h"
+#include "core/genome.h"
+#include "core/util.h"
 
 using namespace std;
 
@@ -9,9 +9,7 @@ bool readGenome(Genome* g, FILE* inputFilePointer) {
 
   while(true) {
     fpos_t prevPos;
-    //printf("%p\n", inputFilePointer);
     fgetpos(inputFilePointer, &prevPos);
-    //puts("tu");
     if (!fgets(buffer, sizeof buffer, inputFilePointer)) {
       break;
     }
@@ -31,4 +29,14 @@ bool readGenome(Genome* g, FILE* inputFilePointer) {
   return iHaveReadSomething;
 }
 
+bool printGenome(Genome* g, FILE* outputFilePointer, int width) {
+  fprintf(outputFilePointer, "%s\n", g->name().c_str());
+
+  for (size_t i = 0; i < g->size(); i += width) {
+    for (size_t j = i; j < min(g->size(), i+width); ++j) {
+      fprintf(outputFilePointer, "%c", g->data(j));
+    }
+    fprintf(outputFilePointer, "\n");
+  }
+}
 

@@ -1,5 +1,5 @@
-#include "index.h"
-#include "bioinf_util.h"
+#include "core/index.h"
+#include "core/bioinf_util.h"
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
