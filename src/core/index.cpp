@@ -77,7 +77,8 @@ void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, unsi
 }
 
 void Index::prepareIndex() {
-  sort(index_.begin(), index_.end());
+  // positions are in increasing order
+  stable_sort(index_.begin(), index_.end());
   indexPrepared_ = true;
 }
 
