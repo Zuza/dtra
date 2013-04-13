@@ -43,12 +43,12 @@ bool Database::readDbStoreIndex() {
   shared_ptr<Index> in(new Index(seedLen_));
 
   for (int iter = 0; ; ++iter) {
-    shared_ptr<Genome> g(new Genome());
-    if (!readGenome(g.get(), dbFilePointer_)) {
+    shared_ptr<Gene> g(new Gene());
+    if (!readGene(g.get(), dbFilePointer_)) {
       break;
     }
 
-    in->insertGenome(g.get());
+    in->insertGene(g.get());
     update_statistics(g.get());
 
     currentBlockNoBytes_ += g->name_.size();
@@ -115,8 +115,8 @@ void Database::clear_statistics() {
   numGenes_ = 0;
 }
 
-void Database::update_statistics(Genome* genome) {
-  size_t sz = genome->size();
+void Database::update_statistics(Gene* gene) {
+  size_t sz = gene->size();
   minSize_ = min<unsigned long long>(minSize_, sz);
   maxSize_ = max<unsigned long long>(maxSize_, sz);
   sizeSum_ += sz;

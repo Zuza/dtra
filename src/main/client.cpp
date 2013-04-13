@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
     }
     createIndex(argv[2], argv[3]);
   } else if (command == "test") {
+    // anything here is temporary and can be deleted at any time
     if (argc != 3) {
       printUsageAndExit();
     }

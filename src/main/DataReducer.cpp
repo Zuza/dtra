@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
-#include "core/genome.h"
+#include "core/gene.h"
 using namespace std;
 
 inline bool throwCoin(double p) {
@@ -28,7 +28,7 @@ void reduceNtDatabase(char* ntFilePath) {
   // TODO: opcionalizirati ovu funkciju
 
   int koji = 0;
-  for (Genome g; readGenome(&g, ntInputFile); ++koji) {
+  for (Gene g; readGene(&g, ntInputFile); ++koji) {
     if (koji % 1000 == 0) {
       fprintf(stderr, "Processed %d genes.\n", koji);
     }
@@ -36,7 +36,7 @@ void reduceNtDatabase(char* ntFilePath) {
       break;
     }
     //if (throwCoin(0.1)) {
-      printGenome(&g);
+      printGene(&g);
       //}
   }
   
@@ -50,10 +50,10 @@ void createWgsimReads(char* ntFilePath) {
   const string outputReadsBig = "reads.fq";
   system(("rm " + outputReadsBig).c_str());
 
-  for (Genome g; readGenome(&g, ntInputFile); ) {
+  for (Gene g; readGene(&g, ntInputFile); ) {
     const string tmpFasta = "reducer.gene.tmp.fa";
     FILE* tmpGeneFile = fopen(tmpFasta.c_str(), "wt");
-    printGenome(&g, tmpGeneFile);
+    printGene(&g, tmpGeneFile);
     fclose(tmpGeneFile);
 
     const string wgsim = "./wgsim ";

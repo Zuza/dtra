@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "BufferedBinaryReader.h"
-#include "genome.h"
+#include "gene.h"
 #include "index.h"
 
 class Database {
@@ -54,7 +54,7 @@ class Database {
   }
 
  private:
-  void update_statistics(Genome* genome);
+  void update_statistics(Gene* gene);
   void clear_statistics();
 
   FILE* dbFilePointer_;

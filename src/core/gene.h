@@ -1,4 +1,4 @@
-// Simple class that represents a genome. Contains the data, name and
+// Simple class that represents a gene. Contains the data, name and
 // functions to read it from FASTA file.
 //
 // Authors: Matija Osrecki, Filip Pavetic
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-class Genome {
+class Gene {
  public:
 
   const std::string& name() const { return name_; }
@@ -24,7 +24,7 @@ class Genome {
   std::string data_;
 };
 
-bool readGenome(Genome* g, FILE* inputFilePointer);
-bool printGenome(Genome* g, FILE* outputFilePointer = stdout, int width = 80);
+bool readGene(Gene* g, FILE* inputFilePointer);
+bool printGene(Gene* g, FILE* outputFilePointer = stdout, int width = 80);
 
 #endif  // MAPPER_GENOME
