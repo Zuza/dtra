@@ -57,7 +57,7 @@ class Database {
     return ret;
   }
 
-  const int& getSeedLen() {
+  const int& getSeedLen() const {
     return seedLen_;
   }
 

@@ -5,14 +5,17 @@
 #include <ctime>
 #include <cstdlib>
 
-inline int baseToInt(const char base) {
+inline int baseToInt(char base, const int nValue = -1) {
+  base = toupper(base);
+
   if (base == 'A') return 0;
   if (base == 'C') return 1;
   if (base == 'T') return 2;
   if (base == 'G') return 3;
   
-  // N will return random number [0..3]
-  return rand()%4;
+  // by default, N will return random number [0..3]
+  if (nValue == -1) return rand()%4;
+  return nValue;
 }
 
 inline char intToBase(const int num) {

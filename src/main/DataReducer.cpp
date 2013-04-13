@@ -46,6 +46,9 @@ void reduceNtDatabase(char* ntFilePath) {
 void createWgsimReads(char* ntFilePath) {
   FILE* ntInputFile = fopen(ntFilePath, "rt");
   assert(ntInputFile);
+  
+  const string outputReadsBig = "reads.fq";
+  system(("rm " + outputReadsBig).c_str());
 
   for (Genome g; readGenome(&g, ntInputFile); ) {
     const string tmpFasta = "reducer.gene.tmp.fa";
@@ -71,10 +74,7 @@ void createWgsimReads(char* ntFilePath) {
     command << " > /dev/null";
     system(command.str().c_str());
 
-    //printf("%s\n", command.str().c_str());    
-    // TODO: readsOutput1 treba appendati na kraj nekog velikog filea s readovima
-    // TODO: treba ubiti output wgsima, zagusuje vrijeme izvrsavanja
-
+    system(("cat " + readsOutput1 + " >> " + outputReadsBig).c_str());
     system(("rm " + readsOutput1).c_str());
     system(("rm " + readsOutput2).c_str());
     system(("rm " + tmpFasta).c_str());

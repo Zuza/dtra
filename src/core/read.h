@@ -19,6 +19,7 @@ public:
   const string& id() const { return id_; }
   const string& data() const { return data_; }
   const int size() const { return data_.size(); }
+  const char& operator [] (const size_t& i) { return data_[i]; }
 
 private:
   string id_;

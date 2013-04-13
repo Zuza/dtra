@@ -7,9 +7,13 @@
 
 struct MappingResult {
   int databaseId;
-  int pos;
+  int start, end;
   bool isReverseComplemented;
   double score;
+
+  bool operator < (const MappingResult& other) {
+    return score < other.score;
+  }
 };
 
 void performMapping(MappingResult* mappingResult,

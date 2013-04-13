@@ -42,11 +42,6 @@ MappingResult solveRead(Database& db, shared_ptr<Read> read) {
   static mutex m;
   MappingResult result;
   performMapping(&result, db, read);
-  // m.lock();
-  // cout << "Begin thread # " << std::this_thread::get_id() << endl;
-  // read->print();
-  // cout << "End thread # " << std::this_thread::get_id() << endl;
-  // m.unlock();
   return result;
 }
 

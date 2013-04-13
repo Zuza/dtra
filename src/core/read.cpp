@@ -23,7 +23,7 @@ int Read::readFromStdin() {
   
   this->id_ = id;
   this->data_ = data;
-
+  
   return 1;
 }
 
