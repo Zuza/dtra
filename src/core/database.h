@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "BufferedBinaryReader.h"
-#include "genome.h"
+#include "gene.h"
 #include "index.h"
 
 class Database {
@@ -54,10 +54,10 @@ class Database {
   }
 
  private:
-  void update_statistics(Genome* genome);
+  void update_statistics(Gene* gene);
   void clear_statistics();
 
-  //  std::vector<std::shared_ptr<Genome> > species_;
+  //  std::vector<std::shared_ptr<Gene> > species_;
   //  std::vector<std::shared_ptr<Index> > speciesIndex_;
 
   FILE* dbFilePointer_;

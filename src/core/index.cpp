@@ -28,7 +28,7 @@ Index::Index(int seedLength) : seedLength_(seedLength) {
 //   return ret;
 // }
 
-void Index::insertGenome(Genome* genome) { 
+void Index::insertGene(Gene* gene) { 
   // TODO: prealociraj sve!
 
   unsigned long long subtractPower = 1;
@@ -38,8 +38,8 @@ void Index::insertGenome(Genome* genome) {
 
   unsigned long long rollingHash = 0;
 
-  for (size_t i = 0; i < genome->size(); ++i) {
-    int next = baseToInt(genome->data()[i]);
+  for (size_t i = 0; i < gene->size(); ++i) {
+    int next = baseToInt(gene->data()[i]);
 
     rollingHash = rollingHash * 4 + next;
     if (i >= seedLength_) {
@@ -55,7 +55,7 @@ void Index::insertGenome(Genome* genome) {
   }
 
   geneStartingPos_.push_back(startingPos_);
-  startingPos_ += genome->size();
+  startingPos_ += gene->size();
 }
 
 pair<unsigned int, unsigned int> Index::position_to_gene_position(unsigned int position) {

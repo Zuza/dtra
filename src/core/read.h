@@ -1,4 +1,4 @@
-// Class represents a single read to be aligned to a genome.
+// Class represents a single read to be aligned to a gene.
 //
 // Authors: Matija Osrecki, Filip Pavetic
 

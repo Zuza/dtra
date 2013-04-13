@@ -1,4 +1,4 @@
-// Class is used to index and query the genome according to how SNAP works.
+// Class is used to index and query the gene according to how SNAP works.
 //
 // Authors: Matija Osrecki, Filip Pavetic
 
@@ -9,7 +9,7 @@
 
 #include "BufferedBinaryReader.h"
 #include "BufferedBinaryWriter.h"
-#include "genome.h"
+#include "gene.h"
 
 // typedef unsigned long long keyType;
 
@@ -20,7 +20,7 @@ public:
 
   Index(int seedLength);
 
-  void insertGenome(Genome* genome);
+  void insertGene(Gene* gene);
   void prepareIndex(); // sort the hashes
 
   void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, unsigned int hash); // hash_t

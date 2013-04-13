@@ -1,4 +1,4 @@
-// Utility functions and classes for genome assembly.
+// Utility functions and classes for gene assembly.
 //
 // Authors: Matija Osrecki, Filip Pavetic
 

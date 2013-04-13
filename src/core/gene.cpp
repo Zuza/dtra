@@ -1,9 +1,9 @@
-#include "core/genome.h"
+#include "core/gene.h"
 #include "core/util.h"
 
 using namespace std;
 
-bool readGenome(Genome* g, FILE* inputFilePointer) {
+bool readGene(Gene* g, FILE* inputFilePointer) {
   static char buffer[1010];
   bool iHaveReadSomething = false;
 
@@ -15,7 +15,7 @@ bool readGenome(Genome* g, FILE* inputFilePointer) {
     }
 
     if (iHaveReadSomething && buffer[0] == '>') {
-      // beginning of a new genome, rollback the file pointer and break
+      // beginning of a new gene, rollback the file pointer and break
       fsetpos(inputFilePointer, &prevPos);
       break;
     }
@@ -29,7 +29,7 @@ bool readGenome(Genome* g, FILE* inputFilePointer) {
   return iHaveReadSomething;
 }
 
-bool printGenome(Genome* g, FILE* outputFilePointer, int width) {
+bool printGene(Gene* g, FILE* outputFilePointer, int width) {
   fprintf(outputFilePointer, "%s\n", g->name().c_str());
 
   for (size_t i = 0; i < g->size(); i += width) {
