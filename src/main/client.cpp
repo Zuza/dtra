@@ -22,7 +22,7 @@ void printUsageAndExit() {
   printf("client index <database location> <index output directory>\n");
   printf("-- creates the index and dumps its parts in the output dir\n");
   puts("");
-  printf("client solve <index directory> <reads input file>\n");
+  printf("client solve <database location> <index directory> <reads input file>\n");
   printf("-- solves with precomputed index\n");
   exit(1);
 }
@@ -48,7 +48,7 @@ void inputReads(vector<shared_ptr<Read> >* reads,
 const int kSeedLen = 16;
 
 void createIndex(string databasePath, string indexFilePath) {
-  Database db(databasePath, indexFilePath, kSeedLen);
+  Database db(databasePath, indexFilePath, kSeedLen, false);
   size_t totalRead = 0;
 
   //  unsigned long long checksum = 0;
@@ -63,6 +63,7 @@ void createIndex(string databasePath, string indexFilePath) {
     totalRead += byteLen;
     size_t minLen, maxLen; db.getMinMaxGeneLength(&minLen, &maxLen);
     fprintf(stderr, "Read %0.3lf Gb.\n", totalRead/1e9);
+    fprintf(stderr, "Duljine gena [%lu, %lu]\n", minLen, maxLen);
     fprintf(stderr, "U ovom bloku je bilo %d gena.\n", 
             (int)db.getCurrentBlockNoGenes());
     fprintf(stderr, "Prosjecna duljina gena je %lf.\n",
@@ -78,9 +79,9 @@ int solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
   return 0;
 }
 
-void solveReads(const string& indexFolderPath, 
+void solveReads(const string& databasePath, const string& indexFolderPath, 
 		vector<shared_ptr<Read> >& reads) {
-  Database db(indexFolderPath, kSeedLen);
+  Database db(databasePath, indexFolderPath, kSeedLen, true);
 
   for (int indexNo = 0; indexNo < db.getIndexFilesCount(); ++indexNo) {
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
@@ -113,26 +114,31 @@ int main(int argc, char* argv[]) {
     createIndex(argv[2], argv[3]);
   } else if (command == "test") {
     // anything here is temporary and can be deleted at any time
-    if (argc != 3) {
+    if (argc != 4) {
       printUsageAndExit();
     }
-    Database db(argv[2], kSeedLen);    
+
+    Database db(argv[2], argv[3], kSeedLen, true);    
     printf("db count = %d\n", db.getIndexFilesCount());
     shared_ptr<Index> ptr_index = db.readIndexFile(0);
     vector<pair<unsigned int, unsigned int> > ret;
     ptr_index->getPositions(&ret, 1516545110u);
     
+    vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index
+
     for (int i = 0; i <  (int)ret.size(); ++i) {
       printf("(%d, %d)\n", ret[i].first, ret[i].second);
+      printf("seq = %s\n", genes[ret[i].first]->data().substr(ret[i].second, 70).c_str());
     }
     
+    
   } else if (command == "solve") {
-    if (argc != 4) {
+    if (argc != 5) {
       printUsageAndExit();
     }
     vector<shared_ptr<Read> > reads;
-    inputReads(&reads, argv[3]);
-    solveReads(argv[2], reads);
+    inputReads(&reads, argv[4]);
+    solveReads(argv[2], argv[3], reads);
   } else {
     printUsageAndExit();
   }

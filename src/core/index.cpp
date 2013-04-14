@@ -96,6 +96,3 @@ void Index::readIndex(BufferedBinaryReader& reader) {
   reader.readVector(geneStartingPos_);
   reader.readVector(index_);
 }
-
-
-
