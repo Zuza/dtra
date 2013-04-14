@@ -1,4 +1,5 @@
 #include "core/lis.h"
+#include <cassert>
 #include <cstdio>
 #include <algorithm>
 #include <utility>
@@ -41,7 +42,7 @@ private:
   std::vector<std::pair<size_t, size_t> > elements_;
 };
   
-void reconstructLIS(vector<size_t>* result,
+void reconstructLIS(vector<int>* result,
 		    size_t last,
 		    const vector<size_t>& reconstructionTable) {
   // printf("%d %d\n", last, reconstructionTable[last]);
@@ -54,24 +55,33 @@ void reconstructLIS(vector<size_t>* result,
 };
 
 
-void calcLongestIncreasingSubsequence(vector<size_t>* result,
-				      const vector<size_t>& elements) {
+void calcLongestIncreasingSubsequence(
+    vector<int>* result,
+    const vector<pair<int, int> >& elements) {
   size_t n = elements.size();
-  std::vector<size_t> dpTable(n, 0);
-  std::vector<size_t> reconstructionTable(n, -1);
 
-  FenwickMax fm(*max_element(elements.begin(), elements.end()));
+  // TODO: ili maknuti ili ostaviti samo u debug modu
+  for (int i = 1; i < n; ++i) {
+    assert(elements[i-1].first <= elements[i].first);
+  }
+
+
+
+  vector<size_t> dpTable(n, 0);
+  vector<size_t> reconstructionTable(n, -1);
+
+  FenwickMax fm(max_element(elements.begin(), elements.end())->second);
 
   for (size_t i = 0; i < n; ++i) {
     //printf("%d\n", elements[i]);
-    std::pair<size_t, size_t> best = fm.get(elements[i]-1);
+    std::pair<size_t, size_t> best = fm.get(elements[i].second-1);
     if (best.first) {
       dpTable[i] = best.first+1;
       reconstructionTable[i] = best.second;
     } else {
       dpTable[i] = 1;
     }
-    fm.update(elements[i], make_pair(dpTable[i], i));
+    fm.update(elements[i].second, make_pair(dpTable[i], i));
   }
 
   size_t last = max_element(dpTable.begin(), dpTable.end())-dpTable.begin();

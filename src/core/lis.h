@@ -4,7 +4,8 @@
 #include <utility>
 #include <vector>
 
-void calcLongestIncreasingSubsequence(std::vector<std::size_t>* result,
-				      const std::vector<std::size_t>& elements);
+void calcLongestIncreasingSubsequence(
+    std::vector<int>* result,
+    const std::vector<std::pair<int, int> >& elements);
 
 #endif

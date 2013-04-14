@@ -29,4 +29,13 @@ inline char intToBase(const int num) {
   return 0;
 }
 
+inline char getBaseComplement(const char base) {
+  if (base == 'A') return 'T';
+  if (base == 'T') return 'A';
+  if (base == 'C') return 'G';
+  if (base == 'G') return 'C';
+  assert(base == 'N');
+  return 'N';
+}
+
 #endif

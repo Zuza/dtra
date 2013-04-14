@@ -45,10 +45,10 @@ void inputReads(vector<shared_ptr<Read> >* reads,
 }
 
 
-const int seedLen = 16;
+const int kSeedLen = 16;
 
 void createIndex(string databasePath, string indexFilePath) {
-  Database db(databasePath, indexFilePath, seedLen);
+  Database db(databasePath, indexFilePath, kSeedLen);
   size_t totalRead = 0;
 
   //  unsigned long long checksum = 0;
@@ -73,15 +73,14 @@ void createIndex(string databasePath, string indexFilePath) {
   //  fprintf(stderr, "DB checksum: %llu\n", checksum);
 }
 
-MappingResult solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
-  MappingResult result;
-  performMapping(&result, idx, read);
-  return result;
+int solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
+  performMapping(idx, read);
+  return 0;
 }
 
 void solveReads(const string& indexFolderPath, 
 		vector<shared_ptr<Read> >& reads) {
-  Database db(indexFolderPath, seedLen);
+  Database db(indexFolderPath, kSeedLen);
 
   for (int indexNo = 0; indexNo < db.getIndexFilesCount(); ++indexNo) {
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
@@ -90,9 +89,9 @@ void solveReads(const string& indexFolderPath,
                         // ili da bude jednako broju jezgara na clusteru 
                         // (to je 8)
 
-    vector<future<MappingResult> > results;
+    vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
-      results.push_back(pool.enqueue<MappingResult>([i, &activeIndex, &reads] {
+      results.push_back(pool.enqueue<int>([i, &activeIndex, &reads] {
 	    return solveRead(activeIndex, reads[i]);
 	  }));
     } 
@@ -117,7 +116,7 @@ int main(int argc, char* argv[]) {
     if (argc != 3) {
       printUsageAndExit();
     }
-    Database db(argv[2], seedLen);    
+    Database db(argv[2], kSeedLen);    
     printf("db count = %d\n", db.getIndexFilesCount());
     shared_ptr<Index> ptr_index = db.readIndexFile(0);
     vector<pair<unsigned int, unsigned int> > ret;
