@@ -12,14 +12,10 @@
 class Database {
  public:
 
-  // read from database and store in index
   Database(const std::string& databasePath, // pass anything if you're only reading index files
            const std::string& indexFilePath,
-           const int seedLen);
-
-  // read from previously created index
-  Database(const std::string& indexFolderPath,
-           const int seedLen);
+           const int seedLen,
+           const bool indexCreated);
 
   ~Database();
 
@@ -53,9 +49,16 @@ class Database {
     return seedLen_;
   }
 
+  std::vector<std::shared_ptr<Gene> >& getGenes() {
+    return genes_;
+  }
+
  private:
   void update_statistics(Gene* gene);
   void clear_statistics();
+  void read_index_summaries();
+
+  int indexFilesCount_;
 
   FILE* dbFilePointer_;
   size_t currentBlockNoBytes_;
@@ -70,10 +73,18 @@ class Database {
 
   // koristi se kod ucitavanja indeksa
   std::shared_ptr<BufferedBinaryReader> bufferedReader_;
+  
+  // first = ftell of the index start in the database
+  // second = number of genes in the index file
+  std::vector<std::pair<long int, int> > indexSummaries_;
+
+  // gene vector
+  std::vector<std::shared_ptr<Gene> > genes_;
 
   unsigned long long sizeSum_;
   unsigned long long minSize_, maxSize_;
   unsigned long long numGenes_;
+  bool indexCreated_;
 };
 
 #endif
