@@ -39,13 +39,13 @@ int calcBegin(const vector<pair<int, int> >& positions,
   return begin;
 }
 
-void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
+void performMappingLong(vector<shared_ptr<Gene> >& genes,
+			shared_ptr<Index> idx, shared_ptr<Read> read) {
   unsigned long long hsh = 0;
   int seedLen = idx->getSeedLen();
   unsigned long long andMask = (1LL<<(2*seedLen))-1;
-
-
-  for (int rc = 0; rc < 1; ++rc) {
+ 
+  for (int rc = 0; rc < 2; ++rc) {
     map<int, shared_ptr<vector<pair<int, int> > > > positionsByGene;
     int noN = 0;
         
@@ -66,11 +66,6 @@ void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
   	for (auto x : positions) {
   	  int geneId = x.first;
   	  int position = x.second;
-
-	  static mutex m;
-	  m.lock();
-	  printf("%llu %d %d\n", hsh, geneId, position);
-	  m.unlock();
 
 	  // TODO: positions vector je sortiran kao sto se pairovi inace
 	  // sortiraju pa mozda mogu izbjeci trazenje po mapi svaki put
@@ -94,28 +89,25 @@ void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
       // TODO: ne bi trebao biti potreban sort tu?
       sort(positions.begin(), positions.end());
 
-      static mutex m;
-      m.lock();
-      printf("geneId=%d sz=%d\n", geneId, positions.size());
-      m.unlock();
-
       vector<int> lisResult;
       calcLongestIncreasingSubsequence(&lisResult, positions);
       
       int begin = calcBegin(positions, lisResult);
       // printf("geneId=%d, begin=%d, score=%d\n", 
       // 	     geneId, begin, (int)lisResult.size());
-      read->updateMapping(lisResult.size(), geneId, begin, rc);
+      string geneSegment = genes[geneId]->data(begin, begin+read->size());
+      read->updateMapping(lisResult.size(), geneId, begin, rc, geneSegment);
     }
   }
 }
 
 }
 
-void performMapping(shared_ptr<Index> idx, shared_ptr<Read> read) {
+void performMapping(vector<shared_ptr<Gene> >& genes,
+		    shared_ptr<Index> idx, shared_ptr<Read> read) {
   if (read->size() < kShortLongBorder) {
 
   } else {
-    performMappingLong(idx, read);
+    performMappingLong(genes, idx, read);
   }
 }

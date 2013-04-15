@@ -17,8 +17,16 @@ class Gene {
   const char& name(size_t i) const { return name_[i]; }
   const std::string& data() const { return data_; }
   const char& data(size_t i) const { return data_[i]; }
+  const std::string data(size_t a, size_t b) { 
+    return std::string(data_.begin()+a, data_.begin()+b);
+  }							
   const size_t size() const { return data_.size(); }
-  
+
+  void clear() { 
+    name_.clear(); 
+    data_.clear(); 
+  }
+
   //private:
   std::string name_;
   std::string data_;

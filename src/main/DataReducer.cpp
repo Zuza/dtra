@@ -64,7 +64,7 @@ void createWgsimReads(int argc, char* argv[]) {
     printUsageAndExit();
   }
 
-  FILE* ntInputFile = fopen(argv[1], "rt");
+  FILE* ntInputFile = fopen(argv[0], "rt");
   assert(ntInputFile);
   
   const string outputReadsBig = "reads.fq";

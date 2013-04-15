@@ -7,7 +7,6 @@
 
 #include <sys/types.h>
 #include "core/bioinf_util.h"
-
 #include <string>
 
 const int kNoTopMappings = 10;
@@ -16,12 +15,17 @@ struct OneMapping {
   double score;
   int geneId, genePos, isRC;
 
-  OneMapping(double score, int geneId, int genePos, int isRC) :
-    score(score), geneId(geneId), genePos(genePos), isRC(isRC) {}
+  std::string geneSegment; // optional
+
+  OneMapping(double score, int geneId, int genePos, int isRC, 
+	     std::string geneSegment) :
+  score(score), geneId(geneId), genePos(genePos), isRC(isRC),
+    geneSegment(geneSegment) {}
 
   void print() {
     printf("on gene %d, at position %d (RC=%d), score=%lf\n",
 	   geneId, genePos, isRC, score);
+    printf("segment: %s\n", geneSegment.c_str());
   }
 
   bool operator < (const OneMapping& m) {
@@ -30,7 +34,7 @@ struct OneMapping {
 };
 
 class Read {
-public:
+ public:
   bool read(FILE* fi);
   void print();
 
@@ -51,8 +55,10 @@ public:
     return getBaseComplement(data_[data_.size()-1-i]);
   }
 
-  void updateMapping(double score, int geneId, int genePos, int isRC) {
-    topMappings_.push_back(OneMapping(score, geneId, genePos, isRC));
+  void updateMapping(double score, int geneId, int genePos, int isRC, 
+		     std::string geneSegment = "") {
+    topMappings_.push_back(OneMapping(score, geneId, genePos, isRC, 
+				      geneSegment));
     size_t i = topMappings_.size()-1;
     
     for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
@@ -64,8 +70,7 @@ public:
     }
   }
 
-
-private:
+ private:
   std::string id_;
   std::string data_;
 

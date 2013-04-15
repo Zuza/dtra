@@ -6,6 +6,7 @@ using namespace std;
 bool readGene(Gene* g, FILE* inputFilePointer) {
   static char buffer[1010];
   bool iHaveReadSomething = false;
+  g->clear();
 
   while(true) {
     fpos_t prevPos;

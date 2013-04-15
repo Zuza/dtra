@@ -60,8 +60,9 @@ void inputReads(vector<shared_ptr<Read> >* reads,
   fclose(readsIn);
 }
 
-int solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
-  performMapping(idx, read);
+int solveRead(vector<shared_ptr<Gene> >& genes, 
+	      shared_ptr<Index> idx, shared_ptr<Read> read) {
+  performMapping(genes, idx, read);
   return 0;
 }
 
@@ -70,6 +71,7 @@ void solveReads(Database& db,
   int indexFileCount = db.getIndexFilesCount();
   for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
+    vector<shared_ptr<Gene> >& genes = db.getGenes();
 
     ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
                         // ili da bude jednako broju jezgara na clusteru 
@@ -77,8 +79,8 @@ void solveReads(Database& db,
 
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
-      results.push_back(pool.enqueue<int>([i, &activeIndex, &reads] {
-	    return solveRead(activeIndex, reads[i]);
+      results.push_back(pool.enqueue<int>([i, &genes, &activeIndex, &reads] {
+	    return solveRead(genes, activeIndex, reads[i]);
 	  }));
     } 
 
@@ -109,6 +111,8 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
 	     mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
       // NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
       printf("gene: %s\n", genes[mapping.geneId]->name().c_str());
+      printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
+					  mapping.genePos+read->size()).c_str());
     }
     
     puts("END READ");
@@ -117,6 +121,10 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
 
   printf("Total reads: %d\n", (int)reads.size());
   printf("Number of reads not mapped: %d\n", readsNoMappings);
+
+  for (int i = 0; i < (int)genes.size(); ++i) {
+    printGene(genes[i].get());
+  }
 }
 
 int main(int argc, char* argv[]) {
