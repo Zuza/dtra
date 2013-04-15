@@ -15,36 +15,56 @@ inline bool throwCoin(double p) {
 }
 
 void printUsageAndExit() {
-  // TODO: opcionalizirati kroz komandnu liniju
   printf("Usage:\n");
-  printf("reducer nt <nt input file>\n");
+  printf("reducer nt random <prob gene selection> <nt input file>\n");
+  printf("reducer nt first <no first genes> <nt input file>\n");
   printf("reducer wgsim <nt input file>\n");
   exit(1);
 }
 
-void reduceNtDatabase(char* ntFilePath) {
-  FILE* ntInputFile = fopen(ntFilePath, "rt");
+void reduceNtDatabase(int argc, char* argv[]) {
+  if (argc < 3) {
+    printUsageAndExit();
+  }
+  
+  double probSelection = 1;
+  int noSelection = -1;
 
-  // TODO: opcionalizirati ovu funkciju
+  if (strcmp(argv[0], "random") == 0) {
+    sscanf(argv[1], "%lf", &probSelection);
+  } else if (strcmp(argv[0], "first") == 0) {
+    sscanf(argv[1], "%d", &noSelection);
+  } else {
+    printUsageAndExit();
+  }
+
+  FILE* ntInputFile = fopen(argv[2], "rt");
+  assert(ntInputFile);
 
   int koji = 0;
   for (Gene g; readGene(&g, ntInputFile); ++koji) {
     if (koji % 1000 == 0) {
       fprintf(stderr, "Processed %d genes.\n", koji);
     }
-    if (koji >= 10) {
+
+    if (noSelection != -1 && koji >= noSelection) {
       break;
     }
-    //if (throwCoin(0.1)) {
+    
+    if (throwCoin(probSelection)) {
       printGene(&g);
-      //}
+    }
   }
   
   fclose(ntInputFile);
 }
 
-void createWgsimReads(char* ntFilePath) {
-  FILE* ntInputFile = fopen(ntFilePath, "rt");
+void createWgsimReads(int argc, char* argv[]) {
+  if (argc < 1) {
+    printUsageAndExit();
+  }
+
+  FILE* ntInputFile = fopen(argv[1], "rt");
   assert(ntInputFile);
   
   const string outputReadsBig = "reads.fq";
@@ -86,16 +106,14 @@ void createWgsimReads(char* ntFilePath) {
 int main(int argc, char* argv[]) {
   srand(time(NULL));
 
-  if (argc != 3) {
+  if (argc < 2) {
     printUsageAndExit();
   }
 
   if (strcmp(argv[1], "nt") == 0) {
-    char* filepath = argv[2];
-    reduceNtDatabase(filepath);
+    reduceNtDatabase(argc-2, argv+2);
   } else if (strcmp(argv[1], "wgsim") == 0) {
-    char* filepath = argv[2];
-    createWgsimReads(filepath);
+    createWgsimReads(argc-2, argv+2);
   } else {
     printUsageAndExit();
   }
