@@ -20,30 +20,9 @@ using namespace std;
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
   printf("client index <database location> <index output directory>\n");
-  printf("-- creates the index and dumps its parts in the output dir\n");
-  puts("");
   printf("client solve <database location> <index directory> <reads input file>\n");
-  printf("-- solves with precomputed index\n");
   exit(1);
 }
-
-void inputReads(vector<shared_ptr<Read> >* reads, 
-		const string& readsPath, const int limit=-1) {
-  int noReads = 0;
-  Read tmp;
-
-  FILE* readsIn = fopen(readsPath.c_str(), "rt");
-  assert(readsIn);
-
-  for ( ; (limit==-1 || noReads<limit) && tmp.read(readsIn); ++noReads) {
-    shared_ptr<Read> newRead(new Read());
-    *newRead = tmp;
-    reads->push_back(newRead);
-  }
-
-  fclose(readsIn);
-}
-
 
 const int kSeedLen = 16;
 
@@ -63,6 +42,22 @@ void createIndex(string databasePath, string indexFilePath) {
     fprintf(stderr, "Prosjecna duljina gena je %lf.\n",
             db.getAverageGeneLength());
   }
+}
+
+void inputReads(vector<shared_ptr<Read> >* reads, 
+		const string& readsPath, const int limit=-1) {
+  FILE* readsIn = fopen(readsPath.c_str(), "rt");
+  assert(readsIn);
+
+  Read tmp;
+  int noReads = 0;
+  for ( ; (limit==-1 || noReads<limit) && tmp.read(readsIn); ++noReads) {
+    shared_ptr<Read> newRead(new Read());
+    *newRead = tmp;
+    reads->push_back(newRead);
+  }
+
+  fclose(readsIn);
 }
 
 int solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
@@ -112,6 +107,7 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
       OneMapping mapping = read->topMapping(x);
       printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
 	     mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
+      // NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
       printf("gene: %s\n", genes[mapping.geneId]->name().c_str());
     }
     
