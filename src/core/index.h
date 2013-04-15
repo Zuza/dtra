@@ -31,8 +31,6 @@ public:
   void writeIndex(BufferedBinaryWriter& writer);
   void readIndex(BufferedBinaryReader& reader);
 
-  //  unsigned long long checksum();
-
 private:
   std::pair<unsigned int, unsigned int> position_to_gene_position(unsigned int position);
 

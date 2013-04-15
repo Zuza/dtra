@@ -37,14 +37,6 @@ class Database {
     *maxLen = maxSize_;
   }
 
-  /* unsigned long long checksum() { */
-  /*   unsigned long long ret = 0; */
-  /*   for (int i = 0; i < speciesIndex_.size(); ++i) { */
-  /*     ret = ret * 1000000007 + speciesIndex_[i]->checksum(); */
-  /*   } */
-  /*   return ret; */
-  /* } */
-
   const int& getSeedLen() const {
     return seedLen_;
   }

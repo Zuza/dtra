@@ -31,4 +31,9 @@ bool Read::read(FILE* fi) {
 void Read::print() {
   printf("id: %s\n", id_.c_str());
   printf("read: %s\n", data_.c_str());
+
+  printf("mappings:\n");
+  for (int i = 0; i < topMappings_.size(); ++i) {
+    topMappings_[i].print();
+  }
 }

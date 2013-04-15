@@ -10,7 +10,7 @@
 
 #include <string>
 
-const int kNoTopMappings = 5;
+const int kNoTopMappings = 10;
 
 struct OneMapping {
   double score;
@@ -18,6 +18,11 @@ struct OneMapping {
 
   OneMapping(double score, int geneId, int genePos, int isRC) :
     score(score), geneId(geneId), genePos(genePos), isRC(isRC) {}
+
+  void print() {
+    printf("on gene %d, at position %d (RC=%d), score=%lf\n",
+	   geneId, genePos, isRC, score);
+  }
 
   bool operator < (const OneMapping& m) {
     return score < m.score;
@@ -32,6 +37,8 @@ public:
   const std::string& id() const { return id_; }
   const std::string& data() const { return data_; }
   const int size() const { return data_.size(); }
+  const std::vector<OneMapping>& topMappings() { return topMappings_; }
+  const OneMapping& topMapping(size_t i) { return topMappings_[i]; }
 
   // ako je reverseComplement == true, 
   // onda ce vratiti i-tu bazu reverse
@@ -48,7 +55,7 @@ public:
     topMappings_.push_back(OneMapping(score, geneId, genePos, isRC));
     size_t i = topMappings_.size()-1;
     
-    while (i >= 1 && topMappings_[i-1] < topMappings_[i]) {
+    for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
       std::swap(topMappings_[i-1], topMappings_[i]);
     }
 

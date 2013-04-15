@@ -51,14 +51,8 @@ void createIndex(string databasePath, string indexFilePath) {
   Database db(databasePath, indexFilePath, kSeedLen, false);
   size_t totalRead = 0;
 
-  //  unsigned long long checksum = 0;
-
   for (int indexNumber = 0; db.readDbStoreIndex(); ++indexNumber) {
     size_t byteLen = db.getCurrentBlockNoBytes();
-
-    // if (command == "solve") {
-    //   processReads(db, reads);
-    // }
 
     totalRead += byteLen;
     size_t minLen, maxLen; db.getMinMaxGeneLength(&minLen, &maxLen);
@@ -68,10 +62,7 @@ void createIndex(string databasePath, string indexFilePath) {
             (int)db.getCurrentBlockNoGenes());
     fprintf(stderr, "Prosjecna duljina gena je %lf.\n",
             db.getAverageGeneLength());
-    //    checksum = checksum * 10007 + db.checksum();
   }
-
-  //  fprintf(stderr, "DB checksum: %llu\n", checksum);
 }
 
 int solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
@@ -79,11 +70,10 @@ int solveRead(shared_ptr<Index> idx, shared_ptr<Read> read) {
   return 0;
 }
 
-void solveReads(const string& databasePath, const string& indexFolderPath, 
+void solveReads(Database& db, 
 		vector<shared_ptr<Read> >& reads) {
-  Database db(databasePath, indexFolderPath, kSeedLen, true);
-
-  for (int indexNo = 0; indexNo < db.getIndexFilesCount(); ++indexNo) {
+  int indexFileCount = db.getIndexFilesCount();
+  for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
 
     ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
@@ -97,8 +87,40 @@ void solveReads(const string& databasePath, const string& indexFolderPath,
 	  }));
     } 
 
-    // TODO: skupiti rezultate
+    for (int i = 0; i < reads.size(); ++i) {
+      results[i].wait();
+    }
   }
+}
+
+void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
+  vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index  
+
+  int readsNoMappings = 0;
+
+  for (int i = 0; i < reads.size(); ++i) {
+    printf("READ #%04d:\n", i);
+    shared_ptr<Read> read = reads[i];
+    printf("id: %s\n", read->id().c_str());
+    printf("data: %s\n", read->data().c_str());
+    printf("mappings (%d):\n", (int)read->topMappings().size());
+    if (read->topMappings().size() == 0) {
+      ++readsNoMappings;
+    }
+
+    for (int x = 0; x < read->topMappings().size(); ++x) {
+      OneMapping mapping = read->topMapping(x);
+      printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
+	     mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
+      printf("gene: %s\n", genes[mapping.geneId]->name().c_str());
+    }
+    
+    puts("END READ");
+    puts("");
+  }
+
+  printf("Total reads: %d\n", (int)reads.size());
+  printf("Number of reads not mapped: %d\n", readsNoMappings);
 }
 
 int main(int argc, char* argv[]) {
@@ -131,14 +153,15 @@ int main(int argc, char* argv[]) {
       printf("seq = %s\n", genes[ret[i].first]->data().substr(ret[i].second, 70).c_str());
     }
     
-    
   } else if (command == "solve") {
     if (argc != 5) {
       printUsageAndExit();
     }
+    Database db(argv[2], argv[3], kSeedLen, true);    
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4]);
-    solveReads(argv[2], argv[3], reads);
+    solveReads(db, reads);
+    printReads(db, reads);
   } else {
     printUsageAndExit();
   }

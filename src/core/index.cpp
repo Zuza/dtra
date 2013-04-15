@@ -15,19 +15,6 @@ Index::Index(int seedLength) : seedLength_(seedLength) {
   assert(seedLength_ <= 32); // maybe later: because we want the hash to fit 64bit integer ?
 }
 
-// unsigned long long Index::checksum() {
-//   unsigned long long ret = seedLength_;
-//   for (int i = 0; i < (int)leftHashRanges_.size(); ++i) {
-//     ret = ret * 3137 + leftHashRanges_[i].first;
-//     ret = ret * 3137 + leftHashRanges_[i].second.first;
-//     ret = ret * 3137 + leftHashRanges_[i].second.second;
-//   }
-//   for (int i = 0; i < (int)rightHash_.size(); ++i) {
-//     ret = ret * 17 + rightHash_[i];
-//   }
-//   return ret;
-// }
-
 void Index::insertGene(Gene* gene) { 
   // TODO: prealociraj sve!
 
@@ -43,7 +30,7 @@ void Index::insertGene(Gene* gene) {
 
     rollingHash = rollingHash * 4 + next;
     if (i >= seedLength_) {
-      rollingHash %= subtractPower;
+      rollingHash %= subtractPower; // TODO(zuza): ANDanje umjesto moda
     }
 
     if (i+1 >= seedLength_) {

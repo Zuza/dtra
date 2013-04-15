@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdio>
 #include <algorithm>
+#include <mutex>
 #include <utility>
 #include <vector>
 using namespace std;
@@ -45,7 +46,6 @@ private:
 void reconstructLIS(vector<int>* result,
 		    size_t last,
 		    const vector<size_t>& reconstructionTable) {
-  // printf("%d %d\n", last, reconstructionTable[last]);
   if (reconstructionTable[last] != -1) {
     reconstructLIS(result, reconstructionTable[last], reconstructionTable);
   }
@@ -65,15 +65,20 @@ void calcLongestIncreasingSubsequence(
     assert(elements[i-1].first <= elements[i].first);
   }
 
-
-
   vector<size_t> dpTable(n, 0);
   vector<size_t> reconstructionTable(n, -1);
 
-  FenwickMax fm(max_element(elements.begin(), elements.end())->second);
+  int maxSecond = -1;
+  for (int i = 0; i < elements.size(); ++i) {
+    // TODO: maknuti
+    assert(elements[i].second >= 0);
+
+    maxSecond = max(maxSecond, elements[i].second);
+  }
+
+  FenwickMax fm(maxSecond);
 
   for (size_t i = 0; i < n; ++i) {
-    //printf("%d\n", elements[i]);
     std::pair<size_t, size_t> best = fm.get(elements[i].second-1);
     if (best.first) {
       dpTable[i] = best.first+1;

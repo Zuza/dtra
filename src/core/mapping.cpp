@@ -1,4 +1,5 @@
 #include <cctype>
+#include <algorithm>
 #include <map>
 #include <mutex>
 #include <utility>
@@ -16,25 +17,26 @@ const int kShortLongBorder = 0;
 
 namespace {
 
-void calcBegin(int* begin, 
-	       const vector<pair<int, int> >& positions,
-	       const vector<int>& lis) {
+int calcBegin(const vector<pair<int, int> >& positions,
+	      const vector<int>& lis) {
   map<int, int> beginEstimate;
   for (size_t i = 0; i < lis.size(); ++i) {
     int r = lis[i];
     int p = positions[r].first;
     int kmer = positions[r].second;
 
-    ++beginEstimate[p-kmer];
+    ++beginEstimate[max(0, p-kmer)];
   }
 
   int maxBegin = 0;
+  int begin = -1;
   for (auto it : beginEstimate) {
     if (it.second > maxBegin) {
       maxBegin = it.second;
-      *begin = it.first;
+      begin = it.first;
     }
   }
+  return begin;
 }
 
 void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
@@ -42,9 +44,9 @@ void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
   int seedLen = idx->getSeedLen();
   unsigned long long andMask = (1LL<<(2*seedLen))-1;
 
-  map<int, shared_ptr<vector<pair<int, int> > > > positionsByGene;
 
   for (int rc = 0; rc < 1; ++rc) {
+    map<int, shared_ptr<vector<pair<int, int> > > > positionsByGene;
     int noN = 0;
         
     for (int i = 0; i < read->size(); ++i) {
@@ -65,6 +67,11 @@ void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
   	  int geneId = x.first;
   	  int position = x.second;
 
+	  static mutex m;
+	  m.lock();
+	  printf("%llu %d %d\n", hsh, geneId, position);
+	  m.unlock();
+
 	  // TODO: positions vector je sortiran kao sto se pairovi inace
 	  // sortiraju pa mozda mogu izbjeci trazenje po mapi svaki put
 	  if (!positionsByGene.count(geneId)) {
@@ -76,17 +83,28 @@ void performMappingLong(shared_ptr<Index> idx, shared_ptr<Read> read) {
       }
     }
 
-    fprintf(stderr, "%d\n", rc);
+    // ovo se ne bi smjelo dogoditi,
+    // barem na sintetski generiranim podacima
+    // assert(!positionsByGene.empty());
+                                     
     for (auto candidateGenes : positionsByGene) {
       int geneId = candidateGenes.first;
-      const vector<pair<int, int> >& positions = *candidateGenes.second;
-      
+      vector<pair<int, int> >& positions = *candidateGenes.second;
+
+      // TODO: ne bi trebao biti potreban sort tu?
+      sort(positions.begin(), positions.end());
+
+      static mutex m;
+      m.lock();
+      printf("geneId=%d sz=%d\n", geneId, positions.size());
+      m.unlock();
+
       vector<int> lisResult;
       calcLongestIncreasingSubsequence(&lisResult, positions);
       
-      int begin = -1;
-      calcBegin(&begin, positions, lisResult);
-
+      int begin = calcBegin(positions, lisResult);
+      // printf("geneId=%d, begin=%d, score=%d\n", 
+      // 	     geneId, begin, (int)lisResult.size());
       read->updateMapping(lisResult.size(), geneId, begin, rc);
     }
   }
