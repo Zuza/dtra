@@ -14,6 +14,8 @@ CC_FLAGS := -O2 --std=c++0x -Wno-unused-result $(INCLUDES) -g -ggdb
 
 all: client reducer
 
+forceall: clean all
+
 client: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES)
 	g++ $(LD_FLAGS) -o $@ obj/core/*.o obj/main/client.o
 
@@ -29,6 +31,6 @@ $(MAIN_OBJ_FILES): $(MAIN_CPP_FILES) $(MAIN_H_FILES)
 	g++ $(CC_FLAGS) -c -o $@ $(MAIN_DIR)/$(notdir $(patsubst %.o, %.cpp, $@))
 
 clean:
-	rm -r obj
-	rm client
-	rm reducer
+	rm -rf obj
+	rm -f client
+	rm -f reducer

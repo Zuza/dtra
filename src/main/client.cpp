@@ -93,37 +93,39 @@ void solveReads(Database& db,
 void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
   vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index  
 
-  int readsNoMappings = 0;
+  map<int, int> stats;
 
   for (int i = 0; i < reads.size(); ++i) {
-    printf("READ #%04d:\n", i);
     shared_ptr<Read> read = reads[i];
-    printf("id: %s\n", read->id().c_str());
-    printf("data: %s\n", read->data().c_str());
-    printf("mappings (%d):\n", (int)read->topMappings().size());
-    if (read->topMappings().size() == 0) {
-      ++readsNoMappings;
-    }
+    int mappingQuality = read->validateMapping();
+    ++stats[mappingQuality];
 
-    for (int x = 0; x < read->topMappings().size(); ++x) {
-      OneMapping mapping = read->topMapping(x);
-      printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
-	     mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
-      // NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
-      printf("gene: %s\n", genes[mapping.geneId]->name().c_str());
-      printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
-					  mapping.genePos+read->size()).c_str());
+    if (mappingQuality == -1) {      
+      printf("READ #%04d:\n", i);
+      printf("id: %s\n", read->id().c_str());
+      printf("data: %s\n", read->data().c_str());
+      printf("mappings (%d):\n", (int)read->topMappings().size());
+      
+      for (int x = 0; x < read->topMappings().size(); ++x) {
+	OneMapping mapping = read->topMapping(x);
+	printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
+	       mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
+	// NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
+	printf("gene: %s\n", genes[mapping.geneId]->name().c_str());
+	printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
+							    mapping.genePos+read->size()).c_str());
+      }
+      puts("END READ");
+      puts("");
     }
-    
-    puts("END READ");
-    puts("");
   }
 
   printf("Total reads: %d\n", (int)reads.size());
-  printf("Number of reads not mapped: %d\n", readsNoMappings);
-
-  for (int i = 0; i < (int)genes.size(); ++i) {
-    printGene(genes[i].get());
+  printf("Number of reads not mapped: %d\n", stats[-1]);
+  for (map<int, int>::iterator it = stats.begin(); it != stats.end(); ++it) {
+    if (it->first != -1) {
+      printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
+    }
   }
 }
 

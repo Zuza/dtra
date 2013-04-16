@@ -96,7 +96,9 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       // printf("geneId=%d, begin=%d, score=%d\n", 
       // 	     geneId, begin, (int)lisResult.size());
       string geneSegment = genes[geneId]->data(begin, begin+read->size());
-      read->updateMapping(lisResult.size(), geneId, begin, rc, geneSegment);
+      string geneName = genes[geneId]->name().substr(1);
+      read->updateMapping(lisResult.size(), geneId, begin, rc, 
+			  geneName, geneSegment);
     }
   }
 }
