@@ -70,6 +70,7 @@ void solveReads(Database& db,
 		vector<shared_ptr<Read> >& reads) {
   int indexFileCount = db.getIndexFilesCount();
   for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
+    fprintf(stderr, "Processing block %d/%d...\n", indexNo, indexFileCount);
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
     vector<shared_ptr<Gene> >& genes = db.getGenes();
 

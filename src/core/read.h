@@ -11,7 +11,7 @@
 #include "core/bioinf_util.h"
 #include "core/util.h"
 
-const int kNoTopMappings = 10;
+const int kNoTopMappings = 5;
 
 struct OneMapping {
   double score;
@@ -92,7 +92,7 @@ class Read {
 
       if (geneId == topMapId &&
 	  (abs(topMappings_[i].genePos-pos1) < maxOffset ||
-	   abs(topMappings_[i].genePos-pos2) < maxOffset)) {
+	   abs(topMappings_[i].genePos-(pos2-size())) < maxOffset)) {
 	return i;
       }
     }

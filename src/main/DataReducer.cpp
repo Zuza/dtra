@@ -18,7 +18,7 @@ void printUsageAndExit() {
   printf("Usage:\n");
   printf("reducer nt random <prob gene selection> <nt input file>\n");
   printf("reducer nt first <no first genes> <nt input file>\n");
-  printf("reducer wgsim <nt input file>\n");
+  printf("reducer wgsim <nt input file> <reads output file> <read length>\n");
   exit(1);
 }
 
@@ -60,14 +60,14 @@ void reduceNtDatabase(int argc, char* argv[]) {
 }
 
 void createWgsimReads(int argc, char* argv[]) {
-  if (argc < 1) {
+  if (argc < 3) {
     printUsageAndExit();
   }
 
   FILE* ntInputFile = fopen(argv[0], "rt");
   assert(ntInputFile);
   
-  const string outputReadsBig = "reads.fq";
+  const string outputReadsBig = argv[1];
   system(("rm " + outputReadsBig).c_str());
 
   for (Gene g; readGene(&g, ntInputFile); ) {
@@ -79,7 +79,8 @@ void createWgsimReads(int argc, char* argv[]) {
     const string wgsim = "./wgsim ";
     const int readsPerGene = 15;
     
-    const int readLength = min((int)g.size(), 700);
+    int readLength; sscanf(argv[2], "%d", &readLength);
+    readLength = min(readLength, (int)g.size());
     const string readsOutput1 = "reads.output.tmp.1";
     const string readsOutput2 = "reads.output.tmp.2";
     
