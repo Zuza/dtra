@@ -68,15 +68,17 @@ int solveRead(vector<shared_ptr<Gene> >& genes,
 
 void solveReads(Database& db, 
 		vector<shared_ptr<Read> >& reads) {
+
   int indexFileCount = db.getIndexFilesCount();
   for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
     fprintf(stderr, "Processing block %d/%d...\n", indexNo, indexFileCount);
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
     vector<shared_ptr<Gene> >& genes = db.getGenes();
 
-    ThreadPool pool(8); // TODO: ovo staviti ili da automatski detektira
-                        // ili da bude jednako broju jezgara na clusteru 
-                        // (to je 8)
+    // http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
+    int numCores = sysconf( _SC_NPROCESSORS_ONLN );
+    assert(numCores > 1 && numCores < 100); // sanity check
+    ThreadPool pool(numCores - 1); // one core for this thread
 
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
@@ -101,7 +103,7 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
     int mappingQuality = read->validateMapping();
     ++stats[mappingQuality];
 
-    if (mappingQuality == -1) {      
+    if (1 || mappingQuality == -1) {      
       printf("READ #%04d:\n", i);
       printf("id: %s\n", read->id().c_str());
       printf("data: %s\n", read->data().c_str());
