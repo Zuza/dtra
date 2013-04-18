@@ -77,7 +77,7 @@ void solveReads(Database& db,
     vector<shared_ptr<Gene> >& genes = db.getGenes();
 
     // http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
-    int numCores = sysconf( _SC_NPROCESSORS_ONLN );
+    int numCores = sysconf(_SC_NPROCESSORS_ONLN);
     assert(numCores > 1 && numCores < 100); // sanity check
     ThreadPool pool(numCores - 1); // one core for this thread
 

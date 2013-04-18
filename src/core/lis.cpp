@@ -43,6 +43,7 @@ private:
   std::vector<std::pair<size_t, size_t> > elements_;
 };
   
+// TODO: makni rekurziu
 void reconstructLIS(vector<int>* result,
 		    size_t last,
 		    const vector<size_t>& reconstructionTable) {
