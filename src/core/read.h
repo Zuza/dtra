@@ -82,7 +82,7 @@ class Read {
   int validateMapping(int maxOffset = 5) {
     std::vector<std::string> tokens = Split(id_, '|');
     int pos1 = -1000000, pos2 = -1000000;
-    sscanf(tokens[4].c_str(), "_%d_%d", &pos1, &pos2); 
+    assert(sscanf(tokens[4].c_str(), "_%d_%d", &pos1, &pos2) == 2); 
     --pos1; --pos2;
     std::string geneId = tokens[3];
 

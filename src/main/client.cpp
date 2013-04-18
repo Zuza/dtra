@@ -15,6 +15,7 @@
 #include "core/database.h"
 #include "core/read.h"
 #include "core/mapping.h"
+
 using namespace std;
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -71,7 +72,7 @@ void solveReads(Database& db,
 
   int indexFileCount = db.getIndexFilesCount();
   for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
-    fprintf(stderr, "Processing block %d/%d...\n", indexNo, indexFileCount);
+    fprintf(stderr, "Processing block %d/%d...\n", indexNo+1, indexFileCount);
     shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
     vector<shared_ptr<Gene> >& genes = db.getGenes();
 
@@ -103,7 +104,7 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
     int mappingQuality = read->validateMapping();
     ++stats[mappingQuality];
 
-    if (1 || mappingQuality == -1) {      
+    if (mappingQuality == -1) {      
       printf("READ #%04d:\n", i);
       printf("id: %s\n", read->id().c_str());
       printf("data: %s\n", read->data().c_str());
