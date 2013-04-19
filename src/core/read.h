@@ -82,12 +82,18 @@ class Read {
   int validateMapping(int maxOffset = 5) {
     std::vector<std::string> tokens = Split(id_, '|');
     int pos1 = -1000000, pos2 = -1000000;
+
+    tokens[4] = tokens[4].substr(tokens[4].find("_"));
     assert(sscanf(tokens[4].c_str(), "_%d_%d", &pos1, &pos2) == 2); 
+
     --pos1; --pos2;
     std::string geneId = tokens[3];
 
     for (int i = 0; i < topMappings_.size(); ++i) {
       int dokle = topMappings_[i].geneStrId.find(" ");
+      if (dokle == -1) {
+	dokle = topMappings_[i].geneStrId.size();
+      }
       std::string topMapId = topMappings_[i].geneStrId.substr(0, dokle);
 
       if (geneId == topMapId &&

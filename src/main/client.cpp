@@ -21,7 +21,7 @@ using namespace std;
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
   printf("client index <database location> <index output directory>\n");
-  printf("client solve <database location> <index directory> <reads input file>\n");
+  printf("client solve <database location> <index directory> <reads input file> <result output file>\n");
   exit(1);
 }
 
@@ -94,13 +94,35 @@ void solveReads(Database& db,
   }
 }
 
-void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
+void printReads(Database& db, const vector<shared_ptr<Read> >& reads,
+		const string& resultFilePath) {
+  FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
+  // format outputa: read_id,top_aln_num;nucl_id,score,start,stop,strand;...
+  assert(resultOut);
+
   vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index  
 
   map<int, int> stats;
 
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
+
+    fprintf(resultOut, "%s,%d", read->id().c_str(), (int)
+	    read->topMappings().size());
+    
+    for (int x = 0; x < read->topMappings().size(); ++x) {
+      const OneMapping& onemap = read->topMapping(x);
+      
+      int dokle = onemap.geneStrId.find(" ");
+      string topMapId = onemap.geneStrId.substr(0, dokle);
+
+      fprintf(resultOut, ";%s,%lf,%d,%d,%d", topMapId.c_str(),
+	      onemap.score, onemap.genePos, 
+	      onemap.genePos+read->size(), onemap.isRC);
+    }
+
+    fprintf(resultOut, "\n");
+
     int mappingQuality = read->validateMapping();
     ++stats[mappingQuality];
 
@@ -131,6 +153,8 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
       printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
     }
   }
+  
+  fclose(resultOut);
 }
 
 int main(int argc, char* argv[]) {
@@ -164,14 +188,14 @@ int main(int argc, char* argv[]) {
     }
     
   } else if (command == "solve") {
-    if (argc != 5) {
+    if (argc != 6) {
       printUsageAndExit();
     }
     Database db(argv[2], argv[3], kSeedLen, true);    
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4]);
     solveReads(db, reads);
-    printReads(db, reads);
+    printReads(db, reads, argv[5]);
   } else {
     printUsageAndExit();
   }
