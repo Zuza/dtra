@@ -38,4 +38,48 @@ inline char getBaseComplement(const char base) {
   return 'N';
 }
 
+// translate bases (ie. 'Y' -> C or T), ref: http://www.bioinformatics.org/sms/iupac.html
+
+inline char randBaseToBase(const char base) {
+  static int len[26] = {1, 3, 1, 3, 0, 0, 1, 3, 0, 0, 2, 0, 2, 4, 0, 0, 0, 2, 2, 1, 1, 3, 2, 0, 2, 0};
+  static char trans[26][5] = {"A",
+                              "CGT",
+                              "C",
+                              "AGT",
+                              "",
+                              "",
+                              "G",
+                              "ACT",
+                              "",
+                              "",
+                              "GT",
+                              "",
+                              "AC",
+                              "AGTC",
+                              "",
+                              "",
+                              "",
+                              "AG",
+                              "GC",
+                              "T",
+                              "U",
+                              "ACG",
+                              "AT",
+                              "",
+                              "CT",
+                              ""};
+
+  assert(base >= 'A' && base <= 'Z');
+
+  if (len[base-'A'] == 1) {
+    return base;
+  }
+  
+  int t;
+  t = len[base-'A'];
+  assert(t != 0);
+  t = rand() % t;
+  return trans[base-'A'][t];
+}
+
 #endif

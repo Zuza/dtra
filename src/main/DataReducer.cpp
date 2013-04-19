@@ -31,9 +31,9 @@ void reduceNtDatabase(int argc, char* argv[]) {
   int noSelection = -1;
 
   if (strcmp(argv[0], "random") == 0) {
-    sscanf(argv[1], "%lf", &probSelection);
+    assert(sscanf(argv[1], "%lf", &probSelection) == 1);
   } else if (strcmp(argv[0], "first") == 0) {
-    sscanf(argv[1], "%d", &noSelection);
+    assert(sscanf(argv[1], "%d", &noSelection) == 1);
   } else {
     printUsageAndExit();
   }

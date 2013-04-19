@@ -48,8 +48,8 @@ bool Database::readDbStoreIndex() {
     in->insertGene(g.get());
     update_statistics(g.get());
 
-    currentBlockNoBytes_ += g->name_.size();
-    currentBlockNoBytes_ += g->data_.size();
+    currentBlockNoBytes_ += g->nameSize();
+    currentBlockNoBytes_ += g->dataSize();
     if (currentBlockNoBytes_ > kMaxBlockSize) {
       break;
     }
