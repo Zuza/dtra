@@ -95,8 +95,8 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       int begin = calcBegin(positions, lisResult);
       // printf("geneId=%d, begin=%d, score=%d\n", 
       // 	     geneId, begin, (int)lisResult.size());
-      string geneSegment = genes[geneId]->data(begin, begin+read->size());
-      string geneName = genes[geneId]->name().substr(1);
+      string geneSegment = cstrToString(genes[geneId]->data() + begin, read->size());
+      string geneName = string(genes[geneId]->name() + 1);
       read->updateMapping(lisResult.size(), geneId, begin, rc, 
                           geneName, geneSegment);
     }

@@ -2,7 +2,7 @@
 #include <cstdlib>
 using namespace std;
 
-const size_t kMaxBlockSize = 10000000; // 10 MB
+const size_t kMaxBlockSize = 100000000; // 100 MB
 
 Database::Database(const string& databasePath,
                    const string& indexFolderPath,

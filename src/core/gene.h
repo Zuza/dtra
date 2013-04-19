@@ -13,13 +13,13 @@
 class Gene {
  public:
 
-  const std::string& name() const { return name_; }
-  const char& name(size_t i) const { return name_[i]; }
-  const std::string& data() const { return data_; }
-  const char& data(size_t i) const { return data_[i]; }
-  const std::string data(size_t a, size_t b) { 
-    return std::string(data_.begin()+a, data_.begin()+b);
-  }							
+  const char* name() const { return name_.c_str(); }
+  const char name(size_t i) const { return name_[i]; }
+  const char* data() const { return data_.c_str(); }
+  const char data(size_t i) const { return data_[i]; }
+  //  const std::string data(size_t a, size_t b) { 
+  //    return std::string(data_.begin()+a, data_.begin()+b);
+  //  }							
   const size_t size() const { return data_.size(); }
 
   void clear() { 
@@ -33,6 +33,6 @@ class Gene {
 };
 
 bool readGene(Gene* g, FILE* inputFilePointer);
-bool printGene(Gene* g, FILE* outputFilePointer = stdout, int width = 80);
+size_t printGene(Gene* g, FILE* outputFilePointer = stdout, int width = 80);
 
 #endif  // MAPPER_GENOME

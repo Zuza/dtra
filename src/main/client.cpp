@@ -111,13 +111,13 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads) {
       printf("mappings (%d):\n", (int)read->topMappings().size());
       
       for (int x = 0; x < read->topMappings().size(); ++x) {
-	OneMapping mapping = read->topMapping(x);
-	printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
-	       mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
-	// NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
-	printf("gene: %s\n", genes[mapping.geneId]->name().c_str());
-	printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
-							    mapping.genePos+read->size()).c_str());
+        OneMapping mapping = read->topMapping(x);
+        printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
+               mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
+        // NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
+        printf("gene: %s\n", genes[mapping.geneId]->name());
+        //        printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
+        //                                                            mapping.genePos+read->size()).c_str());
       }
       puts("END READ");
       puts("");
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i <  (int)ret.size(); ++i) {
       printf("(%d, %d)\n", ret[i].first, ret[i].second);
-      printf("seq = %s\n", genes[ret[i].first]->data().substr(ret[i].second, 70).c_str());
+      printf("seq = %s\n", genes[ret[i].first]->data());
     }
     
   } else if (command == "solve") {

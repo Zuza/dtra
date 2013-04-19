@@ -42,9 +42,10 @@ void reduceNtDatabase(int argc, char* argv[]) {
   assert(ntInputFile);
 
   int koji = 0;
+  size_t printed = 0;
   for (Gene g; readGene(&g, ntInputFile); ++koji) {
     if (koji % 1000 == 0) {
-      fprintf(stderr, "Processed %d genes.\n", koji);
+      fprintf(stderr, "Processed %d genes (%.2lf GB)\n", koji, printed / 1e9);
     }
 
     if (noSelection != -1 && koji >= noSelection) {
@@ -52,7 +53,7 @@ void reduceNtDatabase(int argc, char* argv[]) {
     }
     
     if (throwCoin(probSelection)) {
-      printGene(&g);
+      printed += printGene(&g);
     }
   }
   

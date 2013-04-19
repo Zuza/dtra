@@ -159,6 +159,10 @@ inline void GroupPositions(const unordered_map<int, int>& candidates,
   }
 }
 
+static inline std::string cstrToString(const char* s, int len) {
+  return string(s, s + len);
+}
+
 // trim from start
 static inline std::string &ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));

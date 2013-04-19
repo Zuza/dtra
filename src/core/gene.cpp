@@ -8,6 +8,10 @@ bool readGene(Gene* g, FILE* inputFilePointer) {
   bool iHaveReadSomething = false;
   g->clear();
 
+  size_t nameLen = 0;
+  size_t dataLen = 0;
+
+
   while(true) {
     fpos_t prevPos;
     fgetpos(inputFilePointer, &prevPos);
@@ -30,14 +34,17 @@ bool readGene(Gene* g, FILE* inputFilePointer) {
   return iHaveReadSomething;
 }
 
-bool printGene(Gene* g, FILE* outputFilePointer, int width) {
-  fprintf(outputFilePointer, "%s\n", g->name().c_str());
+size_t printGene(Gene* g, FILE* outputFilePointer, int width) {
+  size_t printed = 0;
+  printed += fprintf(outputFilePointer, "%s\n", g->name());
 
   for (size_t i = 0; i < g->size(); i += width) {
     for (size_t j = i; j < min(g->size(), i+width); ++j) {
-      fprintf(outputFilePointer, "%c", g->data(j));
+      printed += fprintf(outputFilePointer, "%c", g->data(j));
     }
-    fprintf(outputFilePointer, "\n");
+    printed += fprintf(outputFilePointer, "\n");
   }
+
+  return printed;
 }
 
