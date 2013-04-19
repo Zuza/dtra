@@ -12,24 +12,34 @@
 
 class Gene {
  public:
+  Gene() { name_ = data_ = 0; }
+  ~Gene() { clear(); }
 
-  const char* name() const { return name_.c_str(); }
+  const char* name() const { return name_; }
   const char name(size_t i) const { return name_[i]; }
-  const char* data() const { return data_.c_str(); }
+  const char* data() const { return data_; }
   const char data(size_t i) const { return data_[i]; }
-  //  const std::string data(size_t a, size_t b) { 
-  //    return std::string(data_.begin()+a, data_.begin()+b);
-  //  }							
-  const size_t size() const { return data_.size(); }
+
+  const size_t size() const { return data_len_; } // deprecated
+
+  const size_t dataSize() const { return data_len_; }
+  const size_t nameSize() const { return name_len_; }
 
   void clear() { 
-    name_.clear(); 
-    data_.clear(); 
+    if (name_) { 
+      free(name_);
+    }
+    if (data_) {
+      free(data_);
+    }
+    name_ = data_ = 0;
+    name_len_ = 0;
+    data_len_ = 0;
   }
 
-  //private:
-  std::string name_;
-  std::string data_;
+  //private:                                   
+  char* name_; size_t name_len_;
+  char* data_; size_t data_len_;
 };
 
 bool readGene(Gene* g, FILE* inputFilePointer);
