@@ -1,7 +1,7 @@
-// Simple class that represents a gene. Contains the data, name and
-// functions to read it from FASTA file.
-//
-// Authors: Matija Osrecki, Filip Pavetic
+/**
+ * @authors: Goran Zuzic (zuza777@gmail.com)
+ *           Filip Pavetic (fpavetic@gmail.com)
+ */
 
 #ifndef MAPPER_GENOME
 #define MAPPER_GENOME
@@ -19,8 +19,7 @@ class Gene {
   const char name(size_t i) const { return name_[i]; }
   const char* data() const { return data_; }
   const char data(size_t i) const { return data_[i]; }
-
-  const size_t size() const { return data_len_; } // deprecated
+  const std::string& description() const { return description_; }
 
   const size_t dataSize() const { return data_len_; }
   const size_t nameSize() const { return name_len_; }
@@ -37,9 +36,15 @@ class Gene {
     data_len_ = 0;
   }
 
-  //private:                                   
+  friend bool readGene(Gene* g, FILE* inputFilePointer);
+
+ private:
+  void createDescription();
+
+ private:                                   
   char* name_; size_t name_len_;
   char* data_; size_t data_len_;
+  std::string description_;
 };
 
 bool readGene(Gene* g, FILE* inputFilePointer);

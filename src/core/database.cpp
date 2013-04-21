@@ -123,7 +123,7 @@ void Database::clear_statistics() {
 }
 
 void Database::update_statistics(Gene* gene) {
-  size_t sz = gene->size();
+  size_t sz = gene->dataSize();
   minSize_ = min<unsigned long long>(minSize_, sz);
   maxSize_ = max<unsigned long long>(maxSize_, sz);
   sizeSum_ += sz;

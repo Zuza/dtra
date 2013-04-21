@@ -1,6 +1,6 @@
-// Class is used to index and query the gene according to how SNAP works.
-//
-// Authors: Matija Osrecki, Filip Pavetic
+/**
+ * @authors: Goran Zuzic (zuza777@gmail.com)
+ */
 
 #ifndef MAPPER_INDEX
 #define MAPPER_INDEX
@@ -10,8 +10,6 @@
 #include "BufferedBinaryReader.h"
 #include "BufferedBinaryWriter.h"
 #include "gene.h"
-
-// typedef unsigned long long keyType;
 
 typedef unsigned long long hash_t;
 
@@ -29,7 +27,7 @@ public:
   // out: retval
   //   -> vector of pairs -> first is the gene number
   //                         second is the position with the gene
-  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, hash_t hash); // hash_t
+  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, hash_t hash);
 
   const int& getSeedLen() { return seedLength_; }
 
@@ -42,7 +40,7 @@ private:
 
   struct Entry {
     size_t position;
-    hash_t hash; // hash_t
+    hash_t hash;
 
     friend bool operator < (const Entry& a, const Entry& b) {
       return a.hash < b.hash;

@@ -15,22 +15,22 @@ const int kNoTopMappings = 5;
 
 struct OneMapping {
   double score;
-  int geneId, genePos, isRC;
+  int genePos, isRC;
 
   std::string geneStrId;
   std::string geneSegment; // optional
 
-  OneMapping(double score, int geneId, int genePos, int isRC, 
+  OneMapping(double score, int genePos, int isRC, 
 	     std::string geneName, std::string geneSegment) :
-  score(score), geneId(geneId), genePos(genePos), isRC(isRC),
+  score(score), genePos(genePos), isRC(isRC),
     geneStrId(geneName), geneSegment(geneSegment) {
     std::vector<std::string> tokens = Split(geneName, '|');
     geneStrId = tokens[3];
   }
 
   void print() {
-    printf("on gene %d, at position %d (RC=%d), score=%lf\n",
-	   geneId, genePos, isRC, score);
+    printf("on gene %s, at position %d (RC=%d), score=%lf\n",
+	   geneStrId.c_str(), genePos, isRC, score);
     printf("segment: %s\n", geneSegment.c_str());
   }
 
@@ -61,9 +61,9 @@ class Read {
     return getBaseComplement(data_[data_.size()-1-i]);
   }
 
-  void updateMapping(double score, int geneId, int genePos, int isRC, 
+  void updateMapping(double score, int genePos, int isRC, 
 		     std::string geneName, std::string geneSegment = "") {
-    topMappings_.push_back(OneMapping(score, geneId, genePos, isRC, 
+    topMappings_.push_back(OneMapping(score, genePos, isRC, 
 				      geneName, geneSegment));
     size_t i = topMappings_.size()-1;
     

@@ -5,7 +5,33 @@
 #include <cassert>
 #include <cctype>
 
+#include <string>
+#include <vector>
 using namespace std;
+
+void Gene::createDescription() {
+  vector<string> headers = Split(string(name_+1, name_+name_len_), 1); // 1 = ^A
+  description_ = "";
+
+  for (int i = 0; i < headers.size(); ++i) {
+    if (i) description_ += "@";
+
+    vector<string> tokens = Split(headers[i], '|');
+    for (int j = 0; j < tokens.size(); ++j) {
+      if (tokens[j] == "gi") {
+	if (description_.size()) description_ += "_";
+	description_ += "gi:"+tokens[j+1];
+      } else if (tokens[j] == "ref") {
+	if (description_.size()) description_ += "_";
+	description_ += "ref:"+tokens[j+1];
+      } else if (tokens[j] == "emb") {
+	if (description_.size()) description_ += "_";
+	description_ += "emb:"+tokens[j+1];
+      }
+    }
+  }
+  printf("%s\n", description_.c_str());
+}
 
 bool readGene(Gene* g, FILE* inputFilePointer) {
   static char buffer[1010];
@@ -103,10 +129,14 @@ bool readGene(Gene* g, FILE* inputFilePointer) {
   assert(ptrData == dataLen);
   assert(ptrName == nameLen);
 
+#ifdef DEBUG
   for (size_t i = 0; i < dataLen; ++i) {
     assert(g->data_[i] >= 'A' && g->data_[i] <= 'Z');
   }
+#endif
 
+  g->createDescription();
+  
   return dataLen > 0;
 }
 
@@ -114,8 +144,8 @@ size_t printGene(Gene* g, FILE* outputFilePointer, int width) {
   size_t printed = 0;
   printed += fprintf(outputFilePointer, "%s\n", g->name());
 
-  for (size_t i = 0; i < g->size(); i += width) {
-    for (size_t j = i; j < min(g->size(), i+width); ++j) {
+  for (size_t i = 0; i < g->dataSize(); i += width) {
+    for (size_t j = i; j < min(g->dataSize(), i+width); ++j) {
       printed += fprintf(outputFilePointer, "%c", g->data(j));
     }
     printed += fprintf(outputFilePointer, "\n");

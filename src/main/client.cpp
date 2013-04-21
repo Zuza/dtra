@@ -14,12 +14,10 @@
 #include <iostream>
 
 #include "core/ThreadPool.h"
-
 #include "core/database.h"
 #include "core/index.h"
 #include "core/mapping.h"
 #include "core/read.h"
-
 using namespace std;
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -101,13 +99,44 @@ void solveReads(Database& db,
   }
 }
 
+void printStatistics(const vector<shared_ptr<Read> >& reads) {
+  map<int, int> stats;
+  for (int i = 0; i < reads.size(); ++i) {
+    shared_ptr<Read> read = reads[i];
+
+    int mappingQuality = read->validateMapping();
+    ++stats[mappingQuality];
+
+    if (mappingQuality == -1) {      
+      printf("READ #%04d:\n", i);
+      printf("id: %s\n", read->id().c_str());
+      printf("data: %s\n", read->data().c_str());
+      printf("mappings (%d):\n", (int)read->topMappings().size());
+      
+      for (int x = 0; x < read->topMappings().size(); ++x) {
+        OneMapping mapping = read->topMapping(x);
+        printf("score=%lf geneId=%s genePos=%d isRC=%d\n",
+               mapping.score, mapping.geneStrId.c_str(), mapping.genePos, mapping.isRC);
+      }
+      puts("END READ");
+      puts("");
+    }
+  }
+
+  printf("Total reads: %d\n", (int)reads.size());
+  printf("Number of reads not mapped: %d\n", stats[-1]);
+  for (map<int, int>::iterator it = stats.begin(); it != stats.end(); ++it) {
+    if (it->first != -1) {
+      printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
+    }
+  }
+}
+
 void printReads(const vector<shared_ptr<Read> >& reads,
 		const string& resultFilePath) {
   FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
   // format outputa: read_id,top_aln_num;nucl_id,score,start,stop,strand;...
   assert(resultOut);
-
-  map<int, int> stats;
 
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
@@ -125,37 +154,12 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 	      onemap.score, onemap.genePos, 
 	      onemap.genePos+read->size(), onemap.isRC);
     }
-
     fprintf(resultOut, "\n");
-
-    int mappingQuality = read->validateMapping();
-    ++stats[mappingQuality];
-
-    if (mappingQuality == -1) {      
-      printf("READ #%04d:\n", i);
-      printf("id: %s\n", read->id().c_str());
-      printf("data: %s\n", read->data().c_str());
-      printf("mappings (%d):\n", (int)read->topMappings().size());
-      
-      for (int x = 0; x < read->topMappings().size(); ++x) {
-        OneMapping mapping = read->topMapping(x);
-        printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
-               mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
-      }
-      puts("END READ");
-      puts("");
-    }
   }
 
-  printf("Total reads: %d\n", (int)reads.size());
-  printf("Number of reads not mapped: %d\n", stats[-1]);
-  for (map<int, int>::iterator it = stats.begin(); it != stats.end(); ++it) {
-    if (it->first != -1) {
-      printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
-    }
-  }
-  
   fclose(resultOut);
+
+  //printStatistics();
 }
 
 int main(int argc, char* argv[]) {
@@ -194,7 +198,7 @@ int main(int argc, char* argv[]) {
     }
     Database db(argv[2], argv[3], kSeedLen, true);    
     vector<shared_ptr<Read> > reads;
-    inputReads(&reads, argv[4]);
+    inputReads(&reads, argv[4], 100);
     solveReads(db, reads);
     printReads(reads, argv[5]);
   } else {

@@ -11,7 +11,7 @@ using namespace std;
 Index::Index(int seedLength) : seedLength_(seedLength) {
   indexPrepared_ = false;
   startingPos_ = 0;
-  assert(seedLength_ <= 32); // maybe later: because we want the hash to fit 64bit integer ?
+  assert(seedLength_ <= 32); 
 }
 
 void Index::insertGene(Gene* gene) { 
@@ -24,7 +24,7 @@ void Index::insertGene(Gene* gene) {
 
   hash_t rollingHash = 0;
 
-  for (size_t i = 0; i < gene->size(); ++i) {
+  for (size_t i = 0; i < gene->dataSize(); ++i) {
     int next = baseToInt(gene->data()[i]);
 
     rollingHash = rollingHash * 4 + next;
@@ -41,7 +41,7 @@ void Index::insertGene(Gene* gene) {
   }
 
   geneStartingPos_.push_back(startingPos_);
-  startingPos_ += gene->size();
+  startingPos_ += gene->dataSize();
 }
 
 pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) {

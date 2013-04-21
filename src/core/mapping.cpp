@@ -51,14 +51,17 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
                  // Y-onima i sl.
         
     for (int i = 0; i < read->size(); ++i) {
-      if (!isBase(toupper(read->get(i, rc)))) { ++noN; }
-      if (i >= seedLen && !isBase(toupper(read->get(i-seedLen, rc)))) { --noN; }
+      if (!isBase(read->get(i, rc))) { ++noN; }
+      if (i >= seedLen && !isBase(read->get(i-seedLen, rc))) { --noN; }
 
-      hsh = hsh*4+baseToInt(toupper(read->get(i, rc)));
+      hsh = hsh*4+baseToInt(read->get(i, rc));
       hsh &= andMask;
       
       if (noN == 0 && i+1 >= seedLen) {
         vector<pair<unsigned int, unsigned int> > positions;
+	
+	// TODO: mozda u Index mogu staviti metodu koja direktno puni
+	// positionsByGene kako bih izbjegao kopiranje podataka
 	
         // vector kojeg vrati ova metoda je sortiran poretkom
         // u kojem se pairovi standardno sortiraju
@@ -84,22 +87,28 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
     // assert(!positionsByGene.empty());
     
     for (auto candidateGenes : positionsByGene) {
-      int geneId = candidateGenes.first;
-      vector<pair<int, int> >& positions = *candidateGenes.second;
+      int geneIdx = candidateGenes.first;
 
-      // treba li sort
+      vector<pair<int, int> >& positions = *candidateGenes.second;
       sort(positions.begin(), positions.end());
 
       vector<int> lisResult;
       calcLongestIncreasingSubsequence(&lisResult, positions);
-      
+
+      // gdje procjenjujemo da je pocetna pozicija 
+      // mapiranja reada na gen?
       int begin = calcBegin(positions, lisResult);
-      // printf("geneId=%d, begin=%d, score=%d\n", 
-      // 	     geneId, begin, (int)lisResult.size());
-      string geneSegment = cstrToString(genes[geneId]->data() + begin, read->size());
-      string geneName = string(genes[geneId]->name() + 1);
-      read->updateMapping(lisResult.size(), geneId, begin, rc, 
-                          geneName, geneSegment);
+
+      // segment na genu gdje procjenjujemo mapiranje
+#ifdef DEBUG
+      string geneSegment = cstrToString(genes[geneIdx]->data() + begin, 
+					read->size());
+#else
+      string geneSegment = "";
+#endif
+
+      read->updateMapping(lisResult.size(), begin, rc, 
+                          genes[geneIdx]->description(), geneSegment);
     }
   }
 }
