@@ -14,9 +14,11 @@
 #include <iostream>
 
 #include "core/ThreadPool.h"
+
 #include "core/database.h"
-#include "core/read.h"
+#include "core/index.h"
 #include "core/mapping.h"
+#include "core/read.h"
 
 using namespace std;
 
@@ -27,7 +29,7 @@ void printUsageAndExit() {
   exit(1);
 }
 
-const int kSeedLen = 16;
+const int kSeedLen = 20;
 
 void createIndex(string databasePath, string indexFilePath) {
   Database db(databasePath, indexFilePath, kSeedLen, false);

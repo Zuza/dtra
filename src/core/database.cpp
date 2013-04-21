@@ -95,13 +95,15 @@ shared_ptr<Index> Database::readIndexFile(int which) {
   shared_ptr<Index> ptr(new Index(seedLen_));
   ptr->readIndex(reader);
 
-  fseek(dbFilePointer_, indexSummaries_[which].first, SEEK_SET);
+  clear_statistics();
+  fseek(dbFilePointer_, indexSummaries_[which].first, SEEK_SET); // .first -> ftell of the index part
   genes_.clear();
-  genes_.reserve(indexSummaries_[which].second);
+  genes_.reserve(indexSummaries_[which].second); // .second -> number of genes in index part
   for (int i = 0; i < indexSummaries_[which].second; ++i) {
     shared_ptr<Gene> g(new Gene());
     assert(readGene(g.get(), dbFilePointer_));
     genes_.push_back(g);
+    update_statistics(g.get());
   }
   
   fclose(indexFile);
@@ -142,8 +144,8 @@ void Database::read_index_summaries() {
   indexSummaries_.resize(count);
   for (int i = 0; i < count; ++i) {
     fscanf(in, "%ld %d",
-           &indexSummaries_[i].first,
-           &indexSummaries_[i].second);
+           &indexSummaries_[i].first, // ftell of the position
+           &indexSummaries_[i].second); // number of genes
   }
   fclose(in);
 }

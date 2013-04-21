@@ -13,6 +13,8 @@
 
 // typedef unsigned long long keyType;
 
+typedef unsigned long long hash_t;
+
 class Index {
 public:
   // Create index for a set of genes. 'seed_length' determines the
@@ -23,11 +25,11 @@ public:
   void insertGene(Gene* gene);
   void prepareIndex(); // sort the hashes
 
-  /**
-   * Za zadani hash, vraca sve parove (gen, pozicija) gdje se taj hash
-   * nalazi.
-   */
-  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, unsigned int hash); // hash_t
+  // in: hash value
+  // out: retval
+  //   -> vector of pairs -> first is the gene number
+  //                         second is the position with the gene
+  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, hash_t hash); // hash_t
 
   const int& getSeedLen() { return seedLength_; }
 
@@ -36,20 +38,20 @@ public:
   void readIndex(BufferedBinaryReader& reader);
 
 private:
-  std::pair<unsigned int, unsigned int> position_to_gene_position(unsigned int position);
+  std::pair<unsigned int, unsigned int> position_to_gene_position(size_t position);
 
   struct Entry {
-    unsigned int position;
-    unsigned int hash; // hash_t
+    size_t position;
+    hash_t hash; // hash_t
 
     friend bool operator < (const Entry& a, const Entry& b) {
       return a.hash < b.hash;
     }
   };
 
-  std::vector<int> geneStartingPos_;
+  std::vector<size_t> geneStartingPos_;
   std::vector<Index::Entry> index_;
-  int startingPos_;
+  size_t startingPos_;
   int seedLength_;
   bool indexPrepared_;
 };

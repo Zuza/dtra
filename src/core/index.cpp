@@ -11,19 +11,18 @@ using namespace std;
 Index::Index(int seedLength) : seedLength_(seedLength) {
   indexPrepared_ = false;
   startingPos_ = 0;
-  assert(seedLength_ <= 16); // currently unsigned int
   assert(seedLength_ <= 32); // maybe later: because we want the hash to fit 64bit integer ?
 }
 
 void Index::insertGene(Gene* gene) { 
   // TODO: prealociraj sve!
 
-  unsigned long long subtractPower = 1;
+  hash_t subtractPower = 1;
   for (int i = 0; i < seedLength_; ++i) {
     subtractPower *= 4;
   }
 
-  unsigned long long rollingHash = 0;
+  hash_t rollingHash = 0;
 
   for (size_t i = 0; i < gene->size(); ++i) {
     int next = baseToInt(gene->data()[i]);
@@ -45,14 +44,14 @@ void Index::insertGene(Gene* gene) {
   startingPos_ += gene->size();
 }
 
-pair<unsigned int, unsigned int> Index::position_to_gene_position(unsigned int position) {
+pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) {
   auto it = upper_bound(geneStartingPos_.begin(), geneStartingPos_.end(), position);
   assert(it != geneStartingPos_.begin());
   --it;
   return make_pair<unsigned int, unsigned int>(it - geneStartingPos_.begin(), position - *it);
 }
 
-void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, unsigned int hash) {
+void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, hash_t hash) {
   assert(indexPrepared_);
   assert(retVal->empty());
   Entry tmp; tmp.hash = hash;
