@@ -1,5 +1,7 @@
 #include "core/database.h"
 #include <cstdlib>
+#include <ctime>
+
 using namespace std;
 
 const size_t kMaxBlockSize = 1010000000; // 1010 MB
@@ -34,9 +36,13 @@ bool Database::readDbStoreIndex() {
   clear_statistics();
   currentBlockNoBytes_ = 0;
 
+  clock_t starting_time = clock();
+
   int num_genes = 0;
   long int starting_ftell = ftell(dbFilePointer_);
   shared_ptr<Index> in(new Index(seedLen_));
+
+  int last_percentage = 1;
 
   for (int iter = 0; ; ++iter) {
     shared_ptr<Gene> g(new Gene());
@@ -50,7 +56,12 @@ bool Database::readDbStoreIndex() {
 
     currentBlockNoBytes_ += g->nameSize();
     currentBlockNoBytes_ += g->dataSize();
+    if (currentBlockNoBytes_*100 > last_percentage*kMaxBlockSize) {
+      printf("%d%%.. ", last_percentage);
+      ++last_percentage;
+    }
     if (currentBlockNoBytes_ > kMaxBlockSize) {
+      putchar('\n');
       break;
     }
   }
@@ -81,6 +92,7 @@ bool Database::readDbStoreIndex() {
   fclose(indexFile);
 
   indexSummaries_.push_back(make_pair(starting_ftell, num_genes));
+  printf("time to process block = %.2lf\n", double(clock() - starting_time) / CLOCKS_PER_SEC);
   return true;
 }
 
