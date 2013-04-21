@@ -61,7 +61,7 @@ bool Database::readDbStoreIndex() {
     currentBlockNoBytes_ += g->nameSize();
     currentBlockNoBytes_ += g->dataSize();
     if (currentBlockNoBytes_*100 > last_percentage*kMaxBlockSize) {
-      printf("%d%%.. ", last_percentage);
+      printf("%d%%.. ", last_percentage); fflush(stdout);
       ++last_percentage;
     }
     if (currentBlockNoBytes_ > kMaxBlockSize) {
