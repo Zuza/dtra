@@ -19,18 +19,23 @@ void Gene::createDescription() {
     vector<string> tokens = Split(headers[i], '|');
     for (int j = 0; j < tokens.size(); ++j) {
       if (tokens[j] == "gi") {
-	if (description_.size()) description_ += "_";
+	if (description_.size() && description_.back() != '@') {
+	  description_ += "_";
+	}
 	description_ += "gi:"+tokens[j+1];
       } else if (tokens[j] == "ref") {
-	if (description_.size()) description_ += "_";
+	if (description_.size() && description_.back() != '@') {
+	  description_ += "_";
+	}
 	description_ += "ref:"+tokens[j+1];
       } else if (tokens[j] == "emb") {
-	if (description_.size()) description_ += "_";
+	if (description_.size() && description_.back() != '@') {
+	  description_ += "_";
+	}
 	description_ += "emb:"+tokens[j+1];
       }
     }
   }
-  printf("%s\n", description_.c_str());
 }
 
 bool readGene(Gene* g, FILE* inputFilePointer) {

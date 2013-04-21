@@ -82,10 +82,6 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       }
     }
 
-    // ovo se ne bi smjelo dogoditi,
-    // barem na sintetski generiranim podacima
-    // assert(!positionsByGene.empty());
-    
     for (auto candidateGenes : positionsByGene) {
       int geneIdx = candidateGenes.first;
 

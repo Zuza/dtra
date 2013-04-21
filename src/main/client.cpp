@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include <map>
 
 #include <gflags/gflags.h>
 
@@ -22,7 +23,8 @@
 #include "core/read.h"
 using namespace std;
 
-DEFINE_int32(seedLen, 20, "Seed length that is stored/read from the index");
+DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
+DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -32,7 +34,7 @@ void printUsageAndExit() {
 }
 
 void createIndex(string databasePath, string indexFilePath) {
-  Database db(databasePath, indexFilePath, FLAGS_seedLen, false);
+  Database db(databasePath, indexFilePath, FLAGS_seed_len, false);
   size_t totalRead = 0;
 
   for (int indexNumber = 0; db.readDbStoreIndex(); ++indexNumber) {
@@ -85,8 +87,8 @@ void solveReads(Database& db,
     //programmatically-find-the-number-of-cores-on-a-machine
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
     assert(numCores > 1 && numCores < 100); // sanity check
-    ThreadPool pool(numCores - 1); // one core for this thread
-
+    ThreadPool pool(numCores-1); // one core for this thread
+    
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
       results.push_back(
@@ -101,12 +103,12 @@ void solveReads(Database& db,
   }
 }
 
-void printStatistics(const vector<shared_ptr<Read> >& reads) {
+void printWgsimStatistics(const vector<shared_ptr<Read> >& reads) {
   map<int, int> stats;
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
 
-    int mappingQuality = read->validateMapping();
+    int mappingQuality = read->validateWgsimMapping();
     ++stats[mappingQuality];
 
     if (mappingQuality == -1) {      
@@ -117,8 +119,9 @@ void printStatistics(const vector<shared_ptr<Read> >& reads) {
       
       for (int x = 0; x < read->topMappings().size(); ++x) {
         OneMapping mapping = read->topMapping(x);
-        printf("score=%lf geneId=%s genePos=%d isRC=%d\n",
-               mapping.score, mapping.geneStrId.c_str(), mapping.genePos, mapping.isRC);
+        printf("score=%lf geneDes=%s genePos=%d isRC=%d\n",
+               mapping.score, mapping.geneDescriptor.c_str(), 
+	       mapping.genePos, mapping.isRC);
       }
       puts("END READ");
       puts("");
@@ -149,19 +152,18 @@ void printReads(const vector<shared_ptr<Read> >& reads,
     for (int x = 0; x < read->topMappings().size(); ++x) {
       const OneMapping& onemap = read->topMapping(x);
       
-      int dokle = onemap.geneStrId.find(" ");
-      string topMapId = onemap.geneStrId.substr(0, dokle);
-
-      fprintf(resultOut, ";%s,%lf,%d,%d,%d", topMapId.c_str(),
-	      onemap.score, onemap.genePos, 
-	      onemap.genePos+read->size(), onemap.isRC);
+      fprintf(resultOut, ";%s,%lf,%d,%d,%d", onemap.geneDescriptor.c_str(),
+      	      onemap.score, onemap.genePos, 
+      	      onemap.genePos+read->size(), onemap.isRC);
     }
     fprintf(resultOut, "\n");
   }
 
   fclose(resultOut);
 
-  //printStatistics();
+  if (FLAGS_validate_wgsim) {
+    printWgsimStatistics(reads);
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -183,7 +185,7 @@ int main(int argc, char* argv[]) {
       printUsageAndExit();
     }
 
-    Database db(argv[2], argv[3], FLAGS_seedLen, true);    
+    Database db(argv[2], argv[3], FLAGS_seed_len, true);    
     printf("db count = %d\n", db.getIndexFilesCount());
     shared_ptr<Index> ptr_index = db.readIndexFile(0);
     vector<pair<unsigned int, unsigned int> > ret;
@@ -200,10 +202,10 @@ int main(int argc, char* argv[]) {
     if (argc != 6) {
       printUsageAndExit();
     }
-    Database db(argv[2], argv[3], FLAGS_seedLen, true);    
+    Database db(argv[2], argv[3], FLAGS_seed_len, true);    
     vector<shared_ptr<Read> > reads;
-    inputReads(&reads, argv[4], 100);
-    solveReads(db, reads);
+    inputReads(&reads, argv[4]); 
+    solveReads(db, reads); 
     printReads(reads, argv[5]);
   } else {
     printUsageAndExit();
