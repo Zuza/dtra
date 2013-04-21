@@ -81,7 +81,7 @@ void createWgsimReads(int argc, char* argv[]) {
     const int readsPerGene = 15;
     
     int readLength; sscanf(argv[2], "%d", &readLength);
-    readLength = min(readLength, (int)g.size());
+    readLength = min(readLength, (int)g.dataSize());
     const string readsOutput1 = "reads.output.tmp.1";
     const string readsOutput2 = "reads.output.tmp.2";
     

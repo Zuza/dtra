@@ -9,7 +9,7 @@ MAIN_H_FILES := $(wildcard $(MAIN_DIR)/*.h)
 MAIN_CPP_FILES := $(wildcard $(MAIN_DIR)/*.cpp)
 MAIN_OBJ_FILES := $(addprefix obj/main/,$(notdir $(MAIN_CPP_FILES:.cpp=.o)))
 
-LD_FLAGS := -pthread -lgflags
+LD_FLAGS := -pthread -lgflags -static
 CC_FLAGS := -O2 --std=c++0x -Wno-unused-result $(INCLUDES)
 
 all: client reducer

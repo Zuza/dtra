@@ -1,8 +1,5 @@
 dtra
 ====
 
-Klijent se izgradjuje pozivom:
-make client
-
-Dependancies:
-gflags (any?)
+Dependencies:
+  gflags (http://gflags.googlecode.com/files/gflags-2.0.zip)
