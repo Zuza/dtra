@@ -47,11 +47,12 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
  
   for (int rc = 0; rc < 2; ++rc) {
     map<int, shared_ptr<vector<pair<int, int> > > > positionsByGene;
-    int noN = 0;
+    int noN = 0; // sluzi da bih mogao preskociti seedove s N-ovima,
+                 // Y-onima i sl.
         
     for (int i = 0; i < read->size(); ++i) {
-      if (toupper(read->get(i, rc)) == 'N') { ++noN; }
-      if (i >= seedLen && toupper(read->get(i-seedLen, rc)) == 'N') { --noN; }
+      if (!isBase(toupper(read->get(i, rc)))) { ++noN; }
+      if (i >= seedLen && !isBase(toupper(read->get(i-seedLen, rc)))) { --noN; }
 
       hsh = hsh*4+baseToInt(toupper(read->get(i, rc)));
       hsh &= andMask;
@@ -81,12 +82,12 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
     // ovo se ne bi smjelo dogoditi,
     // barem na sintetski generiranim podacima
     // assert(!positionsByGene.empty());
-                                     
+    
     for (auto candidateGenes : positionsByGene) {
       int geneId = candidateGenes.first;
       vector<pair<int, int> >& positions = *candidateGenes.second;
 
-      // TODO: ne bi trebao biti potreban sort tu?
+      // treba li sort
       sort(positions.begin(), positions.end());
 
       vector<int> lisResult;

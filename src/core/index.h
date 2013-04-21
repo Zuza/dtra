@@ -23,6 +23,10 @@ public:
   void insertGene(Gene* gene);
   void prepareIndex(); // sort the hashes
 
+  /**
+   * Za zadani hash, vraca sve parove (gen, pozicija) gdje se taj hash
+   * nalazi.
+   */
   void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, unsigned int hash); // hash_t
 
   const int& getSeedLen() { return seedLength_; }

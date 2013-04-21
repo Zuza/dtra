@@ -5,6 +5,10 @@
 #include <ctime>
 #include <cstdlib>
 
+inline bool isBase(char isit) {
+  return isit == 'A' || isit == 'T' || isit == 'G' || isit == 'C';
+}
+
 inline int baseToInt(char base, const int nValue = -1) {
   base = toupper(base);
 

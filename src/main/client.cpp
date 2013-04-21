@@ -71,22 +71,25 @@ int solveRead(vector<shared_ptr<Gene> >& genes,
 
 void solveReads(Database& db, 
 		vector<shared_ptr<Read> >& reads) {
-
   int indexFileCount = db.getIndexFilesCount();
-  for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
-    fprintf(stderr, "Processing block %d/%d...\n", indexNo+1, indexFileCount);
-    shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
-    vector<shared_ptr<Gene> >& genes = db.getGenes();
 
-    // http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
+  for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
+    fprintf(stderr, "Begin processing block %d/%d...\n", 
+	    indexNo+1, indexFileCount);
+    shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
+    vector<shared_ptr<Gene> >& currentGenes = db.getGenes();
+
+    //http://stackoverflow.com/questions/150355/
+    //programmatically-find-the-number-of-cores-on-a-machine
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
     assert(numCores > 1 && numCores < 100); // sanity check
     ThreadPool pool(numCores - 1); // one core for this thread
 
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
-      results.push_back(pool.enqueue<int>([i, &genes, &activeIndex, &reads] {
-	    return solveRead(genes, activeIndex, reads[i]);
+      results.push_back(
+	 pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads] {
+	    return solveRead(currentGenes, activeIndex, reads[i]);
 	  }));
     } 
 
@@ -96,21 +99,19 @@ void solveReads(Database& db,
   }
 }
 
-void printReads(Database& db, const vector<shared_ptr<Read> >& reads,
+void printReads(const vector<shared_ptr<Read> >& reads,
 		const string& resultFilePath) {
   FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
   // format outputa: read_id,top_aln_num;nucl_id,score,start,stop,strand;...
   assert(resultOut);
-
-  vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index  
 
   map<int, int> stats;
 
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
 
-    fprintf(resultOut, "%s,%d", read->id().c_str(), (int)
-	    read->topMappings().size());
+    fprintf(resultOut, "%s,%d", read->id().c_str(), 
+	    (int)read->topMappings().size());
     
     for (int x = 0; x < read->topMappings().size(); ++x) {
       const OneMapping& onemap = read->topMapping(x);
@@ -138,10 +139,6 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads,
         OneMapping mapping = read->topMapping(x);
         printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
                mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
-        // NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
-        printf("gene: %s\n", genes[mapping.geneId]->name());
-        //        printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
-        //                                                            mapping.genePos+read->size()).c_str());
       }
       puts("END READ");
       puts("");
@@ -197,7 +194,7 @@ int main(int argc, char* argv[]) {
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4]);
     solveReads(db, reads);
-    printReads(db, reads, argv[5]);
+    printReads(reads, argv[5]);
   } else {
     printUsageAndExit();
   }
