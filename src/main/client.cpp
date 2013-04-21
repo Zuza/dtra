@@ -25,6 +25,7 @@ using namespace std;
 
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
 DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_int32(no_reads, -1, "Number of reads to process.");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -204,7 +205,7 @@ int main(int argc, char* argv[]) {
     }
     Database db(argv[2], argv[3], FLAGS_seed_len, true);    
     vector<shared_ptr<Read> > reads;
-    inputReads(&reads, argv[4]); 
+    inputReads(&reads, argv[4], FLAGS_no_reads); 
     solveReads(db, reads); 
     printReads(reads, argv[5]);
   } else {
