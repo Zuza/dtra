@@ -1,10 +1,13 @@
 #include "core/database.h"
+
+#include <gflags/gflags.h>
 #include <cstdlib>
 #include <ctime>
 
 using namespace std;
 
-const size_t kMaxBlockSize = 1010000000; // 1010 MB
+DEFINE_int32(indexPartSize, 100, "Maximum size of each part of "
+             "the index file, in MB (only used during index construction)");
 
 Database::Database(const string& databasePath,
                    const string& indexFolderPath,
@@ -43,6 +46,7 @@ bool Database::readDbStoreIndex() {
   shared_ptr<Index> in(new Index(seedLen_));
 
   int last_percentage = 1;
+  const size_t kMaxBlockSize = 1000000ull * FLAGS_indexPartSize;
 
   for (int iter = 0; ; ++iter) {
     shared_ptr<Gene> g(new Gene());
