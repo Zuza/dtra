@@ -13,12 +13,16 @@
 #include <string>
 #include <iostream>
 
+#include <gflags/gflags.h>
+
 #include "core/ThreadPool.h"
 #include "core/database.h"
 #include "core/index.h"
 #include "core/mapping.h"
 #include "core/read.h"
 using namespace std;
+
+DEFINE_int32(seedLen, 20, "Seed length that is stored/read from the index");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -27,10 +31,8 @@ void printUsageAndExit() {
   exit(1);
 }
 
-const int kSeedLen = 20;
-
 void createIndex(string databasePath, string indexFilePath) {
-  Database db(databasePath, indexFilePath, kSeedLen, false);
+  Database db(databasePath, indexFilePath, FLAGS_seedLen, false);
   size_t totalRead = 0;
 
   for (int indexNumber = 0; db.readDbStoreIndex(); ++indexNumber) {
@@ -163,6 +165,8 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 }
 
 int main(int argc, char* argv[]) {
+  google::ParseCommandLineFlags(&argc, &argv, true);
+
   if (argc <= 1) {
     printUsageAndExit();
   }
@@ -179,7 +183,7 @@ int main(int argc, char* argv[]) {
       printUsageAndExit();
     }
 
-    Database db(argv[2], argv[3], kSeedLen, true);    
+    Database db(argv[2], argv[3], FLAGS_seedLen, true);    
     printf("db count = %d\n", db.getIndexFilesCount());
     shared_ptr<Index> ptr_index = db.readIndexFile(0);
     vector<pair<unsigned int, unsigned int> > ret;
@@ -196,7 +200,7 @@ int main(int argc, char* argv[]) {
     if (argc != 6) {
       printUsageAndExit();
     }
-    Database db(argv[2], argv[3], kSeedLen, true);    
+    Database db(argv[2], argv[3], FLAGS_seedLen, true);    
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4], 100);
     solveReads(db, reads);

@@ -9,7 +9,7 @@ MAIN_H_FILES := $(wildcard $(MAIN_DIR)/*.h)
 MAIN_CPP_FILES := $(wildcard $(MAIN_DIR)/*.cpp)
 MAIN_OBJ_FILES := $(addprefix obj/main/,$(notdir $(MAIN_CPP_FILES:.cpp=.o)))
 
-LD_FLAGS := -pthread
+LD_FLAGS := -pthread -lgflags
 CC_FLAGS := -O2 --std=c++0x -Wno-unused-result $(INCLUDES)
 
 all: client reducer
@@ -17,10 +17,10 @@ all: client reducer
 forceall: clean all
 
 client: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES)
-	g++ $(LD_FLAGS) -o $@ obj/core/*.o obj/main/client.o
+	g++ -o $@ obj/core/*.o obj/main/client.o $(LD_FLAGS)
 
 reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) 
-	g++ $(LD_FLAGS) -o $@ obj/core/*.o obj/main/DataReducer.o
+	g++ -o $@ obj/core/*.o obj/main/DataReducer.o $(LD_FLAGS)
 
 $(CORE_OBJ_FILES): $(CORE_CPP_FILES) $(CORE_H_FILES)
 	mkdir -p obj/core

@@ -1,9 +1,13 @@
 #include "core/database.h"
+
+#include <gflags/gflags.h>
 #include <cstdlib>
+#include <ctime>
+
 using namespace std;
 
-const size_t kMaxBlockSize = 100000000;
-//const size_t kMaxBlockSize = 1010000000; // 1010 MB
+DEFINE_int32(indexPartSize, 100, "Maximum size of each part of "
+             "the index file, in MB (only used during index construction)");
 
 Database::Database(const string& databasePath,
                    const string& indexFolderPath,
@@ -35,9 +39,14 @@ bool Database::readDbStoreIndex() {
   clear_statistics();
   currentBlockNoBytes_ = 0;
 
+  clock_t starting_time = clock();
+
   int num_genes = 0;
   long int starting_ftell = ftell(dbFilePointer_);
   shared_ptr<Index> in(new Index(seedLen_));
+
+  int last_percentage = 1;
+  const size_t kMaxBlockSize = 1000000ull * FLAGS_indexPartSize;
 
   for (int iter = 0; ; ++iter) {
     shared_ptr<Gene> g(new Gene());
@@ -51,7 +60,12 @@ bool Database::readDbStoreIndex() {
 
     currentBlockNoBytes_ += g->nameSize();
     currentBlockNoBytes_ += g->dataSize();
+    if (currentBlockNoBytes_*100 > last_percentage*kMaxBlockSize) {
+      printf("%d%%.. ", last_percentage);
+      ++last_percentage;
+    }
     if (currentBlockNoBytes_ > kMaxBlockSize) {
+      putchar('\n');
       break;
     }
   }
@@ -82,6 +96,7 @@ bool Database::readDbStoreIndex() {
   fclose(indexFile);
 
   indexSummaries_.push_back(make_pair(starting_ftell, num_genes));
+  printf("time to process block = %.2lf\n", double(clock() - starting_time) / CLOCKS_PER_SEC);
   return true;
 }
 
