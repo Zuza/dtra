@@ -21,8 +21,8 @@ struct OneMapping {
   std::string geneSegment; // optional
 
   OneMapping(double score, int geneId, int genePos, int isRC, 
-	     std::string geneName, std::string geneSegment) :
-  score(score), geneId(geneId), genePos(genePos), isRC(isRC),
+             std::string geneName, std::string geneSegment) :
+    score(score), geneId(geneId), genePos(genePos), isRC(isRC),
     geneStrId(geneName), geneSegment(geneSegment) {
     std::vector<std::string> tokens = Split(geneName, '|');
     geneStrId = tokens[3];
@@ -30,7 +30,7 @@ struct OneMapping {
 
   void print() {
     printf("on gene %d, at position %d (RC=%d), score=%lf\n",
-	   geneId, genePos, isRC, score);
+           geneId, genePos, isRC, score);
     printf("segment: %s\n", geneSegment.c_str());
   }
 
@@ -40,7 +40,7 @@ struct OneMapping {
 };
 
 class Read {
- public:
+public:
   bool read(FILE* fi);
   void print();
 
@@ -62,9 +62,9 @@ class Read {
   }
 
   void updateMapping(double score, int geneId, int genePos, int isRC, 
-		     std::string geneName, std::string geneSegment = "") {
+                     std::string geneName, std::string geneSegment = "") {
     topMappings_.push_back(OneMapping(score, geneId, genePos, isRC, 
-				      geneName, geneSegment));
+                                      geneName, geneSegment));
     size_t i = topMappings_.size()-1;
     
     for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
@@ -92,21 +92,21 @@ class Read {
     for (int i = 0; i < topMappings_.size(); ++i) {
       int dokle = topMappings_[i].geneStrId.find(" ");
       if (dokle == -1) {
-	dokle = topMappings_[i].geneStrId.size();
+        dokle = topMappings_[i].geneStrId.size();
       }
       std::string topMapId = topMappings_[i].geneStrId.substr(0, dokle);
 
       if (geneId == topMapId &&
-	  (abs(topMappings_[i].genePos-pos1) < maxOffset ||
-	   abs(topMappings_[i].genePos-(pos2-size())) < maxOffset)) {
-	return i;
+          (abs(topMappings_[i].genePos-pos1) < maxOffset ||
+           abs(topMappings_[i].genePos-(pos2-size())) < maxOffset)) {
+        return i;
       }
     }
 
     return -1;
   }
 
- private:
+private:
   std::string id_;
   std::string data_;
 
