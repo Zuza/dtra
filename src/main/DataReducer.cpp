@@ -19,6 +19,7 @@ void printUsageAndExit() {
   printf("reducer nt random <prob gene selection> <nt input file>\n");
   printf("reducer nt first <no first genes> <nt input file>\n");
   printf("reducer wgsim <nt input file> <reads output file> <read length>\n");
+  printf("reducer flux <nt input file> <reads output file> <sequencer type[illumina/roche454/pacbio/iontorrent]>\n");
   exit(1);
 }
 
@@ -60,6 +61,71 @@ void reduceNtDatabase(int argc, char* argv[]) {
   fclose(ntInputFile);
 }
 
+void createFluxReads(int argc, char* argv[]) {
+  if (argc < 3) {
+    printUsageAndExit();
+  }
+
+  FILE* ntInputFile = fopen(argv[0], "rt");
+  assert(ntInputFile);
+
+  system("mkdir fluxGenomes");
+
+  FILE* annotationFile = fopen("annotation.gtf", "wt");
+
+  const int read_number = 100;
+
+  int read_length = 151;
+  if( strcmp(argv[2], "illumina") == 0 ) {
+    read_length = 151;
+  } else if( strcmp(argv[2], "roche454") == 0 ) {
+    read_length = 1200;
+  } else if( strcmp(argv[2], "pacbio") == 0 ) {
+    read_length = 11087;
+  } else if( strcmp(argv[2], "iontorrent") == 0 ) {
+    read_length = 354;
+  }
+
+  FILE* fluxParametersFile = fopen("parameters.par", "wt");
+  fprintf( fluxParametersFile, "REF_FILE_NAME \tannotation.gtf\n" );
+  fprintf( fluxParametersFile, "GEN_DIR \tfluxGenomes\n\n" );
+  fprintf( fluxParametersFile, "NB_MOLECULES \t1000\n" );
+  fprintf( fluxParametersFile, "READ_NUMBER \t%d\n", read_number );
+  fprintf( fluxParametersFile, "READ_LENGTH \t%d\n", read_length );
+  fprintf( fluxParametersFile, "ERR_FILE \t%d\n", 76 );
+  fprintf( fluxParametersFile, "FASTA \tYES\n");
+
+  int flux_genome_id = 0;
+  for (Gene g; readGene(&g, ntInputFile); ) {
+    flux_genome_id++;
+    char buff[128];
+    sprintf(buff, "fluxGenomes/%d.fa", flux_genome_id);
+    FILE *geneFile = fopen(buff, "wt");
+    printGene(&g, geneFile);
+    fclose(geneFile);
+
+    fprintf( annotationFile, 
+             "%d source exon 1 %ld . + . gene_id \"%d\"; transcript_id \"%d\";\n",
+             flux_genome_id, g.dataSize(), flux_genome_id, flux_genome_id
+           );
+  }
+
+  fclose(annotationFile);
+  fclose(fluxParametersFile);
+
+  system( "flux-simulator/bin/flux-simulator -p parameters.par" );
+
+  string outFile = argv[1];
+  system( ("mv parameters.fastq " + outFile).c_str() );
+
+  system( "rm -r fluxGenomes" );
+  system( "rm parameters.par" );
+  system( "rm parameters.pro" );
+  system( "rm parameters.lib" );
+  system( "rm parameters.bed" );
+  system( "rm annotation.gtf" );
+}
+
 void createWgsimReads(int argc, char* argv[]) {
   if (argc < 3) {
     printUsageAndExit();
@@ -81,7 +147,7 @@ void createWgsimReads(int argc, char* argv[]) {
     const int readsPerGene = 15;
     
     int readLength; sscanf(argv[2], "%d", &readLength);
-    readLength = min(readLength, (int)g.size());
+    readLength = min(readLength, (int)g.dataSize());
     const string readsOutput1 = "reads.output.tmp.1";
     const string readsOutput2 = "reads.output.tmp.2";
     
@@ -116,6 +182,8 @@ int main(int argc, char* argv[]) {
     reduceNtDatabase(argc-2, argv+2);
   } else if (strcmp(argv[1], "wgsim") == 0) {
     createWgsimReads(argc-2, argv+2);
+  } else if (strcmp(argv[1], "flux") == 0) {
+    createFluxReads(argc-2, argv+2);
   } else {
     printUsageAndExit();
   }

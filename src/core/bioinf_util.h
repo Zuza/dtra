@@ -5,6 +5,12 @@
 #include <ctime>
 #include <cstdlib>
 
+inline bool isBase(char isit) {
+  isit = toupper(isit);
+
+  return isit == 'A' || isit == 'T' || isit == 'G' || isit == 'C';
+}
+
 inline int baseToInt(char base, const int nValue = -1) {
   base = toupper(base);
 
@@ -29,7 +35,9 @@ inline char intToBase(const int num) {
   return 0;
 }
 
-inline char getBaseComplement(const char base) {
+inline char getBaseComplement(char base) {
+  base = toupper(base);
+
   if (base == 'A') return 'T';
   if (base == 'T') return 'A';
   if (base == 'C') return 'G';
@@ -75,8 +83,7 @@ inline char randBaseToBase(const char base) {
     return base;
   }
   
-  int t;
-  t = len[base-'A'];
+  int t = len[base-'A'];
   assert(t != 0);
   t = rand() % t;
   return trans[base-'A'][t];

@@ -12,21 +12,22 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include <map>
 
 #include <gflags/gflags.h>
 
 #include "core/ThreadPool.h"
-
 #include "core/database.h"
 #include "core/index.h"
 #include "core/mapping.h"
 #include "core/read.h"
-
 using namespace std;
 
-DEFINE_int32(seedLen, 20, "Seed length that is stored/read from the index");
-DEFINE_int32(solverThreads, sysconf(_SC_NPROCESSORS_ONLN) - 1,
+DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
+DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN) - 1,
              "Number of threads used by the solver");
+DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_int32(no_reads, -1, "Number of reads to process.");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -36,7 +37,7 @@ void printUsageAndExit() {
 }
 
 void createIndex(string databasePath, string indexFilePath) {
-  Database db(databasePath, indexFilePath, FLAGS_seedLen, false);
+  Database db(databasePath, indexFilePath, FLAGS_seed_len, false);
   size_t totalRead = 0;
 
   for (int indexNumber = 0; db.readDbStoreIndex(); ++indexNumber) {
@@ -77,25 +78,26 @@ int solveRead(vector<shared_ptr<Gene> >& genes,
 
 void solveReads(Database& db, 
 		vector<shared_ptr<Read> >& reads) {
-
   int index_file_count = db.getIndexFilesCount();
+
   clock_t starting_time;
   for (int index_no = 0; index_no < index_file_count; ++index_no) {
     starting_time = clock();
     fprintf(stderr, "Processing block %d/%d... ", index_no+1, index_file_count);
     shared_ptr<Index> activeIndex = db.readIndexFile(index_no);
-    vector<shared_ptr<Gene> >& genes = db.getGenes();
+    vector<shared_ptr<Gene> >& currentGenes = db.getGenes();
 
     // http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
-    int threads = FLAGS_solverThreads;
+    int threads = FLAGS_solver_threads;
     assert(threads >= 1 && threads < 100); // sanity check
     ThreadPool pool(threads); // one core for this thread
 
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
-      results.push_back(pool.enqueue<int>([i, &genes, &activeIndex, &reads] {
-	    return solveRead(genes, activeIndex, reads[i]);
-	  }));
+      results.push_back(
+        pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads] {
+            return solveRead(currentGenes, activeIndex, reads[i]);
+          }));
     } 
 
     for (int i = 0; i < reads.size(); ++i) {
@@ -105,36 +107,12 @@ void solveReads(Database& db,
   }
 }
 
-void printReads(Database& db, const vector<shared_ptr<Read> >& reads,
-		const string& resultFilePath) {
-  FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
-  // format outputa: read_id,top_aln_num;nucl_id,score,start,stop,strand;...
-  assert(resultOut);
-
-  vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index  
-
+void printWgsimStatistics(const vector<shared_ptr<Read> >& reads) {
   map<int, int> stats;
-
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
 
-    fprintf(resultOut, "%s,%d", read->id().c_str(), (int)
-	    read->topMappings().size());
-    
-    for (int x = 0; x < read->topMappings().size(); ++x) {
-      const OneMapping& onemap = read->topMapping(x);
-      
-      int dokle = onemap.geneStrId.find(" ");
-      string topMapId = onemap.geneStrId.substr(0, dokle);
-
-      fprintf(resultOut, ";%s,%lf,%d,%d,%d", topMapId.c_str(),
-	      onemap.score, onemap.genePos, 
-	      onemap.genePos+read->size(), onemap.isRC);
-    }
-
-    fprintf(resultOut, "\n");
-
-    int mappingQuality = read->validateMapping();
+    int mappingQuality = read->validateWgsimMapping();
     ++stats[mappingQuality];
 
     if (mappingQuality == -1) {      
@@ -145,12 +123,9 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads,
       
       for (int x = 0; x < read->topMappings().size(); ++x) {
         OneMapping mapping = read->topMapping(x);
-        printf("score=%lf geneId=%d genePos=%d isRC=%d\n",
-               mapping.score, mapping.geneId, mapping.genePos, mapping.isRC);
-        // NE VALJA SLJEDECA LINIJA KAD IMAM VISE OD 1 BLOKA
-        printf("gene: %s\n", genes[mapping.geneId]->name());
-        //        printf("segment: %s\n", genes[mapping.geneId]->data(mapping.genePos,
-        //                                                            mapping.genePos+read->size()).c_str());
+        printf("score=%lf geneDes=%s genePos=%d isRC=%d\n",
+               mapping.score, mapping.geneDescriptor.c_str(), 
+	       mapping.genePos, mapping.isRC);
       }
       puts("END READ");
       puts("");
@@ -164,8 +139,35 @@ void printReads(Database& db, const vector<shared_ptr<Read> >& reads,
       printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
     }
   }
-  
+}
+
+void printReads(const vector<shared_ptr<Read> >& reads,
+		const string& resultFilePath) {
+  FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
+  // format outputa: read_id,top_aln_num;nucl_id,score,start,stop,strand;...
+  assert(resultOut);
+
+  for (int i = 0; i < reads.size(); ++i) {
+    shared_ptr<Read> read = reads[i];
+
+    fprintf(resultOut, "%s,%d", read->id().c_str(), 
+	    (int)read->topMappings().size());
+    
+    for (int x = 0; x < read->topMappings().size(); ++x) {
+      const OneMapping& onemap = read->topMapping(x);
+      
+      fprintf(resultOut, ";%s,%lf,%d,%d,%d", onemap.geneDescriptor.c_str(),
+      	      onemap.score, onemap.genePos, 
+      	      onemap.genePos+read->size(), onemap.isRC);
+    }
+    fprintf(resultOut, "\n");
+  }
+
   fclose(resultOut);
+
+  if (FLAGS_validate_wgsim) {
+    printWgsimStatistics(reads);
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -187,7 +189,7 @@ int main(int argc, char* argv[]) {
       printUsageAndExit();
     }
 
-    Database db(argv[2], argv[3], FLAGS_seedLen, true);    
+    Database db(argv[2], argv[3], FLAGS_seed_len, true);    
     printf("db count = %d\n", db.getIndexFilesCount());
     shared_ptr<Index> ptr_index = db.readIndexFile(0);
     vector<pair<unsigned int, unsigned int> > ret;
@@ -204,11 +206,11 @@ int main(int argc, char* argv[]) {
     if (argc != 6) {
       printUsageAndExit();
     }
-    Database db(argv[2], argv[3], FLAGS_seedLen, true);    
+    Database db(argv[2], argv[3], FLAGS_seed_len, true);    
     vector<shared_ptr<Read> > reads;
-    inputReads(&reads, argv[4]);
-    solveReads(db, reads);
-    printReads(db, reads, argv[5]);
+    inputReads(&reads, argv[4], FLAGS_no_reads); 
+    solveReads(db, reads); 
+    printReads(reads, argv[5]);
   } else {
     printUsageAndExit();
   }
