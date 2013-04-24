@@ -6,6 +6,7 @@
 #define MAPPER_READ
 
 #include <sys/types.h>
+#include <memory>
 #include <string>
 
 #include "core/bioinf_util.h"
@@ -79,11 +80,27 @@ class Read {
   // na kojima se nalazi u genu
   int validateWgsimMapping(int maxOffset = kMaxOffset);
 
+  unsigned long long checksum() {
+    unsigned long long ret = 0;
+    for (int i = 0; i < id_.size(); ++i) ret = ret * 3137 + id_[i];
+    for (int i = 0; i < data_.size(); ++i) ret = ret * 17 + data_[i];
+    return ret;
+  }
+
  private:
   std::string id_;
   std::string data_;
 
   std::vector<OneMapping> topMappings_;
 };
+
+void splitReadInputFile(std::vector<unsigned long long>* filePos,
+			const std::string& filePath,
+			const int noParts);
+
+void inputReadsFileChunk(std::vector<std::shared_ptr<Read> >* reads,
+			 const std::string& filePath,
+			 const unsigned long long& begin,
+			 const unsigned long long& end);
 
 #endif  // MAPPER_READ

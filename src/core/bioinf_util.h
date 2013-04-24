@@ -46,6 +46,19 @@ inline char getBaseComplement(char base) {
   return 'N';
 }
 
+inline std::string ReverseComplement(std::string s) {
+  std::string ret;
+  ret.reserve(s.size()+1);
+  for (int i = (int)s.size()-1; i >= 0; --i) {
+    if (s[i] == 'A') ret += "T";
+    if (s[i] == 'T') ret += "A";
+    if (s[i] == 'C') ret += "G";
+    if (s[i] == 'G') ret += "C";
+    if (s[i] == 'N') ret += "N";
+  }
+  return ret;
+}
+
 // translate bases (ie. 'Y' -> C or T), ref: http://www.bioinformatics.org/sms/iupac.html
 
 inline char randBaseToBase(const char base) {

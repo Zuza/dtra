@@ -21,6 +21,12 @@
 #include "core/index.h"
 #include "core/mapping.h"
 #include "core/read.h"
+#include "core/util.h"
+
+#ifdef MPI_CLUSTER
+  #include <mpi.h>
+#endif 
+
 using namespace std;
 
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
@@ -88,7 +94,7 @@ void solveReads(Database& db,
     //programmatically-find-the-number-of-cores-on-a-machine
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
     assert(numCores > 1 && numCores < 100); // sanity check
-    ThreadPool pool(numCores-1); // one core for this thread
+    ThreadPool pool(numCores);
     
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
@@ -178,37 +184,77 @@ int main(int argc, char* argv[]) {
   if (command == "index") {
     if (argc != 4) {
       printUsageAndExit();
+    } else {
+      assert(isValidFile(argv[2]));
+      assert(isValidFile(argv[3]));
     }
+
     createIndex(argv[2], argv[3]);
   } else if (command == "test") {
-    // anything here is temporary and can be deleted at any time
-    if (argc != 4) {
-      printUsageAndExit();
+    string readsFile = argv[2];
+    
+    vector<unsigned long long> filePos;
+    splitReadInputFile(&filePos,
+		       readsFile,
+		       12);
+    unsigned long long chunkChecksum = 0;
+    int chunkTotalSize = 0;
+
+    for (int i = 1; i < filePos.size(); ++i) {
+      printf("[%llu %llu>\n", filePos[i-1], filePos[i]);
+
+      vector<shared_ptr<Read> > chunkRead;
+      inputReadsFileChunk(&chunkRead, readsFile,
+			  filePos[i-1], filePos[i]);
+      chunkTotalSize += chunkRead.size();
+      for (int j = 0; j < chunkRead.size(); ++j) {
+	chunkChecksum = chunkChecksum * 10007 + chunkRead[j]->checksum();
+      }
+    }
+    printf("%d %llu\n", chunkTotalSize, chunkChecksum);
+
+    vector<shared_ptr<Read> > allReads;
+    inputReads(&allReads, readsFile);
+
+    unsigned long long allChecksum = 0;
+    for (int i = 0; i < allReads.size(); ++i) {
+      allChecksum = allChecksum * 10007 + allReads[i]->checksum();
     }
 
-    Database db(argv[2], argv[3], FLAGS_seed_len, true);    
-    printf("db count = %d\n", db.getIndexFilesCount());
-    shared_ptr<Index> ptr_index = db.readIndexFile(0);
-    vector<pair<unsigned int, unsigned int> > ret;
-    ptr_index->getPositions(&ret, 1516545110u);
-    
-    vector<shared_ptr<Gene> >& genes = db.getGenes(); // holds the last loaded index
-
-    for (int i = 0; i <  (int)ret.size(); ++i) {
-      printf("(%d, %d)\n", ret[i].first, ret[i].second);
-      printf("seq = %s\n", genes[ret[i].first]->data());
-    }
-    
+    printf("%d %llu\n", (int)allReads.size(), allChecksum);
   } else if (command == "solve") {
     if (argc != 6) {
       printUsageAndExit();
+    } else {
+      assert(isValidFile(argv[2]));
+      assert(isValidFile(argv[3]));
+      assert(isValidFile(argv[4]));
+      assert(isValidFile(argv[5]));
     }
+
     Database db(argv[2], argv[3], FLAGS_seed_len, true);    
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4], FLAGS_no_reads); 
     solveReads(db, reads); 
     printReads(reads, argv[5]);
-  } else {
+  }
+  #ifdef MPI_CLUSTER
+  else if (command == "cluster") { // TODO: dovrsiti!
+    MPI_Init(&argc, &argv);
+    int noWorkers, myId;
+    MPI_Comm_size(MPI_COMM_WORLD, &noWorkers);
+    MPI_Comm_rand(MPI_COMM_WORLD, &myId);
+
+    if (myId == 0) { // distributer
+      // ovaj ce ucitavati s NFS-a i slati
+    } else {
+      // ostali ce primiti
+    }
+
+    MPI_Finalize();
+  }
+  #endif
+  else {
     printUsageAndExit();
   }
 

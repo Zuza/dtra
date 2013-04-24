@@ -77,3 +77,78 @@ int Read::validateWgsimMapping(int maxOffset) {
   
   return -1;
 }
+
+
+// TODO: mozda napraviti 'tezinsko' dijeljenje jer neke su 
+// radilice jace od ostalih
+void splitReadInputFile(vector<unsigned long long>* filePos,
+			const string& filePath,
+			const int noParts) {
+  unsigned long long fileSize = getFileSize(filePath);
+  unsigned long long chunkSize = fileSize / noParts;
+
+  assert(filePos->empty());
+  for (int i = 0; i < noParts; ++i) {
+    filePos->push_back(i*chunkSize);
+  }
+
+  FILE* fi = fopen(filePath.c_str(), "rt");
+
+  for (int i = 0; i < noParts; ++i) {
+    assert(fseek(fi, (*filePos)[i], SEEK_SET) == 0);
+    
+    char previous, current;
+    for (previous = '\n'; ; previous = current) {
+      current = getc(fi);
+      if (current == EOF) { 
+	// ftell ce u ovom trenutku biti jednak 
+	// velicini filea
+	break;
+      }
+
+      if (current == '@' && previous == '\n') { 
+	// pocetak nekog reada
+	ungetc('@', fi);
+	break;
+      }
+    }
+
+    (*filePos)[i] = ftell(fi);
+  }
+
+  fclose(fi);
+
+  filePos->push_back(fileSize);
+  assert(is_sorted(filePos->begin(), filePos->end()));
+  filePos->erase(unique(filePos->begin(), filePos->end()), filePos->end());
+
+  assert((*filePos)[0] == 0);
+  assert(filePos->back() == fileSize);
+}
+
+// ucitavam segment file izmedju [begin, end>
+void inputReadsFileChunk(vector<shared_ptr<Read> >* reads,
+			 const string& filePath,
+			 const unsigned long long& begin,
+			 const unsigned long long& end) {
+  FILE* fi = fopen(filePath.c_str(), "rt");
+  assert(fi);
+
+  fseek(fi, begin, SEEK_SET);
+  while (true) {
+    //printf("%llu %llu\n", ftell(fi), end);
+    shared_ptr<Read> tmp(new Read());
+
+    if (!tmp->read(fi)) {
+      break;
+    }
+
+    if (ftell(fi) <= end) {
+      reads->push_back(tmp);
+    } else {
+      break;
+    }
+  }
+
+  fclose(fi);
+}
