@@ -30,6 +30,8 @@
 using namespace std;
 
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
+DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
+             "Number of threads used by the solver");
 DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 
@@ -82,31 +84,32 @@ int solveRead(vector<shared_ptr<Gene> >& genes,
 
 void solveReads(Database& db, 
 		vector<shared_ptr<Read> >& reads) {
-  int indexFileCount = db.getIndexFilesCount();
+  int index_file_count = db.getIndexFilesCount();
 
-  for (int indexNo = 0; indexNo < indexFileCount; ++indexNo) {
-    fprintf(stderr, "Begin processing block %d/%d...\n", 
-	    indexNo+1, indexFileCount);
-    shared_ptr<Index> activeIndex = db.readIndexFile(indexNo);
+  clock_t starting_time;
+  for (int index_no = 0; index_no < index_file_count; ++index_no) {
+    starting_time = clock();
+    fprintf(stderr, "Processing block %d/%d... ", index_no+1, index_file_count);
+    shared_ptr<Index> activeIndex = db.readIndexFile(index_no);
     vector<shared_ptr<Gene> >& currentGenes = db.getGenes();
 
-    //http://stackoverflow.com/questions/150355/
-    //programmatically-find-the-number-of-cores-on-a-machine
-    int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-    assert(numCores > 1 && numCores < 100); // sanity check
-    ThreadPool pool(numCores);
-    
+    // http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
+    int threads = FLAGS_solver_threads;
+    assert(threads >= 1 && threads < 100); // sanity check
+    ThreadPool pool(threads); // one core for this thread
+
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
       results.push_back(
-	 pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads] {
-	    return solveRead(currentGenes, activeIndex, reads[i]);
-	  }));
+        pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads] {
+            return solveRead(currentGenes, activeIndex, reads[i]);
+          }));
     } 
 
     for (int i = 0; i < reads.size(); ++i) {
       results[i].wait();
     }
+    printf("done (%.2lfs)\n", (clock() - starting_time) / double(CLOCKS_PER_SEC));
   }
 }
 

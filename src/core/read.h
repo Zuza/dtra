@@ -22,13 +22,13 @@ struct OneMapping {
   std::string geneSegment; // optional
 
   OneMapping(double score, int genePos, int isRC, 
-	     std::string geneDescriptor, std::string geneSegment) :
-  score(score), genePos(genePos), isRC(isRC),
+             std::string geneDescriptor, std::string geneSegment) :
+    score(score), genePos(genePos), isRC(isRC),
     geneDescriptor(geneDescriptor), geneSegment(geneSegment) {}
 
   void print() {
     printf("on gene %s, at position %d (RC=%d), score=%lf\n",
-	   geneDescriptor.c_str(), genePos, isRC, score);
+           geneDescriptor.c_str(), genePos, isRC, score);
     printf("segment: %s\n", geneSegment.c_str());
   }
 
@@ -38,7 +38,7 @@ struct OneMapping {
 };
 
 class Read {
- public:
+public:
   bool read(FILE* fi);
   void print();
 
@@ -60,10 +60,10 @@ class Read {
   }
 
   void updateMapping(double score, int genePos, int isRC, 
-		     std::string geneDescriptor, 
-		     std::string geneSegment = "") {
+                     std::string geneDescriptor, 
+                     std::string geneSegment = "") {
     topMappings_.push_back(OneMapping(score, genePos, isRC, 
-				      geneDescriptor, geneSegment));
+                                      geneDescriptor, geneSegment));
     size_t i = topMappings_.size()-1;
     
     for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
@@ -90,7 +90,7 @@ class Read {
  private:
   std::string id_;
   std::string data_;
-
+  
   std::vector<OneMapping> topMappings_;
 };
 

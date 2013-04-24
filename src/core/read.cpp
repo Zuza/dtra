@@ -69,8 +69,8 @@ int Read::validateWgsimMapping(int maxOffset) {
     }
 
     if (geneMatch &&
-	(abs(topMappings_[i].genePos-pos1) < maxOffset ||
-	 abs(topMappings_[i].genePos-(pos2-size())) < maxOffset)) {
+        (abs(topMappings_[i].genePos-pos1) < maxOffset ||
+         abs(topMappings_[i].genePos-(pos2-size())) < maxOffset)) {
       return i;
     }
   }
