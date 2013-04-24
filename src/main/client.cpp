@@ -189,7 +189,6 @@ int main(int argc, char* argv[]) {
       printUsageAndExit();
     } else {
       assert(isValidFile(argv[2]));
-      assert(isValidFile(argv[3]));
     }
 
     createIndex(argv[2], argv[3]);
@@ -230,12 +229,11 @@ int main(int argc, char* argv[]) {
       printUsageAndExit();
     } else {
       assert(isValidFile(argv[2]));
-      assert(isValidFile(argv[3]));
       assert(isValidFile(argv[4]));
       assert(isValidFile(argv[5]));
     }
 
-    Database db(argv[2], argv[3], FLAGS_seed_len, true);    
+    Database db(argv[2], argv[3], FLAGS_seed_len, true);
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4], FLAGS_no_reads); 
     solveReads(db, reads); 
