@@ -6,10 +6,15 @@
 
 #include "BufferedBinaryWriter.h"
 
+// for parallel sorting
+#include <parallel/algorithm>
+
 using namespace std;
 
 DEFINE_double(avg_multiplier, 5.0, "Index will discard every kmer that " \
               "appears more than avg_freq * avg_multiplier times");
+DEFINE_bool(use_parallel_sort, true, "Sorting the index will use " \
+            "__gnu_parallel::stable_sort");
 
 Index::Index(int seedLength) : seedLength_(seedLength) {
   indexPrepared_ = false;
@@ -140,7 +145,11 @@ void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, hash
 
 void Index::prepareIndex() {
   // positions are in increasing order
-  stable_sort(index_.begin(), index_.end());
+  if (FLAGS_use_parallel_sort) {
+    __gnu_parallel::stable_sort(index_.begin(), index_.end()); // STABLE!!
+  } else {
+    std::stable_sort(index_.begin(), index_.end());
+  }
   indexPrepared_ = true;
 }
 
