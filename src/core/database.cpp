@@ -6,6 +6,9 @@
 
 using namespace std;
 
+DEFINE_bool(discard_freq_seeds, true, "If true, discard seeds with frequency more " \
+            "than avg_freq * avg_multiplier (see below)");
+
 DEFINE_int32(indexPartSize, 100, "Maximum size of each part of "
              "the index file, in MB (only used during index construction)");
 
@@ -83,8 +86,14 @@ bool Database::readDbStoreIndex() {
     fclose(out);
     return false;
   }
+  printf("time to read block = %.2lf\n", double(clock() - starting_time) / CLOCKS_PER_SEC);
 
   in->prepareIndex();
+
+  if (FLAGS_discard_freq_seeds) {
+    in->discardFrequentSeeds();
+  }
+
   assert(indexFolderPath_.size() < 90);
   char filename[100]; sprintf(filename, "%s%d", indexFolderPath_.c_str(), currentIndex_); 
   ++currentIndex_;
@@ -97,6 +106,7 @@ bool Database::readDbStoreIndex() {
 
   indexSummaries_.push_back(make_pair(starting_ftell, num_genes));
   printf("time to process block = %.2lf\n", double(clock() - starting_time) / CLOCKS_PER_SEC);
+
   return true;
 }
 

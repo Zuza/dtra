@@ -6,12 +6,15 @@
 #define MAPPER_INDEX
 
 #include <vector>
+#include <gflags/gflags.h>
 
 #include "BufferedBinaryReader.h"
 #include "BufferedBinaryWriter.h"
 #include "gene.h"
 
 typedef unsigned long long hash_t;
+
+DECLARE_double(avg_multiplier);
 
 class Index {
 public:
@@ -34,6 +37,9 @@ public:
   // serialize & deserialize
   void writeIndex(BufferedBinaryWriter& writer);
   void readIndex(BufferedBinaryReader& reader);
+
+  // optimization
+  void discardFrequentSeeds();
 
 private:
   std::pair<unsigned int, unsigned int> position_to_gene_position(size_t position);

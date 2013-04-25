@@ -9,6 +9,8 @@
 #include "gene.h"
 #include "index.h"
 
+DECLARE_bool(discard_freq_seeds);
+
 class Database {
  public:
 

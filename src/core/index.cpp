@@ -8,6 +8,9 @@
 
 using namespace std;
 
+DEFINE_double(avg_multiplier, 5.0, "Index will discard every kmer that " \
+              "appears more than avg_freq * avg_multiplier times");
+
 Index::Index(int seedLength) : seedLength_(seedLength) {
   indexPrepared_ = false;
   startingPos_ = 0;
@@ -42,6 +45,79 @@ void Index::insertGene(Gene* gene) {
 
   geneStartingPos_.push_back(startingPos_);
   startingPos_ += gene->dataSize();
+}
+
+void Index::discardFrequentSeeds() {
+  assert(indexPrepared_);
+
+  hash_t last_hash = index_[0].hash + 1;
+  long long run = 0;
+
+  long long run_max = 0;
+  long long run_sum = 0;
+  long long run_cnt = 0;
+  long long kmers_cnt = 0;
+
+  for (auto entry : index_) {
+    ++kmers_cnt;
+
+    if (last_hash == entry.hash) {
+      ++run;
+    } else if (run > 0) {
+      /////
+      if (run > run_max) run_max = run;
+      run_sum += run;
+      ++run_cnt;
+      /////
+      run = 1;
+      last_hash = entry.hash;
+    }
+  }
+  if (run > 0) {
+    /////
+    if (run > run_max) run_max = run;
+    run_sum += run;
+    ++run_cnt;
+    /////
+  }
+
+  double avg_run = double(run_sum) / run_cnt;
+  printf("Maximum k-mer frequency = %lld\n", run_max);
+  printf("Average k-mer frequency = %.2lf (discarding runs larger than %.2lf)\n", avg_run, FLAGS_avg_multiplier * avg_run);
+
+  long long runs_left = 0;
+  long long kmers_left = 0;
+
+  size_t write_over = 0;
+  for (size_t i = 0; i < index_.size(); ) {
+    hash_t last_hash = index_[i].hash;
+    long long run = 0;
+
+    size_t j;
+    for (j = i; j < index_.size(); ++j) {
+      if (last_hash == index_[j].hash)
+        ++run;
+      else
+        break;
+    }
+
+    // if (run <= FLAGS_avg_multiplier * run_avg)
+    if (run_cnt * run <= FLAGS_avg_multiplier * run_sum) {
+      ++runs_left;
+      kmers_left += run;
+
+      for (long long it = 0; it < run; ++it) {
+        index_[write_over] = index_[i + it];
+        ++write_over;
+      }
+    }
+
+    i = j;
+  }
+  index_.resize(write_over);
+
+  printf("Runs left = %lld (%.2lf%%)\n", runs_left, double(runs_left) / run_cnt * 100.0);
+  printf("Kmers left = %lld (%.2lf%%)\n", kmers_left, double(kmers_left) / kmers_cnt * 100.0);
 }
 
 pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) {
