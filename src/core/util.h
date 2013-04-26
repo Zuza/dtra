@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <sys/stat.h>
+#include <gflags/gflags.h>
 
 // String splitter function.
 inline std::vector<std::string> &Split(
@@ -38,6 +39,7 @@ inline std::vector<std::string> Split(const std::string &s, char delim) {
 }
 
 static inline bool isValidFile(const std::string& filePath) {
+  // TODO: ovo nije dobro za provjeru fileova iz kojih se cita jer ih kreirax
   FILE* f = fopen(filePath.c_str(), "a"); // append kreira file ako ne postoji,
                                           // a nece prebrisati ako postoji
   bool ok = (f != NULL);

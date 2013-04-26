@@ -14,9 +14,6 @@
 
 typedef unsigned long long hash_t;
 
-DECLARE_double(avg_multiplier);
-DECLARE_bool(use_parallel_sort);
-
 class Index {
 public:
   // Create index for a set of genes. 'seed_length' determines the

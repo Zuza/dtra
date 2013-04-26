@@ -42,6 +42,11 @@ inline char getBaseComplement(char base) {
   if (base == 'T') return 'A';
   if (base == 'C') return 'G';
   if (base == 'G') return 'C';
+
+  if (base != 'N') {
+    return base;
+    fprintf(stderr, "BASE: %c\n", base);
+  }
   assert(base == 'N');
   return 'N';
 }

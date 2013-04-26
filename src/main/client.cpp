@@ -239,6 +239,7 @@ int main(int argc, char* argv[]) {
     solveReads(db, reads); 
     printReads(reads, argv[5]);
   }
+
   #ifdef MPI_CLUSTER
   else if (command == "cluster") { // TODO: dovrsiti!
     MPI_Init(&argc, &argv);
@@ -255,6 +256,7 @@ int main(int argc, char* argv[]) {
     MPI_Finalize();
   }
   #endif
+
   else {
     printUsageAndExit();
   }

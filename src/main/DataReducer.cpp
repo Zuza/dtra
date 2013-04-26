@@ -19,7 +19,7 @@ void printUsageAndExit() {
   printf("reducer nt random <prob gene selection> <nt input file>\n");
   printf("reducer nt first <no first genes> <nt input file>\n");
   printf("reducer wgsim <nt input file> <reads output file> <read length>\n");
-  printf("reducer flux <nt input file> <reads output file> <sequencer type[illumina/roche454/pacbio/iontorrent]>\n");
+  printf("reducer flux <nt input file> <reads output file> <sequencer type[illumina/roche454/pacbio/iontorrent]> <number of reads>\n");
   exit(1);
 }
 
@@ -62,7 +62,7 @@ void reduceNtDatabase(int argc, char* argv[]) {
 }
 
 void createFluxReads(int argc, char* argv[]) {
-  if (argc < 3) {
+  if (argc != 4) {
     printUsageAndExit();
   }
 
@@ -72,8 +72,6 @@ void createFluxReads(int argc, char* argv[]) {
   system("mkdir fluxGenomes");
 
   FILE* annotationFile = fopen("annotation.gtf", "wt");
-
-  const int read_number = 100;
 
   int read_length = 151;
   if( strcmp(argv[2], "illumina") == 0 ) {
@@ -85,6 +83,9 @@ void createFluxReads(int argc, char* argv[]) {
   } else if( strcmp(argv[2], "iontorrent") == 0 ) {
     read_length = 354;
   }
+
+  int read_number = 100;
+  assert(sscanf(argv[3], "%d", &read_number) == 1);
 
   FILE* fluxParametersFile = fopen("parameters.par", "wt");
   fprintf( fluxParametersFile, "REF_FILE_NAME \tannotation.gtf\n" );
@@ -144,7 +145,7 @@ void createWgsimReads(int argc, char* argv[]) {
     fclose(tmpGeneFile);
 
     const string wgsim = "./wgsim ";
-    const int readsPerGene = 15;
+    const int readsPerGene = 7;
     
     int readLength; sscanf(argv[2], "%d", &readLength);
     readLength = min(readLength, (int)g.dataSize());

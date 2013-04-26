@@ -11,7 +11,6 @@
 
 #include "core/bioinf_util.h"
 
-const int kNoTopMappings = 5;
 const int kMaxOffset = 5;
 
 struct OneMapping {
@@ -26,10 +25,10 @@ struct OneMapping {
     score(score), genePos(genePos), isRC(isRC),
     geneDescriptor(geneDescriptor), geneSegment(geneSegment) {}
 
-  void print() {
-    printf("on gene %s, at position %d (RC=%d), score=%lf\n",
+  void print(FILE* out) {
+    fprintf(out, "on gene %s, at position %d (RC=%d), score=%lf\n",
            geneDescriptor.c_str(), genePos, isRC, score);
-    printf("segment: %s\n", geneSegment.c_str());
+    fprintf(out, "segment: %s\n", geneSegment.c_str());
   }
 
   bool operator < (const OneMapping& m) {
@@ -40,7 +39,7 @@ struct OneMapping {
 class Read {
 public:
   bool read(FILE* fi);
-  void print();
+  void print(FILE* out);
 
   const std::string& id() const { return id_; }
   const std::string& data() const { return data_; }
@@ -61,19 +60,7 @@ public:
 
   void updateMapping(double score, int genePos, int isRC, 
                      std::string geneDescriptor, 
-                     std::string geneSegment = "") {
-    topMappings_.push_back(OneMapping(score, genePos, isRC, 
-                                      geneDescriptor, geneSegment));
-    size_t i = topMappings_.size()-1;
-    
-    for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
-      std::swap(topMappings_[i-1], topMappings_[i]);
-    }
-
-    if (topMappings_.size() > kNoTopMappings) {
-      topMappings_.pop_back();
-    }
-  }
+                     std::string geneSegment = "");
 
   // ovo podrazumijeva da je ucitani read zapravo napravljen
   // simulatorom pa u liniji s imenom sadrzi i stvarne pozicije

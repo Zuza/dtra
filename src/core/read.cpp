@@ -7,8 +7,10 @@
 
 #include "read.h"
 #include "util.h"
-
 using namespace std;
+
+DEFINE_int32(no_top_mappings, 5, "Number of best mappings a read records.");
+
 
 bool Read::read(FILE* fi) {
   static char id[100001];
@@ -22,15 +24,18 @@ bool Read::read(FILE* fi) {
   assert(id[100000] == 0);
 
   data[100000] = 0;
-  if (fscanf(fi, "%s", data) != 1) return 0;
+  if(fscanf(fi, "%s", data) != 1) {
+    printf("%s\n", id);
+    assert(0);
+  }
   assert(data[100000] == 0);
 
   nesto[100000] = 0;
-  if (fscanf(fi, "%s", nesto) != 1) return 0;
+  assert(fscanf(fi, "%s", nesto) == 1);
   assert(nesto[100000] == 0);
 
   kvaliteta[100000] = 0;
-  if (fscanf(fi, "%s", kvaliteta) != 1) return 0;
+  assert(fscanf(fi, "%s", kvaliteta) == 1);
   assert(kvaliteta[100000] == 0);
   
   this->id_ = id;
@@ -39,21 +44,24 @@ bool Read::read(FILE* fi) {
   return 1;
 }
 
-void Read::print() {
-  printf("id: %s\n", id_.c_str());
-  printf("read: %s\n", data_.c_str());
+void Read::print(FILE* out) {
+  fprintf(out, "id: %s\n", id_.c_str());
+  fprintf(out, "read: %s\n", data_.c_str());
 
-  printf("mappings:\n");
+  fprintf(out, "mappings:\n");
   for (int i = 0; i < topMappings_.size(); ++i) {
-    topMappings_[i].print();
+    topMappings_[i].print(out);
   }
 }
 
 int Read::validateWgsimMapping(int maxOffset) {
   vector<string> tokens = Split(id_, '|');
   int pos1 = -1000000, pos2 = -1000000;
-  
-  tokens[4] = tokens[4].substr(tokens[4].find("_"));
+
+  string posinfo = tokens[4];
+  int underscorePos = posinfo.find("_");
+  posinfo = posinfo.substr(underscorePos);
+  tokens[4] = posinfo;
   assert(sscanf(tokens[4].c_str(), "_%d_%d", &pos1, &pos2) == 2);
   
   --pos1; --pos2;
@@ -76,6 +84,22 @@ int Read::validateWgsimMapping(int maxOffset) {
   }
   
   return -1;
+}
+
+void Read::updateMapping(double score, int genePos, int isRC, 
+			 string geneDescriptor, 
+			 string geneSegment) {
+  topMappings_.push_back(OneMapping(score, genePos, isRC, 
+				    geneDescriptor, geneSegment));
+  size_t i = topMappings_.size()-1;
+  
+  for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
+    swap(topMappings_[i-1], topMappings_[i]);
+  }
+  
+  if (topMappings_.size() > FLAGS_no_top_mappings) {
+      topMappings_.pop_back();
+  }
 }
 
 
