@@ -37,7 +37,7 @@ DEFINE_int32(no_reads, -1, "Number of reads to process.");
 void printUsageAndExit() {
   printf("client index <database location> <index output directory>\n");
   printf("client solve <database location> <index directory> <reads input file> <result output file>\n");
-  printf("client cluster <database location> <index directory> <reads input file> <result output file>\n");
+  printf("mpirun <mpi arguments> client cluster <database location> <index directory> <reads input file> <result output file>\n");
   exit(1);
 }
 
