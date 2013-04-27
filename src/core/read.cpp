@@ -54,31 +54,23 @@ void Read::print(FILE* out) {
   }
 }
 
-int Read::validateWgsimMapping(int maxOffset) {
-  vector<string> tokens = Split(id_, '|');
-  int pos1 = -1000000, pos2 = -1000000;
+int Read::getMappingQuality(int maxOffset) {
+  vector<string> tokens = Split(id_, ':');
+  int pos1 = atoi(tokens[5].c_str()), pos2 = atoi(tokens[6].c_str());
 
-  string posinfo = tokens[4];
-  int underscorePos = posinfo.find("_");
-  posinfo = posinfo.substr(underscorePos);
-  tokens[4] = posinfo;
-  assert(sscanf(tokens[4].c_str(), "_%d_%d", &pos1, &pos2) == 2);
-  
-  --pos1; --pos2;
-  string readInGene = tokens[3];
+  int geneIdx = atoi(tokens[0].c_str() + 1);
+  --pos1; --pos2; // is this true?
+  --geneIdx;
   
   for (int i = 0; i < topMappings_.size(); ++i) {
     bool geneMatch = false;
 
-    // ovo nije nuzno savrseno tocno, ali mislim da se u stvarnosti ne
-    // dogadja slucaj kada ne radi
-    if (topMappings_[i].geneDescriptor.find(readInGene) != string::npos) {
+    if (geneIdx == topMappings_[i].geneIdx)
       geneMatch = true;
-    }
 
     if (geneMatch &&
         (abs(topMappings_[i].genePos-pos1) < maxOffset ||
-         abs(topMappings_[i].genePos-(pos2-size())) < maxOffset)) {
+         abs(topMappings_[i].genePos+size()-pos2) < maxOffset)) {
       return i;
     }
   }
@@ -86,19 +78,10 @@ int Read::validateWgsimMapping(int maxOffset) {
   return -1;
 }
 
-int Read::validateFluxMapping(int maxOffset) {
-  vector<string> tokens = Split(id_, ':');
-  int start, end;
-  char strand;
-  sscanf(tokens[1].c_str(), "%d-%d%c", &start, &end, &strand);
-
-  return -1;
-}
-
-void Read::updateMapping(double score, int genePos, int isRC, 
+void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
 			 string geneDescriptor, 
 			 string geneSegment) {
-  topMappings_.push_back(OneMapping(score, genePos, isRC, 
+  topMappings_.push_back(OneMapping(score, genePos, isRC, geneIdx,
 				    geneDescriptor, geneSegment));
   size_t i = topMappings_.size()-1;
   

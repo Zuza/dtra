@@ -11,17 +11,18 @@ MAIN_OBJ_FILES := $(addprefix obj/main/,$(notdir $(MAIN_CPP_FILES:.cpp=.o)))
 
 CC := mpic++ # to je omotac oko g++-a koji brine o MPI pathovima
 LD_FLAGS := -pthread -lgflags
-CC_FLAGS := -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
+CC_FLAGS := -DDEBUG -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
+#PAZI, IMA DEBUG!!!
 
 all: client reducer
 
 forceall: clean all
 
 client: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES)
-	$(CC) $(CC_FLAGS) -o $@ obj/core/*.o obj/main/client.o $(LD_FLAGS)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/main/client.o $(LD_FLAGS)
 
 reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) 
-	$(CC) $(CC_FLAGS) -o $@ obj/core/*.o obj/main/DataReducer.o $(LD_FLAGS)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/main/DataReducer.o $(LD_FLAGS)
 
 $(CORE_OBJ_FILES): $(CORE_CPP_FILES) $(CORE_H_FILES)
 	mkdir -p obj/core

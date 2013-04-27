@@ -30,7 +30,7 @@ using namespace std;
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
 DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
              "Number of threads used by the solver");
-DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_bool(validate_simulation, false, "Used for simulated tests, if true some statistics is printed on stdout.");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -112,28 +112,26 @@ void solveReads(Database& db,
   }
 }
 
-void printWgsimStatistics(const vector<shared_ptr<Read> >& reads) {
+void printSimulationStatistics(const vector<shared_ptr<Read> >& reads) {
   map<int, int> stats;
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
 
-    int mappingQuality = read->validateWgsimMapping();
+    int mappingQuality = read->getMappingQuality();
     ++stats[mappingQuality];
 
-    if (mappingQuality == -1) {      
+    if (mappingQuality != 0) {      
       printf("READ #%04d:\n", i);
+      printf("mappingQuality = %d\n", mappingQuality);
       printf("id: %s\n", read->id().c_str());
       printf("data: %s\n", read->data().c_str());
       printf("mappings (%d):\n", (int)read->topMappings().size());
       
       for (int x = 0; x < read->topMappings().size(); ++x) {
         OneMapping mapping = read->topMapping(x);
-        printf("score=%lf geneDes=%s genePos=%d isRC=%d\n",
-               mapping.score, mapping.geneDescriptor.c_str(), 
-	       mapping.genePos, mapping.isRC);
+        mapping.print(stdout);
       }
-      puts("END READ");
-      puts("");
+      puts("END READ\n");
     }
   }
 
@@ -170,8 +168,8 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 
   fclose(resultOut);
 
-  if (FLAGS_validate_wgsim) {
-    printWgsimStatistics(reads);
+  if (FLAGS_validate_simulation) {
+    printSimulationStatistics(reads);
   }
 }
 
@@ -287,8 +285,8 @@ int main(int argc, char* argv[]) {
     
     vector<unsigned long long> filePos;
     splitReadInputFile(&filePos,
-		       readsFile,
-		       12);
+                       readsFile,
+                       12);
     unsigned long long chunkChecksum = 0;
     int chunkTotalSize = 0;
 
@@ -297,10 +295,10 @@ int main(int argc, char* argv[]) {
 
       vector<shared_ptr<Read> > chunkRead;
       inputReadsFileChunk(&chunkRead, readsFile,
-			  filePos[i-1], filePos[i]);
+                          filePos[i-1], filePos[i]);
       chunkTotalSize += chunkRead.size();
       for (int j = 0; j < chunkRead.size(); ++j) {
-	chunkChecksum = chunkChecksum * 10007 + chunkRead[j]->checksum();
+        chunkChecksum = chunkChecksum * 10007 + chunkRead[j]->checksum();
       }
     }
     printf("%d %llu\n", chunkTotalSize, chunkChecksum);

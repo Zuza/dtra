@@ -17,18 +17,22 @@ struct OneMapping {
   double score;
   int genePos, isRC;
 
+  int geneIdx;
   std::string geneDescriptor;
   std::string geneSegment; // optional
 
-  OneMapping(double score, int genePos, int isRC, 
+  OneMapping(double score, int genePos, int isRC, int geneIdx,
              std::string geneDescriptor, std::string geneSegment) :
-    score(score), genePos(genePos), isRC(isRC),
+    score(score), genePos(genePos), isRC(isRC), geneIdx(geneIdx),
     geneDescriptor(geneDescriptor), geneSegment(geneSegment) {}
 
   void print(FILE* out) {
-    fprintf(out, "on gene %s, at position %d (RC=%d), score=%lf\n",
-           geneDescriptor.c_str(), genePos, isRC, score);
-    fprintf(out, "segment: %s\n", geneSegment.c_str());
+    fprintf(out, "on gene %s (idx=%d), at position %d (RC=%d), score=%lf\n",
+            geneDescriptor.c_str(), geneIdx, genePos, isRC, score);
+
+    if (geneSegment.size() > 0) {
+      fprintf(out, "segment: %s\n", geneSegment.c_str());
+    }
   }
 
   bool operator < (const OneMapping& m) {
@@ -58,16 +62,14 @@ public:
     return getBaseComplement(data_[data_.size()-1-i]);
   }
 
-  void updateMapping(double score, int genePos, int isRC, 
+  void updateMapping(double score, int genePos, int isRC, int geneIdx,
                      std::string geneDescriptor, 
                      std::string geneSegment = "");
 
   // ovo podrazumijeva da je ucitani read zapravo napravljen
   // simulatorom pa u liniji s imenom sadrzi i stvarne pozicije
   // na kojima se nalazi u genu
-  int validateWgsimMapping(int maxOffset = kMaxOffset);
-
-  int validateFluxMapping(int maxOffset = kMaxOffset);
+  int getMappingQuality(int maxOffset = kMaxOffset);
 
   unsigned long long checksum() {
     unsigned long long ret = 0;
