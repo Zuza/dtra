@@ -86,6 +86,15 @@ int Read::validateWgsimMapping(int maxOffset) {
   return -1;
 }
 
+int Read::validateFluxMapping(int maxOffset) {
+  vector<string> tokens = Split(id_, ':');
+  int start, end;
+  char strand;
+  sscanf(tokens[1].c_str(), "%d-%d%c", &start, &end, &strand);
+
+  return -1;
+}
+
 void Read::updateMapping(double score, int genePos, int isRC, 
 			 string geneDescriptor, 
 			 string geneSegment) {
