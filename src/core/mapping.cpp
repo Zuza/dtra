@@ -6,6 +6,8 @@
 #include <vector>
 #include "core/mapping.h"
 #include "core/lis.h"
+#include "core/util.h"
+
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
@@ -103,7 +105,7 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       string geneSegment = "";
 #endif
 
-      read->updateMapping(lisResult.size(), begin, rc, 
+      read->updateMapping(lisResult.size(), begin, rc, geneIdx,
                           genes[geneIdx]->description(), geneSegment);
     }
   }
