@@ -91,7 +91,6 @@ int Read::validateFluxMapping(int maxOffset) {
   int start, end;
   char strand;
   sscanf(tokens[1].c_str(), "%d-%d%c", &start, &end, &strand);
-
   return -1;
 }
 
