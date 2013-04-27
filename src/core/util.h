@@ -38,10 +38,15 @@ inline std::vector<std::string> Split(const std::string &s, char delim) {
   return Split(s, delim, elems);
 }
 
-static inline bool isValidFile(const std::string& filePath) {
-  // TODO: ovo nije dobro za provjeru fileova iz kojih se cita jer ih kreirax
-  FILE* f = fopen(filePath.c_str(), "a"); // append kreira file ako ne postoji,
-                                          // a nece prebrisati ako postoji
+static inline bool isValidInputFile(const std::string& filePath) {
+  FILE* f = fopen(filePath.c_str(), "r");
+  bool ok = (f != NULL);
+  fclose(f);
+  return ok;
+}
+
+static inline bool isValidOutputFile(const std::string& filePath) {
+  FILE* f = fopen(filePath.c_str(), "w");
   bool ok = (f != NULL);
   fclose(f);
   return ok;

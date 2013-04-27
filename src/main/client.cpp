@@ -23,9 +23,7 @@
 #include "core/read.h"
 #include "core/util.h"
 
-#ifdef MPI_CLUSTER
-  #include <mpi.h>
-#endif 
+#include <mpi.h>
 
 using namespace std;
 
@@ -39,6 +37,7 @@ DEFINE_int32(no_reads, -1, "Number of reads to process.");
 void printUsageAndExit() {
   printf("client index <database location> <index output directory>\n");
   printf("client solve <database location> <index directory> <reads input file> <result output file>\n");
+  printf("client cluster <database location> <index directory> <reads input file> <result output file>\n");
   exit(1);
 }
 
@@ -176,6 +175,97 @@ void printReads(const vector<shared_ptr<Read> >& reads,
   }
 }
 
+void clusterSolve(int argc, char* argv[]) {
+  if (argc != 4) {
+    printUsageAndExit();
+  }
+
+  string databasePath = argv[0];
+  string indexPath = argv[1];
+  string readsInputPath = argv[2];
+  string readsOutputPath = argv[3];
+
+  assert(isValidInputFile(databasePath));
+  //assert(isValidFolder(indexPath));
+  assert(isValidInputFile(readsInputPath));
+  assert(isValidOutputFile(readsOutputPath));
+
+  MPI_Init(&argc, &argv);
+
+  int noWorkers, myId;
+  MPI_Comm_size(MPI_COMM_WORLD, &noWorkers);
+  MPI_Comm_rank(MPI_COMM_WORLD, &myId);
+
+  unsigned long long myChunkBegin = 1;
+  unsigned long long myChunkEnd = 0;
+  
+  if (myId == 0) { // distributer
+    // ovaj ce ucitavati s NFS-a i slati
+    vector<unsigned long long> splitPos;
+    splitReadInputFile(&splitPos, readsInputPath, noWorkers);
+
+    assert((int)splitPos.size()-1 <= noWorkers);
+    myChunkBegin = splitPos[0]; // i master ce odraditi dio
+    myChunkEnd   = splitPos[1];
+
+    for (int i = 1; i+1 < (int)splitPos.size(); ++i) {
+      MPI_Send(&splitPos[i], 1, MPI_UNSIGNED_LONG_LONG, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&splitPos[i+1], 1, MPI_UNSIGNED_LONG_LONG, i, 0, MPI_COMM_WORLD);
+    }
+    for (int i = (int)splitPos.size()-1; i < noWorkers; ++i) {
+      unsigned long long dummyBegin = 1, dummyEnd = 0;
+      MPI_Send(&dummyBegin, 1, MPI_UNSIGNED_LONG_LONG, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&dummyEnd, 1, MPI_UNSIGNED_LONG_LONG, i, 0, MPI_COMM_WORLD);
+    }
+  } else {
+    // ostali ce primiti
+    MPI_Status stat;
+    MPI_Recv(&myChunkBegin, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_ANY_TAG,
+	     MPI_COMM_WORLD, &stat);
+    MPI_Recv(&myChunkEnd, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_ANY_TAG,
+	     MPI_COMM_WORLD, &stat);
+  }
+  
+  // svatko ucita svoj dio ...
+  vector<shared_ptr<Read> > reads;
+
+  // ... odradi ...
+  if (myChunkBegin < myChunkEnd) {
+    inputReadsFileChunk(&reads, readsInputPath, myChunkBegin, myChunkEnd);
+    
+    Database db(databasePath, indexPath, FLAGS_seed_len, true);
+    solveReads(db, reads);
+  }
+
+  // ... i ispise u privremeni file
+  int lastSlash = readsOutputPath.find_last_of("/");
+  string tmpOutputFolder = "";
+  if (lastSlash != string::npos) {
+    tmpOutputFolder = readsOutputPath.substr(0, lastSlash) + "/";
+  } 
+  ostringstream tmpOutputFile;
+  tmpOutputFile << tmpOutputFolder << myId;
+  printf("tmpout: %s\n", tmpOutputFile.str().c_str()); fflush(stdout);
+  printReads(reads, tmpOutputFile.str());
+  
+  MPI_Barrier(MPI_COMM_WORLD); // svi moraju dovrsiti ...
+
+  // ... prije nego sto distributor pokupi sve privremene
+  // fileove u konacni output cijelog clustera i obrise
+  // privremene podatke
+  if (myId == 0) {
+    system(("rm -f " + readsOutputPath).c_str());
+    for (int i = 0; i < noWorkers; ++i) {
+      ostringstream ithFile;
+      ithFile << tmpOutputFolder << i;
+      system(("cat " + ithFile.str() + " >> " + readsOutputPath).c_str());
+      system(("rm " + ithFile.str()).c_str());
+    }
+  }
+  
+  MPI_Finalize();
+}
+
 int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -188,7 +278,7 @@ int main(int argc, char* argv[]) {
     if (argc != 4) {
       printUsageAndExit();
     } else {
-      assert(isValidFile(argv[2]));
+      assert(isValidInputFile(argv[2]));
     }
 
     createIndex(argv[2], argv[3]);
@@ -228,9 +318,9 @@ int main(int argc, char* argv[]) {
     if (argc != 6) {
       printUsageAndExit();
     } else {
-      assert(isValidFile(argv[2]));
-      assert(isValidFile(argv[4]));
-      assert(isValidFile(argv[5]));
+      assert(isValidInputFile(argv[2]));
+      assert(isValidInputFile(argv[4]));
+      assert(isValidOutputFile(argv[5]));
     }
 
     Database db(argv[2], argv[3], FLAGS_seed_len, true);
@@ -238,26 +328,9 @@ int main(int argc, char* argv[]) {
     inputReads(&reads, argv[4], FLAGS_no_reads); 
     solveReads(db, reads); 
     printReads(reads, argv[5]);
-  }
-
-  #ifdef MPI_CLUSTER
-  else if (command == "cluster") { // TODO: dovrsiti!
-    MPI_Init(&argc, &argv);
-    int noWorkers, myId;
-    MPI_Comm_size(MPI_COMM_WORLD, &noWorkers);
-    MPI_Comm_rand(MPI_COMM_WORLD, &myId);
-
-    if (myId == 0) { // distributer
-      // ovaj ce ucitavati s NFS-a i slati
-    } else {
-      // ostali ce primiti
-    }
-
-    MPI_Finalize();
-  }
-  #endif
-
-  else {
+  } else if (command == "cluster") {
+    clusterSolve(argc-2, argv+2);
+  } else {
     printUsageAndExit();
   }
 
