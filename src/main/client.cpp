@@ -186,7 +186,7 @@ void clusterSolve(int argc, char* argv[]) {
   string readsOutputPath = argv[3];
 
   assert(isValidInputFile(databasePath));
-  //assert(isValidFolder(indexPath));
+  assert(isValidFolder(indexPath));
   assert(isValidInputFile(readsInputPath));
   assert(isValidOutputFile(readsOutputPath));
 

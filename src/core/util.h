@@ -8,6 +8,9 @@
 #include <cctype>
 #include <ctime>
 
+#include <unistd.h>
+#include <dirent.h>
+
 #include <algorithm>
 #include <functional> 
 #include <map>
@@ -42,6 +45,13 @@ static inline bool isValidInputFile(const std::string& filePath) {
   FILE* f = fopen(filePath.c_str(), "r");
   bool ok = (f != NULL);
   fclose(f);
+  return ok;
+}
+
+static inline bool isValidFolder(const std::string& folderPath) {
+  DIR* dir = opendir(folderPath.c_str());
+  bool ok = (dir != NULL);
+  closedir(dir);
   return ok;
 }
 

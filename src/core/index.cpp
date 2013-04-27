@@ -88,7 +88,7 @@ void Index::discardFrequentSeeds() {
 
   double avg_run = double(run_sum) / run_cnt;
   printf("Maximum k-mer frequency = %lld\n", run_max);
-  printf("Average k-mer frequency = %.2lf (discarding runs larger than %.2lf)\n", avg_run, FLAGS_avg_multiplier * avg_run);
+  printf("Average k-mer frequency = %.2lf (discarding freqs larger than %.2lf)\n", avg_run, FLAGS_avg_multiplier * avg_run);
 
   long long runs_left = 0;
   long long kmers_left = 0;
@@ -121,7 +121,7 @@ void Index::discardFrequentSeeds() {
   }
   index_.resize(write_over);
 
-  printf("Runs left = %lld (%.2lf%%)\n", runs_left, double(runs_left) / run_cnt * 100.0);
+  printf("Different hashes left = %lld (%.2lf%%)\n", runs_left, double(runs_left) / run_cnt * 100.0);
   printf("Kmers left = %lld (%.2lf%%)\n", kmers_left, double(kmers_left) / kmers_cnt * 100.0);
 }
 
