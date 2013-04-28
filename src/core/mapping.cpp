@@ -125,8 +125,12 @@ void performSswMapping(vector<shared_ptr<Gene> >& genes,
 
   using namespace StripedSmithWaterman;
 
+  shared_ptr<Read> read_orig(new Read());
   shared_ptr<Read> read_rc(new Read());
-  *read_rc = *read;
+  *read_orig = *read;
+  read_orig->removeAllLower();
+
+  *read_rc = *read_orig;
   read_rc->complement();
 
   for (size_t geneIdx = 0; geneIdx < genes.size(); ++geneIdx) {
