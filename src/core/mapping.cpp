@@ -146,7 +146,7 @@ void performSswMapping(vector<shared_ptr<Gene> >& genes,
     StripedSmithWaterman::Alignment alignment;
     // Aligns the query to the ref
 
-    aligner.Align(read->data().c_str(),
+    aligner.Align(read_orig->data().c_str(),
                   genes[geneIdx]->data(), genes[geneIdx]->dataSize(),
                   filter, &alignment);
 
