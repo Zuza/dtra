@@ -62,6 +62,15 @@ public:
     }
   }
 
+  void removeAllLower() {
+    string tmp;
+    for (char c : data_) {
+      if (isupper(c))
+        tmp += c;
+    }
+    data_ = tmp;
+  }
+
   // ako je reverseComplement == true, 
   // onda ce vratiti i-tu bazu reverse
   // complementa, inace vracam normalno i-tu
