@@ -26,3 +26,9 @@ client-index:
 
 client-solve-illumina:
 	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-illumina.fq $(READS_DIR)/test-illumina.out.fq
+client-solve-roche454:
+	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-roche454.fq $(READS_DIR)/test-roche454.out.fq
+client-solve-pacbio:
+	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-pacbio.fq $(READS_DIR)/test-pacbio.out.fq
+client-solve-iontorrent:
+	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-iontorrent.fq $(READS_DIR)/test-iontorrent.out.fq
