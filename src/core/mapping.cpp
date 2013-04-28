@@ -8,6 +8,9 @@
 #include "core/lis.h"
 #include "core/util.h"
 
+#include "ssw/ssw_cpp.h"
+#include <iostream>
+
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
@@ -111,13 +114,54 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
   }
 }
 
+void performSswMapping(vector<shared_ptr<Gene> >& genes,
+			shared_ptr<Index> idx, shared_ptr<Read> read) {
+
+  using namespace StripedSmithWaterman;
+
+  shared_ptr<Read> read_rc(new Read());
+  *read_rc = *read;
+  read_rc->complement();
+
+  for (size_t geneIdx = 0; geneIdx < genes.size(); ++geneIdx) {
+    // ----------- SSW part -------------------
+    // Declares a default Aligner
+    StripedSmithWaterman::Aligner aligner;
+    // Declares a default filter
+    StripedSmithWaterman::Filter filter;
+    // Declares an alignment that stores the result
+    StripedSmithWaterman::Alignment alignment;
+    // Aligns the query to the ref
+
+    aligner.Align(read->data().c_str(),
+                  genes[geneIdx]->data(), genes[geneIdx]->dataSize(),
+                  filter, &alignment);
+
+    read->updateMapping(alignment.sw_score,
+                        alignment.ref_begin, /*rc*/ 0, geneIdx,
+                        genes[geneIdx]->description(), "");
+
+    aligner.Align(read_rc->data().c_str(),
+                  genes[geneIdx]->data(), genes[geneIdx]->dataSize(),
+                  filter, &alignment);
+
+    read->updateMapping(alignment.sw_score,
+                        alignment.ref_begin, /*rc*/ 1, geneIdx,
+                        genes[geneIdx]->description(), "");
+  }
+
+}
+
 }
 
 void performMapping(vector<shared_ptr<Gene> >& genes,
 		    shared_ptr<Index> idx, shared_ptr<Read> read) {
-  if (read->size() < kShortLongBorder) {
 
-  } else {
-    performMappingLong(genes, idx, read);
-  }
+  performSswMapping(genes, idx, read);
+
+  // if (read->size() < kShortLongBorder) {
+
+  // } else {
+  //   performMappingLong(genes, idx, read);
+  // }
 }

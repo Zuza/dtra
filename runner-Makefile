@@ -24,6 +24,8 @@ reducer-wgsim:
 client-index:
 	$(BIN_DIR)/client --indexPartSize 40 index $(DB_DIR)/nt.part $(DB_DIR)/index.part/
 
+client-solve-one:
+	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-one.fq $(READS_DIR)/test-one.out.fq
 client-solve-illumina:
 	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-illumina.fq $(READS_DIR)/test-illumina.out.fq
 client-solve-roche454:

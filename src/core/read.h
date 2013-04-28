@@ -51,6 +51,17 @@ public:
   const std::vector<OneMapping>& topMappings() { return topMappings_; }
   const OneMapping& topMapping(size_t i) { return topMappings_[i]; }
 
+  void complement() {
+    size_t sz = data_.size();
+    for (long long i = 0, j = sz - 1; i <= j; ++i, --j) {
+      char d_i = data_[i];
+      data_[i] = getBaseComplement(data_[j]);
+      if (i != j) {
+        data_[j] = getBaseComplement(d_i);
+      }
+    }
+  }
+
   // ako je reverseComplement == true, 
   // onda ce vratiti i-tu bazu reverse
   // complementa, inace vracam normalno i-tu
