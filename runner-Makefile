@@ -1,4 +1,4 @@
-BIN_DIR=dtra/bin
+BIN_DIR=bin
 DB_DIR=db
 READS_DIR=test-reads
 

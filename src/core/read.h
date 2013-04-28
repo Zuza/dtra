@@ -69,7 +69,8 @@ public:
   // ovo podrazumijeva da je ucitani read zapravo napravljen
   // simulatorom pa u liniji s imenom sadrzi i stvarne pozicije
   // na kojima se nalazi u genu
-  int getMappingQuality(int maxOffset = kMaxOffset);
+  int validateWgsimMapping(int maxOffset = kMaxOffset);
+  int validateFluxMapping(int maxOffset = kMaxOffset);
 
   unsigned long long checksum() {
     unsigned long long ret = 0;

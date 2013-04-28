@@ -30,7 +30,8 @@ using namespace std;
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
 DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
              "Number of threads used by the solver");
-DEFINE_bool(validate_simulation, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_bool(validate_flux, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -112,12 +113,16 @@ void solveReads(Database& db,
   }
 }
 
-void printSimulationStatistics(const vector<shared_ptr<Read> >& reads) {
+void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
   map<int, int> stats;
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
 
-    int mappingQuality = read->getMappingQuality();
+    int mappingQuality = -1;
+    if (what == "wgsim") mappingQuality = read->validateFluxMapping();
+    else if (what == "flux") mappingQuality = read->validateWgsimMapping();
+    else assert(0);
+	     
     ++stats[mappingQuality];
 
     if (mappingQuality != 0) {      
@@ -144,6 +149,8 @@ void printSimulationStatistics(const vector<shared_ptr<Read> >& reads) {
   }
 }
 
+
+
 void printReads(const vector<shared_ptr<Read> >& reads,
 		const string& resultFilePath) {
   FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
@@ -168,8 +175,11 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 
   fclose(resultOut);
 
-  if (FLAGS_validate_simulation) {
-    printSimulationStatistics(reads);
+  if (FLAGS_validate_flux) {
+    printStats(reads, "flux");
+  }
+  if (FLAGS_validate_wgsim) {
+    printStats(reads, "wgsim");
   }
 }
 
