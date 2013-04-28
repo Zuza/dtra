@@ -8,6 +8,7 @@
 #include "core/lis.h"
 #include "core/util.h"
 
+#include <gflags/gflags.h>
 #include "ssw/ssw_cpp.h"
 #include <iostream>
 
@@ -114,6 +115,11 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
   }
 }
 
+DEFINE_int32(ssw_match, 1, "ssw match");
+DEFINE_int32(ssw_mismatch, 2, "ssw mismatch");
+DEFINE_int32(ssw_gap_open, 5, "ssw gap open");
+DEFINE_int32(ssw_gap_extend, 2, "ssw gap extend");
+
 void performSswMapping(vector<shared_ptr<Gene> >& genes,
 			shared_ptr<Index> idx, shared_ptr<Read> read) {
 
@@ -126,7 +132,10 @@ void performSswMapping(vector<shared_ptr<Gene> >& genes,
   for (size_t geneIdx = 0; geneIdx < genes.size(); ++geneIdx) {
     // ----------- SSW part -------------------
     // Declares a default Aligner
-    StripedSmithWaterman::Aligner aligner;
+    StripedSmithWaterman::Aligner aligner(FLAGS_ssw_match,
+                                          FLAGS_ssw_mismatch, 
+                                          FLAGS_ssw_gap_open,
+                                          FLAGS_ssw_gap_extend);
     // Declares a default filter
     StripedSmithWaterman::Filter filter;
     // Declares an alignment that stores the result
