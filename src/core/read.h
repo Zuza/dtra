@@ -63,7 +63,7 @@ public:
   }
 
   void removeAllLower() {
-    string tmp;
+    std::string tmp;
     for (char c : data_) {
       if (isupper(c))
         tmp += c;
