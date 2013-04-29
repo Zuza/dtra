@@ -18,7 +18,7 @@ void printUsageAndExit() {
   printf("Usage:\n");
   printf("reducer nt random <prob gene selection> <nt input file>\n");
   printf("reducer nt first <no first genes> <nt input file>\n");
-  printf("reducer wgsim <nt input file> <reads output file> <read length>\n");
+  printf("reducer wgsim <nt input file> <reads output file> <read length> <readova po genu>\n");
   printf("reducer flux <nt input file> <reads output file> <sequencer type[illumina/roche454/pacbio/iontorrent]> <number of reads>\n");
   exit(1);
 }
@@ -128,7 +128,7 @@ void createFluxReads(int argc, char* argv[]) {
 }
 
 void createWgsimReads(int argc, char* argv[]) {
-  if (argc < 3) {
+  if (argc != 4) {
     printUsageAndExit();
   }
 
@@ -145,9 +145,10 @@ void createWgsimReads(int argc, char* argv[]) {
     fclose(tmpGeneFile);
 
     const string wgsim = "./wgsim ";
-    const int readsPerGene = 7;
     
-    int readLength; sscanf(argv[2], "%d", &readLength);
+    int readLength; assert(sscanf(argv[2], "%d", &readLength) == 1);
+    int readsPerGene; assert(sscanf(argv[3], "%d", &readsPerGene) == 1);
+
     readLength = min(readLength, (int)g.dataSize());
     const string readsOutput1 = "reads.output.tmp.1";
     const string readsOutput2 = "reads.output.tmp.2";

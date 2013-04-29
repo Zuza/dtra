@@ -11,31 +11,8 @@ using namespace std;
 
 void Gene::createDescription() {
   vector<string> headers = Split(string(name_+1, name_+name_len_), 1); // 1 = ^A
-  description_ = "";
-
-  for (int i = 0; i < headers.size(); ++i) {
-    if (i) description_ += "@";
-
-    vector<string> tokens = Split(headers[i], '|');
-    for (int j = 0; j < tokens.size(); ++j) {
-      if (tokens[j] == "gi") {
-        if (description_.size() && description_.back() != '@') {
-          description_ += "_";
-        }
-        description_ += "gi:"+tokens[j+1];
-      } else if (tokens[j] == "ref") {
-        if (description_.size() && description_.back() != '@') {
-          description_ += "_";
-        }
-        description_ += "ref:"+tokens[j+1];
-      } else if (tokens[j] == "emb") {
-        if (description_.size() && description_.back() != '@') {
-          description_ += "_";
-        }
-        description_ += "emb:"+tokens[j+1];
-      }
-    }
-  }
+  vector<string> details = Split(headers[0], ' ');
+  description_ = details[0];
 }
 
 bool readGene(Gene* g, FILE* inputFilePointer) {
@@ -134,11 +111,10 @@ bool readGene(Gene* g, FILE* inputFilePointer) {
   assert(ptrData == dataLen);
   assert(ptrName == nameLen);
 
-#ifdef DEBUG
   for (size_t i = 0; i < dataLen; ++i) {
+    g->data_[i] = toupper(g->data_[i]);
     assert(g->data_[i] >= 'A' && g->data_[i] <= 'Z');
   }
-#endif
 
   g->createDescription();
   

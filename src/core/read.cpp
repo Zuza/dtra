@@ -80,21 +80,22 @@ int Read::validateFluxMapping(int maxOffset) {
 
 
 int Read::validateWgsimMapping(int maxOffset) {
-  vector<string> tokens = Split(id_, '|');
+  vector<string> tokens = Split(id_, '_');
   int pos1 = -1000000, pos2 = -1000000;
   
-  tokens[4] = tokens[4].substr(tokens[4].find("_"));
-  assert(sscanf(tokens[4].c_str(), "_%d_%d", &pos1, &pos2) == 2);
+  string readInGene = tokens[0].substr(1);
+
+  assert(sscanf(tokens[1].c_str(), "%d", &pos1) == 1);
+  assert(sscanf(tokens[2].c_str(), "%d", &pos2) == 1);
   
   --pos1; --pos2;
-  string readInGene = tokens[3];
   
   for (int i = 0; i < topMappings_.size(); ++i) {
     bool geneMatch = false;
 
     // ovo nije nuzno savrseno tocno, ali mislim da se u stvarnosti ne
     // dogadja slucaj kada ne radi
-    if (topMappings_[i].geneDescriptor.find(readInGene) != string::npos) {
+     if (topMappings_[i].geneDescriptor.find(readInGene) != string::npos) {
       geneMatch = true;
     }
 
