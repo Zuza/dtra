@@ -119,8 +119,8 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
     shared_ptr<Read> read = reads[i];
 
     int mappingQuality = -1;
-    if (what == "wgsim") mappingQuality = read->validateFluxMapping();
-    else if (what == "flux") mappingQuality = read->validateWgsimMapping();
+    if (what == "wgsim") mappingQuality = read->validateWgsimMapping();
+    else if (what == "flux") mappingQuality = read->validateFluxMapping();
     else assert(0);
 	     
     ++stats[mappingQuality];

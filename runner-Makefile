@@ -1,15 +1,16 @@
 BIN_DIR=bin
-DB_DIR=db
-READS_DIR=test-reads
+DB_DIR=../db
+READS_DIR=../test-reads
 
 compile:
-	make -C dtra
+	make
 
 reducer-nt:
 	$(BIN_DIR)/reducer nt first 30000 $(DB_DIR)/nt > $(DB_DIR)/nt.part
 
 reducer-flux:
 	ln -f -s $(BIN_DIR)/flux-simulator flux-simulator
+	mkdir -p $(READS_DIR)
 	$(BIN_DIR)/reducer flux $(DB_DIR)/nt.part $(READS_DIR)/test-illumina.fq illumina 1000
 	$(BIN_DIR)/reducer flux $(DB_DIR)/nt.part $(READS_DIR)/test-roche454.fq roche454 1000
 	$(BIN_DIR)/reducer flux $(DB_DIR)/nt.part $(READS_DIR)/test-pacbio.fq pacbio 1000
@@ -25,10 +26,10 @@ client-index:
 	$(BIN_DIR)/client --indexPartSize 40 index $(DB_DIR)/nt.part $(DB_DIR)/index.part/
 
 client-solve-illumina:
-	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-illumina.fq $(READS_DIR)/test-illumina.out.fq
+	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-illumina.fq $(READS_DIR)/test-illumina.out.fq
 client-solve-roche454:
-	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-roche454.fq $(READS_DIR)/test-roche454.out.fq
+	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-roche454.fq $(READS_DIR)/test-roche454.out.fq
 client-solve-pacbio:
-	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-pacbio.fq $(READS_DIR)/test-pacbio.out.fq
+	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-pacbio.fq $(READS_DIR)/test-pacbio.out.fq
 client-solve-iontorrent:
-	$(BIN_DIR)/client --validate_simulation solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-iontorrent.fq $(READS_DIR)/test-iontorrent.out.fq
+	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-iontorrent.fq $(READS_DIR)/test-iontorrent.out.fq
