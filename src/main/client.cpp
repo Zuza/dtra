@@ -30,8 +30,8 @@ using namespace std;
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
 DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
              "Number of threads used by the solver");
-DEFINE_bool(validate_flux, false, "Used for simulated tests, if true some statistics is printed on stdout.");
-DEFINE_bool(validate_wgsim, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_string(validate_flux, "", "report/full");
+DEFINE_string(validate_wgsim, "", "report/full");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 
 // readovi se citaju sa stdin-a i salju na stdout
@@ -125,7 +125,10 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
 	     
     ++stats[mappingQuality];
 
-    if (mappingQuality != 0) {      
+    bool validateFull = 
+      FLAGS_validate_flux == "full" || FLAGS_validate_wgsim == "full";
+      
+    if (mappingQuality != 0 && validateFull) {      
       printf("READ #%04d:\n", i);
       printf("mappingQuality = %d\n", mappingQuality);
       printf("id: %s\n", read->id().c_str());
@@ -175,10 +178,10 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 
   fclose(resultOut);
 
-  if (FLAGS_validate_flux) {
+  if (FLAGS_validate_flux != "") {
     printStats(reads, "flux");
   }
-  if (FLAGS_validate_wgsim) {
+  if (FLAGS_validate_wgsim != "") {
     printStats(reads, "wgsim");
   }
 }

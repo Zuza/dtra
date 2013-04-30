@@ -9,7 +9,7 @@ MAIN_H_FILES := $(wildcard $(MAIN_DIR)/*.h)
 MAIN_CPP_FILES := $(wildcard $(MAIN_DIR)/*.cpp)
 MAIN_OBJ_FILES := $(addprefix obj/main/,$(notdir $(MAIN_CPP_FILES:.cpp=.o)))
 
-CC := mpic++ # to je omotac oko g++-a koji brine o MPI pathovima
+CC := CXX=/home/fpavetic/install/bin/g++ mpiCC  # to je omotac oko g++-a koji brine o MPI pathovima
 LD_FLAGS := -pthread -lgflags
 CC_FLAGS := -DDEBUG -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
 #PAZI, IMA DEBUG!!!
@@ -34,5 +34,5 @@ $(MAIN_OBJ_FILES): $(MAIN_CPP_FILES) $(MAIN_H_FILES)
 
 clean:
 	rm -rf obj
-	rm -f client
-	rm -f reducer
+	rm -f bin/client
+	rm -f bin/reducer
