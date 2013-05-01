@@ -11,8 +11,7 @@ MAIN_OBJ_FILES := $(addprefix obj/main/,$(notdir $(MAIN_CPP_FILES:.cpp=.o)))
 
 CC := CXX=/home/fpavetic/install/bin/g++ mpiCC  # to je omotac oko g++-a koji brine o MPI pathovima
 LD_FLAGS := -pthread -lgflags
-CC_FLAGS := -DDEBUG -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
-#PAZI, IMA DEBUG!!!
+CC_FLAGS := -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
 
 all: client reducer
 
