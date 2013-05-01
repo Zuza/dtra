@@ -33,6 +33,7 @@ DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
 DEFINE_string(validate_flux, "", "report/full");
 DEFINE_string(validate_wgsim, "", "report/full");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
+DEFINE_double(confidence, 0.5, "Confidence threshold.h");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -119,11 +120,37 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
     shared_ptr<Read> read = reads[i];
 
     int mappingQuality = -1;
-    if (what == "wgsim") mappingQuality = read->validateWgsimMapping();
-    else if (what == "flux") mappingQuality = read->validateFluxMapping();
-    else assert(0);
-	     
+    if (what == "wgsim") {
+      mappingQuality = read->validateWgsimMapping();
+    } else if (what == "flux") {
+      mappingQuality = read->validateFluxMapping();
+    } else {
+      assert(0);
+    }
+
     ++stats[mappingQuality];
+
+    if (mappingQuality == 0) { // tocan je na prvom mjestu!
+      double confidence1 = read->topMapping(0).score/read->size();
+      double confidence2 = 1e10;
+      
+      // confidence2 trenutno nema toliku ulogu jer
+      // na jednom genu/genomu mi podrazumijevamo samo jednu
+      // poziciju
+      //
+      // TODO: razmatranje vise pozicija na genu/genomu moze
+      // se rijesiti dodatnom podjelom svakog genoma/gena na
+      // blokove pa u svakom bloku mozemo naci jedinstvenu poziciju
+      // i uzeti blok s najvecim scoreom
+      if (read->topMappings().size() >= 2) {
+	confidence2 = 
+	  read->topMapping(0).score/read->topMapping(1).score;
+      }
+
+      if (confidence1 > FLAGS_confidence) {
+	++stats[-2];
+      }
+    }
 
     bool validateFull = 
       FLAGS_validate_flux == "full" || FLAGS_validate_wgsim == "full";
@@ -145,8 +172,9 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
 
   printf("Total reads: %d\n", (int)reads.size());
   printf("Number of reads not mapped: %d\n", stats[-1]);
+  printf("Reads mapped with high confidence: %d\n", stats[-2]);
   for (map<int, int>::iterator it = stats.begin(); it != stats.end(); ++it) {
-    if (it->first != -1) {
+    if (it->first >= 0) {
       printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
     }
   }
