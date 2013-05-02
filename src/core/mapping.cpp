@@ -60,12 +60,12 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       hsh &= andMask;
       
       if (noN == 0 && i+1 >= seedLen) {
-	// tijekom iteriranja u paru kojeg vraca get()
-	// first je sortiran
-	for (Index::iterator it = idx->getPositions(hsh, seedLen);
-	     !it.done(); ) {
+	Index::iterator it = idx->getPositions(hsh, seedLen);
+	for ( ; !it.done(); it.advance()) {
 	  pair<unsigned int, unsigned int> x = it.get();
           int geneId = x.first;
+	  int position = x.second;
+	  //printf("geneId=%d, position=%d\n", geneId, position);
 	  
 	  shared_ptr<vector<pair<int, int> > >& posVec =
 	    positionsByGene[geneId];
@@ -74,17 +74,9 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 	    posVec = shared_ptr<vector<pair<int, int> > > (
                             new vector<pair<int, int> >());
 	  }
-	 
-	  Index::iterator jt = it;
-	  for (; !jt.done(); jt.advance()) {
-	    pair<unsigned int, unsigned int> y = jt.get();
-	    if (y.first != geneId) {
-	      break;
-	    }
-	    int position = y.second;
-	    posVec->push_back(make_pair(position, i+1-seedLen));
-	  }
-	  it = jt;
+
+	  assert(positionsByGene.count(geneId));
+	  posVec->push_back(make_pair(position, i+1-seedLen));
 	} 
       }
     }

@@ -32,8 +32,10 @@ public:
     void advance();
     std::pair<unsigned int, unsigned int> get();
 
+    /* void setStartingPos(size_t where); */
+
     const Index* idx_;
-    size_t begin, end, curr;
+    size_t begin, end, curr, currStartingPos;
   };
 
   friend class iterator;
@@ -47,7 +49,6 @@ public:
   //                         second is the position with the gene
   Index::iterator getPositions(const hash_t& hash, 
 			       const int& querySeedLen);
-  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, hash_t hash);
 
   const int& getSeedLen() { return seedLength_; }
 
@@ -67,6 +68,9 @@ private:
 
     friend bool operator < (const Entry& a, const Entry& b) {
       return a.hash < b.hash;
+
+      // zbog toga sto se koristi stable_sort, oni s jednakim
+      // hashem bit ce sortirani po poziciji
     }
   };
 
