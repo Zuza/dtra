@@ -65,6 +65,10 @@ void Index::iterator::advance() {
   //   size_t nextPosition = idx_->index_[next].position;
 
   //   if (nextPosition < currPosition) {
+  //     // ovo je potrebno u slucaju kad je querySeedLen manji
+  //     // od duljine kojom smo izgradili index. tad se moze
+  //     // dogoditi da unutar istog hash ne budu sortirane pozicije
+  //     // vec se sastoje od slijepljenih sortiranih nizova
   //     setStartingPos(next); 
   //   } else {
   //     if (currStartingPos+1 < idx_->geneStartingPos_.size()) {
