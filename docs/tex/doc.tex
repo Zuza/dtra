@@ -127,17 +127,24 @@ Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Biolozi su izolirali ne
 
 \section{Sekvenciranje DNA}
 
-\chapter{Pristupa}
+\chapter{Pristup}
 
 \section{Pregled}
 Ovo poglavlje počinjemo kratkih pregledom trendova u razvoju mappera te kasnije dajemo detaljan opis našeg pristupa. Jedan od prvih algoritama za poravnanje očitanja je algoritam globalnog poravnanja pod nazivom Smith-Waterman (TODO referenca). Rješenje dobiveno tim algoritmom može se smatrati veoma točnim zbog toga što ima statistički opravdano značenje, međutim zbog velike vremenske složenosti algoritma (TODO napisati složenosti) nije praktično za korištenje.\\
-Većina boljih modernih mappera (poput SNAP-a (TODO referenca) i SeqAlto-a (TODO referenca)) koriste tkzv. seed-and-extend pristup. U tom pristupu prvo se od referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi hash tablicu kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake.\\
+Većina boljih modernih mappera (poput SNAP-a (TODO referenca) i SeqAlto-a (TODO referenca)) koriste tkzv. seed-and-extend pristup. U tom pristupu prvo se od referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi hash tablicu kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
 Naš mapper indeks izgrađuje po uzoru na SeqAlto, međutim uvodimo novu metriku ocjene kvalitete koja za red složenosti poboljšava postojeće algoritme bez gubitka točnosti što ćemo potkrijepiti eksperimentima u kasnijim poglavljima.
 Metrika kvalitete bazira se na traženju najduljeg uzlaznog podniza\footnote{engl. Longest Increasing Subsequence; odatle dolazi inspiracija za naziv LISA - LIS Aligner}\\
-\\
-TODO: neka slika koja reprezentira DNA+indeks
 
-\section{sad}
+\section{Opis pristupa}
+
+Glavna inspiracija prema našem algoritmu dolazi iz nekoliko činjenica. Prvo, za malu količinu grešaka (to je realan slušaj, očitanja s velikim postotkom greške nisu korisna za ikakve zaključke) unutar očitanja postojat će mnogo nizova uzastopnih znakova koji nisu dotaknuti greškom. Mi želimo iskoristiti tu činjenicu pa dizajniramo algoritam koji nastoji poravnati dijelove netaknute greškom, a one koji je sadrže ignorira. Pokazuje se da je za veće duljine očitanja ovaj pristup iznimno uspješan\footnote{Trenutna pretpostavka koju radimo je da dugačka očitanja imaju svoje jedinstveno mjesto u genomu. Neki drugi mapperi ne rade tu pretpostavku pa je u daljnjim planovima razvoja LISA-e dopustiti mogućnost poravnanja na više različitih mjesta unutar genoma.}
+
+TODO: slika koja stavlja read ispod genoma i dočarava prianjanje
+
+\subsection{Indeks}
+U pregledu poglavlja spomenuli smo da za izgradnju indeksa pratimo smjernice SeqAlto mappera. Svaki niz $i$ od $k=20$ uzastopnih znakova na poziciji $p_i$ unutar genoma kodiramo jednim cijelim brojem $h_i$ koji predstavlja hash bez kolizije. Indeks nam čini polje uređenih parova $(h_i, p_i)$. To je polje sortirano pa koristimo binarno pretraživanje kako bi dohvat pozicija za neki zadani hash bio efikasan. Dodatno, one $h_i$-ove koji se pojavljuju jako velik broj puta njihove parove mičemo iz niza jer takvi ne donose korisnu informaciju, a samo povećavaju vremensku i memorijsku složenost. 
+
+TODO: neka slika koja reprezentira DNA+indeks
 
 \chapter{Implementacija}
 
