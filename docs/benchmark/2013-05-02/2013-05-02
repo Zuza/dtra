@@ -1,0 +1,82 @@
+- testovi na genome.zesoi.fer.hr
+- detalji procesora u 2013-05-02.cpuinfo (24 jezgre)
+- 188 Gb RAM-a
+- 3.5 Tb diska
+
+Readovi su generirani wgsimom (100000 single), uz defaultne postavke greski.
+xxxxxxxxxxxx -> oznacuje da se iz nepoznatog razloga wgsim zamrzavao kod generiranja readova
+
+BWA-MEM (bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-default-single/2000.fq)
+	     	    100bp        200bp	    500bp       1000bp     2000bp      5000bp
+=======================================================================================
+E. Coli		    1.059s       2.590s     10.826s     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Salmonella	    1.294s       2.710s     10.430s     37.919s    66.630s    xxxxxxxxx
+=======================================================================================
+Streptococcus       1.155s       2.578s     10.691s     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Yersinia pestis	    1.073s       3.841s     16.941s     57.090s    90.931s    191.490s
+=======================================================================================
+
+
+BWA-BWASW (bwa bwasw -t 24 yersinia ~/db/bacteria/yersinia/wgsim-default-single/100.fq)
+	     	    100bp        200bp	    500bp       1000bp     2000bp      5000bp
+=======================================================================================
+E. Coli		   3.730s        5.021s     12.355s     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Salmonella         4.014s        5.205s     11.751s     24.117s    54.542s    xxxxxxxxx
+=======================================================================================
+Streptococcus      3.912s        5.449s     11.662s     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Yersinia pestis	   3.855s        5.728s     12.941s     27.229s    59.720s    166.228s
+=======================================================================================
+
+
+SEQALTO (seqalto_basic align yersinia -n 1 -f -p 24 -1 ~/db/bacteria/yersinia/wgsim-default-single/100.fq)
+	     	    100bp        200bp	    500bp       1000bp     2000bp    5000bp
+=======================================================================================
+E. Coli		   1.623s        1.957s      9.683s     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Salmonella         1.406s        1.878s      8.084s     50.932s    372.40s   xxxxxxxxxx
+=======================================================================================
+Streptococcus      1.653s        1.747s      8.463s     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Yersinia pestis	   0.931s        2.145s     11.535s     89.092s    7m9s      19m27s
+=======================================================================================
+
+
+SNAP
+za readove duljine 100,200: time ./snap single ecoli/ ~/db/bacteria/ecoli/wgsim-default-single/100.fq  > ecoli.snap.100.result -t 24
+za duljinu 500:  time ./snap single ecoli/ ~/db/bacteria/ecoli/wgsim-default-single/500.fq -t 24 -d 20
+za duljinu 1000:  time ./snap single salmonella ~/db/bacteria/salmonella/wgsim-default-single/1000.fq -t 24 -d 40 -h 100 -n 2000
+
+
+	     	    100bp        200bp	    500bp       1000bp     2000bp    5000bp
+=======================================================================================
+E. Coli		    0.689s       0.767s     0.579s      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Salmonella          0.696s       0.728s     0.757s      1.075s   ne znam ga natjerati 
+=======================================================================================
+Streptococcus       0.438s       0.658s     0.490s      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Yersinia pestis	    0.705s       0.740s     1.005s      1.146s   ne znam ga natjerati
+=======================================================================================
+
+
+LISA
+time bin/client solve ~/db/bacteria/ecoli/Escherichia_coli_0_1288.GCA_000303255.1.18.dna.nonchromosomal.fa ecoli/ ~/db/bacteria/ecoli/wgsim-default-single/500.fq /dev/null --validate_wgsim=report > ecoli.lisa.500.result
+
+
+	     	    100bp        200bp	    500bp       1000bp     2000bp    5000bp
+=======================================================================================
+E. Coli		    1.711s       2.928s     6.723s      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Salmonella          1.690s       2.982s     6.712s      12.991s    25.150    xxxxxxxxxx
+=======================================================================================
+Streptococcus       1.397s       2.342s     4.911s      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=======================================================================================
+Yersinia pestis	    1.734s       2.989s     6.753s      13.062s    25.648s   1m6.738s
+=======================================================================================
+
+* u fileovima koji cuvaju tocnosti LISA-e, pouzdano smjesteni readovi su oni kod kojih
+je lis/duljina_reada > 0.5
