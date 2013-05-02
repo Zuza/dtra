@@ -16,7 +16,7 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{caption}
-
+\usepackage[usenames, dvipsnames]{color}
 
 \begin{document}
 
@@ -40,11 +40,92 @@ Ovaj rad opisuje sustav za mapiranje kratkih DNA sekvenci na referentni genom. R
 \item naposlijetku dajemo kratki zaključak i smjernice za daljnji rad
 \end{itemize}
 
-Sustav je razvijen u sklopu natjecanja identifikacije organizama iz toka DNA sekvenci koje je objavila tvrtka \emph{InnoCentive} pod 
-sponzorstvom vlade Sjedinjenih Američkih država i koje je trenutno u tijeku.
+Sustav je razvijen u sklopu natjecanja identifikacija organizama iz toka DNA sekvenci
+kojeg je objavila tvrtka \emph{InnoCentive} pod sponzorstvom vlade Sjedinjenih Američkih Država
+i koje još nije završilo \footnote{više informacija o samom natjecaju možete pronaći na \emph{http://tinyurl.com/dna-dtra}}.
 
-\section{Biološka pozadina problema}
-bla bla bla
+\section{Bioinformatika}
+
+Bioinformatika je u posljednjih nekoliko godina u centru ogromne pažnje i entuzijazma do kojih su
+doveli napretci u razumijevanju živih bića i brzom razvoju tehnologije pomoću kojih ih možemo proučavati.
+Dosada se bioinformatika koristila u svrhe proučavanja nasljednih svojstava, evolucije između vrsta i identifikacije
+patogenih bakterija, dok se u bliskoj budućnosti vjeruje kako će pomoći u proizvodnji boljih lijekova koji bi bili
+posebno prilagođeni zaraženoj osobi.
+
+Molekularna biologija i biokemija su nam otkrili kako najveću funkcionalnu ulogu u gotovo svim biološkim procesima
+živih organizama imaju molekule zvane \emph{proteini}, linearni nizovi aminokiselina spojenih peptidnim vezama.
+Njihova uloga u organizmima seže od katalizacije procesa (npr. kod metabolizma), signalizacije i adhezije stanica
+sve do imunološkog sustava. Proteini su konstruirani zasebno u svakoj stanici od svojih gradivnih elemenata (aminokiselina),
+a kod koji specificira način na koji se grade proteini se nalazi u masivnoj staničnoj molekuli
+deoksiribonukleinske kiseline (DNA).
+
+Dominantno područje bioinformatike se bavi sekvenciranjem (čitanjem) i analizom DNA. Molekula DNA je dugi linearni niz sastavljen od otprilike
+3 milijarde\footnote{kod ljudi} povezanih parova baza nukleinskih kiselina. Veličina tih brojeva stvara potrebu za razvojem računalnih alata
+bez kojih bilo kakva obrada postaje nemoguća.
+
+Nedavni razvoj moderne tehnologije je doveo do strmoglavog pada cijene sekvenciranja molekule DNA do te razine da je
+postalo jasno kako će u bliskoj budućnosti najsporiji i najteži dio bioinformatike biti u konstrukciji efikasnih
+algoritama koji brzo i pouzdano obrađuju sve veču i veću količinu informacija na njihovom raspolaganju.
+
+\section{DNA i mutacije}
+Kao što je spomenuto, DNA modeliramo kao linearni niz povezanih parova baza. U DNA se pojavljuju točno četiri različite baze i njih
+označavamo slovima \emph{A, G, T} i \emph{C}\footnote{skraćeno od adenin, guanin, timin i citozin, vrsta nukleinskih kiselina koje se pojavljuju}.
+Na taj način DNA modeliramo dugim nizom slova nad gornjom četvoroslovnom abecedom, primjerice:
+
+\begin{verbatim}
+... AGTGAGGAAAAAAAAAGGTCAATGCAGCACTTGAGCCAACATTGTAGAT
+    GTTGTACTGCAAGGTCAGGTCTCGCCCCTCCACGGCGTATCTGTTCAG
+    CAGTGACTTGGAGGCAAGAAAATCAAACCCGTGATCGATGGTACCGAGC ...
+\end{verbatim}
+
+Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Biolozi su izolirali nekoliko dominantnih mutacija:
+
+\begin{enumerate}
+\item Supstitucija - zamjena jedne baze drugom. Najčešća od navedenih mutacija.
+  Uzrokovana greškama u replikaciji i kemikalijama.
+  \nopagebreak
+  \begin{figure}[!ht]
+    \begin{center}
+      A C G \textcolor{blue}{T} T G A C \\
+      A C G \textcolor{red}{A} T G A C
+      \caption{Primjer supstitucije}
+    \end{center}
+  \end{figure}
+
+\item Ispuštanje i umetanje - iz DNA se ukloni ili doda slijed baza. Ova mutacija je vrlo štetna i obično
+  rezultira gubitkom funkcionalnosti tog dijela gena.
+
+  \nopagebreak
+  \begin{figure}[!ht]
+    \begin{center}
+      A C G \textcolor{red}{T T G} A C \\
+      A C G A C
+      \caption{Primjer ispuštanja}
+    \end{center}
+  \end{figure}
+\item Udvostručavanje - ponavljanje dijela sekvence dva ili više puta zaredom. Ova mutacija je iznimno rijetka,
+  ali se smatra da je unatoč tomu imala veliku ulogu u povećanju genetskog koda živih bića.
+  \begin{figure}[!ht]
+    \begin{center}
+      A C G \textcolor{blue}{T T G A} C \\
+      A C G \underline{\textcolor{red}{T T G A}} \underline{\textcolor{red}{T T G A}} C \\
+      \caption{Primjer udvostručavanja}
+    \end{center}
+  \end{figure}
+  
+\item Inverzija - okretanje dijela sekvence. Iznimno rijetka mutacija koja se najčešće zanemaruje pri analizi.
+  \begin{figure}[!ht]
+    \begin{center}
+      A C \textcolor{blue}{T C A A} G G \\
+      A C \textcolor{red} {A A C T} G G
+      \caption{Primjer inverzije}
+    \end{center}
+\end{figure}
+\end{enumerate}
+
+
+
+\section{Sekvenciranje DNA}
 
 \chapter{Sustav}
 
