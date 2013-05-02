@@ -16,6 +16,37 @@ DEFINE_double(avg_multiplier, 5.0, "Index will discard every kmer that " \
 DEFINE_bool(use_parallel_sort, true, "Sorting the index will use " \
             "__gnu_parallel::stable_sort");
 
+Index::iterator::iterator(const Index* idx,
+			  const hash_t& hash,
+			  const int& querySeedLen) : idx_(idx) {
+  // TODO: trenutno je querySeedLen ignoriran, treba
+  // dodati da u equal_range usporedbama uzimam samo
+  // najznacajnijih querySeedLen znamenki u bazi 4
+  Index::Entry tmp; tmp.hash = hash;
+  auto pair_lb_ub = 
+    equal_range(idx->index_.begin(), idx->index_.end(), tmp);
+  begin = distance(idx->index_.begin(), pair_lb_ub.first);
+  end   = distance(idx->index_.begin(), pair_lb_ub.second);
+  reset();
+}
+
+void Index::iterator::reset() {
+  curr = begin;
+}
+
+bool Index::iterator::done() {
+  return curr == end;
+}
+
+void Index::iterator::advance() {
+  ++curr;
+}
+
+pair<unsigned int, unsigned int> Index::iterator::get() {
+  // TODO: mozda bi ta metoda trebala biti staticka
+  return idx_->position_to_gene_position(idx_->index_[curr].position);
+}
+
 Index::Index(int seedLength) : seedLength_(seedLength) {
   indexPrepared_ = false;
   startingPos_ = 0;
@@ -125,16 +156,26 @@ void Index::discardFrequentSeeds() {
   printf("Kmers left = %lld (%.2lf%%)\n", kmers_left, double(kmers_left) / kmers_cnt * 100.0);
 }
 
-pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) {
+pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) const {
   auto it = upper_bound(geneStartingPos_.begin(), geneStartingPos_.end(), position);
   assert(it != geneStartingPos_.begin());
   --it;
   return make_pair<unsigned int, unsigned int>(it - geneStartingPos_.begin(), position - *it);
 }
 
+Index::iterator Index::getPositions(const hash_t& hash,
+				    const int& querySeedLen) {
+#ifdef DEBUG
+  assert(indexPrepared_);
+#endif
+  return iterator(this, hash, querySeedLen);
+}
+
 void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, hash_t hash) {
+#ifdef DEBUG
   assert(indexPrepared_);
   assert(retVal->empty());
+#endif
   Entry tmp; tmp.hash = hash;
   auto pair_lb_ub = equal_range(index_.begin(), index_.end(), tmp);
   for ( ; pair_lb_ub.first != pair_lb_ub.second; ++pair_lb_ub.first) {
