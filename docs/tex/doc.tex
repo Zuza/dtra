@@ -78,7 +78,7 @@ Na taj način DNA modeliramo dugim nizom slova nad gornjom četvoroslovnom abece
     CAGTGACTTGGAGGCAAGAAAATCAAACCCGTGATCGATGGTACCGAGC ...
 \end{verbatim}
 
-Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Biolozi su izolirali nekoliko dominantnih mutacija:
+Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Okvirno poznavanje mogućih mutacija je nužno za bolje razumijevanje izazova koji se javljaju u bioinformatici. Biolozi su izolirali nekoliko dominantnih mutacija:
 
 \begin{enumerate}
 \item Supstitucija - zamjena jedne baze drugom. Najčešća od navedenih mutacija.
@@ -123,9 +123,44 @@ Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Biolozi su izolirali ne
 \end{figure}
 \end{enumerate}
 
-
-
 \section{Sekvenciranje DNA}
+
+Prvi pokušaj sekvenciranja ljudskog DNA počinje 1990. s američkim \emph{Human Genome Project} koji je trajao 15
+godina i uspješno identificirao većinu ljudskog genoma. Ukupna cijena projekta je procijenjena na \$3.000.000.000.
+(TODO: referenca)
+Od tada cijena sekvenciranja DNA strmoglavo pada i očekuje se će u sljedećih nekoliko godina dostići \$1.000 za
+cjelokupni ljudski genom.
+
+Sekvenciranje DNA se odvija u nekoliko faza: (1) prikupljanje kratkih očitanja, (2) poravnavanje s referentnim genomom, (3) izlistavanje varijanti i (4) filtriranje i označavanje.
+
+\begin{description}
+\item[Prikupljanje kratkih očitanja] je biološki dio sekvenciranja tijekom kojeg se DNA višestruko replicira puta, slučajno lomi na dijelove duljine 100-3000 baza te se potom očitava složenim metodama. Te metode su podložne pogreškama uslijed krivog čitanja dijela sekvenci, gubljenja informacija i dvosmislenosti podataka koji se javljaju tijekom loma.
+
+\item[Poravnavanje s referentnim genomom] je proces mapiranja kratkih očitanja na referentni genom. Uobičajeni volumen podataka od otprilike desetke milijuna očitanja i tri milijarde startnih pozicija čini ovaj posao vrlo
+algoritamski zahtjevnim. Još kritičnim ovaj korak čini svojstvo da se sve greške na ovom koraku propagiraju i
+ruše kvalitetu svim preostalim dijelovima sekvenciranja.
+
+\item [Izlistavanje varijanti] je korak u kojem se uspoređuju poravnata očitanja s referentnim genomom. Pronađene
+mutacije mogu biti uzročnici nasljednih bolesti ili mogu jednostavno biti genski šum bez funkcionalnih svojstava.
+
+\item [Filtriranje i označavanje] procjenjuje koja od potencijalnih razlika između interesantnih gena pridonosi 
+patološkom procesu kojeg proučavamo. Filtriraju se mutacije bez funkcionalnih značajki te se propoznaju česte prisutne populacijske mutacije.
+\end{description}
+
+\section{Obrazloženje teme}
+
+Izgrađeni sustav se bavi problematikom \emph{poravnavanja očitanja s referentnim genomom}. Specifično, potrebno
+je za svaki od nekoliko desetaka milijuna očitanja koja su skupljena u FASTQ datoteku mapirati na poziciju u
+referentnom genomu. Problem su pritom gore opisane mutacije, pogreške u kratkim očitanjima, dvosmisleni podaci,
+regije niske složenosti te repetitivne regije koje se mogu mapirati na više mjesta u referentnom genomu.
+
+Ovaj sustav se koristi kao prvi korak prilikom rješavanja problema identifikacije organizama iz toga DNA sekvenci
+koji se pojavio na natjecanju sponzoriranom od strane vlade Sjedinjenih Američkih Država. Autori ovog rada sudjeluju
+na tome natjecanju u sklopu tima Fakulteta Elektrotehnike i računarstva.
+
+
+
+
 
 \chapter{Pristup}
 
