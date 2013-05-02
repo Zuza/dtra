@@ -4,4 +4,8 @@
 *.h~
 client
 reducer
-
+*.log
+*.aux
+*.out
+*.toc
+*.pdf
