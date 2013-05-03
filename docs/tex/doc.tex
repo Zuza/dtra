@@ -305,16 +305,63 @@ Genom S. Enterica-e sastoji se od otprilike 5M parova nukoleotida. Proveli smo t
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{../img/streptococcus-time.pdf}
-\caption{Usporedba performansi mappera}
+\caption{Usporedba performansi mappera}\label{streptococcus-time}
 \end{figure}
+
+Genom S. Pneumoniae sadrži otprilike 3M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200 i 500. Na slici \ref{streptococcus-time} vidljivo je kako na ovim kraćim duljinama SNAP ima najbolje performanse. To je očekivan rezultat budući da je on pažljivo dizajniran za kratke duljine očitanja. LISA je bolja od preostalih mappera. Tablica \ref{streptococcus-correct} pokazuje vrhunsku preciznost svih mappera. Valja istaknuti kako SNAP ima nešto manju preciznost u usporedbi s ostalim mapperima.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500\\
+\hline
+\hline
+	BWA-MEM & 99.10 & 99.38 & 99.55\\
+\hline
+	BWA-SW  & 99.12 & 99.37 & 99.54\\
+\hline
+	SeqAlto & 98.57 & 99.31 & 99.52\\
+\hline
+	SNAP    & 97.74 & 96.26 & 98.82\\
+\hline
+	LISA    & 98.98 & 99.36 & 99.53\\
+\hline
+\end{tabular}
+\caption{Postotak točno poravnatih očitanja}\label{streptococcus-correct}
+\end{table}
+
 
 \section {Yersinia Pestis}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{../img/yersinia-time.pdf}
-\caption{Usporedba performansi mappera}
+\caption{Usporedba performansi mappera}\label{yersinia-time}
 \end{figure}
+
+Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000, 2000 i 5000. Slika \ref{yersinia-time} demonstrira efikasnost SNAP-a na manjim duljinama. SNAP je imao poteškoća s obrađivanjem očitanja duljina većih od 1000, iz tog razloga izostaju ti rezultati. Zbog preglednosti grafa na njemu nisu vidljiva vremena izvođenja SeqAlto-a za duljine 2000 (7m9s) i 5000 (19m27s). Za dugačka očitanja LISA se ponaša uvjerljivo najbolje, postižući ubrzanja 3-20x u usporedbi s ostalim mapperima.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 2000 & 5000\\
+\hline
+\hline
+	BWA-MEM & 95.63 & 96.31 & 97.34 & 98.66 & 99.90 & 100.00\\
+\hline
+	BWA-SW  & 95.60 & 96.31 & 97.33 & 98.58 & 99.79 & 99.98\\
+\hline
+	SeqAlto & 95.12 & 96.29 & 97.37 & 98.63 & 99.88 & 63.85\\
+\hline
+	SNAP    & 99.13 & 97.02 & 99.47 & 97.95 & -\\
+\hline
+	LISA    & 99.54 & 99.67 & 99.81 & 99.95 & 99.91\\
+\hline
+\end{tabular}
+\caption{Postotak točno poravnatih očitanja}\label{yersinia-correct}
+\end{table}
 
 
 \section {Dodatne informacije}
