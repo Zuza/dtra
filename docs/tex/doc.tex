@@ -156,8 +156,7 @@ regije niske složenosti te repetitivne regije koje se mogu mapirati na više mj
 
 Ovaj sustav se koristi kao prvi korak prilikom rješavanja problema identifikacije organizama iz toga DNA sekvenci
 koji se pojavio na natjecanju sponzoriranom od strane vlade Sjedinjenih Američkih Država. Autori ovog rada sudjeluju
-na tome natjecanju u sklopu tima Fakulteta Elektrotehnike i računarstva.
-
+na tome natjecanju u sklopu tima Fakulteta elektrotehnike i računarstva Sveučilišta u Zagrebu.
 
 
 
@@ -202,6 +201,31 @@ Razlog zašto je ova faza potrebna je vidljiv na TODO: dodati sliku. Očito je d
 Mjerenje pouzdanosti je još uvijek otvoren problem za LISA-u. Trenutno koristimo omjer duljine pronađenog rastućeg niza i duljine očitanja.
 
 \chapter{Implementacija}
+
+Implementacija sustava može biti vrlo prirodno razložena na dva osnovna dijela:
+
+\begin{enumerate}
+\item izgradnja indeksa nad referentnom bazom gena (potrebno je pripremiti bazu genoma)
+\item mapiranje očitanja na referentnu bazu (potrebno je pripremiti datoteku s očitanjima)
+\end{enumerate}
+
+Prije bilo kakvog mapiranja potrebno je jednokratno izgraditi indeks, ali je nakon toga moguće neograničeno puta koristiti izgrađeni indeks pri mapiranju podataka, kao što je prikazano na dijagramu:
+
+\begin{figure}[!ht]
+\begin{center}
+	\includegraphics[width=1\textwidth]{../img/Komponente.png}
+	\caption{Dijagram komponenata s njihovih ulazima/izlazima}
+\end{center}
+\end{figure}
+
+
+Ostatak poglavlja će detaljnije obraditi pojedine komponente opisanog algoritma te njihove ulazne/izlazne podatke.
+
+\section{Priprema podataka}
+
+\section{Izgradnja indeksa}
+\section{Mapiranje podataka}
+\section{Paralelizacija algoritma}
 
 \chapter{Rezultati}
 U ovoj sekciji analiziramo performanse LISA-e. Analiza se provodi poravnanjem nad poznatim vrstama bakterija - kuga, salmonela, streptokok i E. Coli. Motivacija iza preciznog poravnanja očitanja u genome bakterije je jasna - efikasno i točno određivanje primjerice mutacija omogućuje brži dizajn lijekova za bakterije koje su stekle otpornost na postojeće lijekove.\\
