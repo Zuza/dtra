@@ -66,35 +66,33 @@ Ovaj rad opisuje sustav za mapiranje DNA sekvenci na referentni genom. Rad je po
 
 Sustav je razvijen u sklopu natjecanja identifikacija organizama iz toka DNA sekvenci
 kojeg je objavila tvrtka \emph{InnoCentive} pod sponzorstvom vlade Sjedinjenih Američkih Država
-i koje još nije završilo \footnote{više informacija o samom natjecaju možete pronaći na \emph{http://tinyurl.com/dna-dtra}}.
+i koje je u tijeku \footnote{više informacija o samom natjecaju možete pronaći na \emph{http://tinyurl.com/dna-dtra}}.
 
 \section{Bioinformatika}
 
-Bioinformatika je u posljednjih nekoliko godina u centru ogromne pažnje i entuzijazma do kojih su
-doveli napretci u razumijevanju živih bića i brzom razvoju tehnologije pomoću kojih ih možemo proučavati.
-Dosada se bioinformatika koristila u svrhe proučavanja nasljednih svojstava, evolucije između vrsta i identifikacije
+Bioinformatika je u posljednjih nekoliko godina u centru ogromne pažnje i entuzijazma zbog napredaka u razumijevanju živih bića i brzom razvoju tehnologije pomoću kojih ih možemo proučavati.
+Tijekom 20. stoljeća se bioinformatika koristila u svrhe proučavanja nasljednih svojstava, evolucije između vrsta te identifikacije
 patogenih bakterija, dok se u bliskoj budućnosti vjeruje kako će pomoći u proizvodnji boljih lijekova koji bi bili
 posebno prilagođeni zaraženoj osobi.
 
 Molekularna biologija i biokemija su nam otkrili kako najveću funkcionalnu ulogu u gotovo svim biološkim procesima
 živih organizama imaju molekule zvane \emph{proteini}, linearni nizovi aminokiselina spojenih peptidnim vezama.
-Njihova uloga u organizmima seže od katalizacije procesa (npr. kod metabolizma), signalizacije i adhezije stanica
-sve do imunološkog sustava. Proteini su konstruirani zasebno u svakoj stanici od svojih gradivnih elemenata (aminokiselina),
-a kod koji specificira način na koji se grade proteini se nalazi u masivnoj staničnoj molekuli
+Njihova uloga u organizmima seže od katalizacijskih procesa (npr. kod metabolizma), signalizacije i adhezije stanica
+sve do imunološkog sustava. Proteini su konstruirani zasebno u svakoj stanici od svojih gradivnih elemenata (aminokiselina) prema uputstvu zapisanim u masivnoj staničnoj molekuli
 deoksiribonukleinske kiseline (DNA).
 
-Dominantno područje bioinformatike se bavi sekvenciranjem (čitanjem) i analizom DNA. Molekula DNA je dugi linearni niz sastavljen od otprilike
-3 milijarde\footnote{kod ljudi} povezanih parova baza nukleinskih kiselina. Veličina tih brojeva stvara potrebu za razvojem računalnih alata
+Dominantno područje bioinformatike se bavi sekvenciranjem (čitanjem) i analizom DNA, koja je po svojoj strukturi dugi linearni niz sastavljen od otprilike
+3 milijarde\footnote{kod ljudi} povezanih parova baza nukleinskih kiselina. Masivnost tih brojeva stvara potrebu za razvojem računalnih alata
 bez kojih bilo kakva obrada postaje nemoguća.
 
-Nedavni razvoj moderne tehnologije je doveo do strmoglavog pada cijene sekvenciranja molekule DNA do te razine da je
+Nedavni je razvoj moderne tehnologije doveo do strmoglavog pada cijene sekvenciranja molekule DNA do te razine da je
 postalo jasno kako će u bliskoj budućnosti najsporiji i najteži dio bioinformatike biti u konstrukciji efikasnih
-algoritama koji brzo i pouzdano obrađuju sve veću i veću količinu informacija na njihovom raspolaganju.
+algoritama koji brzo i pouzdano obrađuju rastuću količinu informacija na njihovom raspolaganju.
 
 \section{DNA i mutacije}
 Kao što je spomenuto, DNA modeliramo kao linearni niz povezanih parova baza. U DNA se pojavljuju točno četiri različite baze i njih
 označavamo slovima \emph{A, G, T} i \emph{C}\footnote{skraćeno od adenin, guanin, timin i citozin, vrsta nukleinskih kiselina koje se pojavljuju}.
-Na taj način DNA modeliramo dugim nizom slova nad gornjom četvoroslovnom abecedom, primjerice:
+Na taj način DNA reprezentiramo dugim nizom slova nad gornjom četvoroslovnom abecedom, primjerice:
 
 \begin{verbatim}
 ... AGTGAGGAAAAAAAAAGGTCAATGCAGCACTTGAGCCAACATTGTAGAT
@@ -102,10 +100,10 @@ Na taj način DNA modeliramo dugim nizom slova nad gornjom četvoroslovnom abece
     CAGTGACTTGGAGGCAAGAAAATCAAACCCGTGATCGATGGTACCGAGC ...
 \end{verbatim}
 
-Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Okvirno poznavanje mogućih mutacija je nužno za bolje razumijevanje izazova koji se javljaju u bioinformatici. Biolozi su izolirali nekoliko dominantnih mutacija:
+Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Okvirno poznavanje mogućih mutacija je nužno za bolje razumijevanje izazova koji se javljaju u bioinformatici. Biolozi su izolirali nekoliko dominantnih vrsta:
 
 \begin{enumerate}
-\item Supstitucija - zamjena jedne baze drugom. Najčešća od navedenih mutacija.
+\item Supstitucija - zamjena jedne baze drugom. Najčešća mutacija.
   Uzrokovana greškama u replikaciji i kemikalijama.
   \nopagebreak
   \begin{figure}[!ht]
@@ -117,7 +115,7 @@ Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Okvirno poznavanje mogu
   \end{figure}
 
 \item Ispuštanje i umetanje - iz DNA se ukloni ili doda slijed baza. Ova mutacija je vrlo štetna i obično
-  rezultira gubitkom funkcionalnosti tog dijela gena.
+  rezultira gubitkom funkcionalnosti dijela gena.
 
   \nopagebreak
   \begin{figure}[!ht]
@@ -158,10 +156,10 @@ cjelokupni ljudski genom.
 Sekvenciranje DNA se odvija u nekoliko faza: (1) prikupljanje kratkih očitanja, (2) poravnavanje s referentnim genomom, (3) izlistavanje varijanti i (4) filtriranje i označavanje. \cite{mardis2008next}
 
 \begin{description}
-\item[Prikupljanje kratkih očitanja] je biološki dio sekvenciranja tijekom kojeg se DNA višestruko replicira puta, slučajno lomi na dijelove duljine 100-3000 baza te se potom očitava složenim metodama. Te metode su podložne pogreškama uslijed krivog čitanja dijela sekvenci, gubljenja informacija i dvosmislenosti podataka koji se javljaju tijekom loma.
+\item[Prikupljanje kratkih očitanja] je biološki dio sekvenciranja tijekom kojeg se DNA višestruko replicira, slučajno lomi na dijelove duljine 100-3000 baza te se potom očitava složenim metodama. Te metode su podložne pogreškama uslijed krivog očitanja dijela sekvenci, gubljenja informacija i dvosmislenosti podataka koji se javljaju tijekom loma.
 
-\item[Poravnavanje s referentnim genomom] je proces mapiranja kratkih očitanja na referentni genom. Uobičajeni volumen podataka od otprilike desetke milijuna očitanja i tri milijarde startnih pozicija čini ovaj posao vrlo
-algoritamski zahtjevnim. Još kritičnim ovaj korak čini svojstvo da se sve greške na ovom koraku propagiraju i
+\item[Poravnavanje s referentnim genomom] je proces mapiranja očitanih fragmenata na referentni genom. Uobičajeni volumen podataka od otprilike desetke milijuna očitanja i tri milijarde startnih pozicija čini ovaj posao vrlo
+algoritamski zahtjevnim. Još kritičnijim ovaj korak čini svojstvo da se sve greške na ovom koraku propagiraju i
 ruše kvalitetu svim preostalim dijelovima sekvenciranja.
 
 \item [Izlistavanje varijanti] je korak u kojem se uspoređuju poravnata očitanja s referentnim genomom. Pronađene
@@ -178,8 +176,8 @@ je za svaki od nekoliko desetaka milijuna očitanja koja su skupljena u FASTQ da
 referentnom genomu. Problem su pritom gore opisane mutacije, pogreške u kratkim očitanjima, dvosmisleni podaci,
 regije niske složenosti te repetitivne regije koje se mogu mapirati na više mjesta u referentnom genomu.
 
-Ovaj sustav se koristi kao prvi korak prilikom rješavanja problema identifikacije organizama iz toga DNA sekvenci
-koji se pojavio na natjecanju sponzoriranom od strane vlade Sjedinjenih Američkih Država. Autori ovog rada sudjeluju
+Ovaj sustav se koristi kao prvi korak prilikom rješavanja problema identifikacije organizama iz toka DNA sekvenci
+koji se pojavio na natjecanju \emph{Innocentive}. Autori ovog rada sudjeluju
 na tome natjecanju u sklopu tima Fakulteta elektrotehnike i računarstva Sveučilišta u Zagrebu.
 
 
@@ -187,15 +185,16 @@ na tome natjecanju u sklopu tima Fakulteta elektrotehnike i računarstva Sveuči
 
 \chapter{Pristup}
 
-\section{Pregled}
+\section{Pregled postojećih rješenja}
 Ovo poglavlje počinjemo kratkih pregledom trendova u razvoju mappera te kasnije dajemo detaljan opis našeg pristupa. Jedan od prvih algoritama za poravnanje očitanja je algoritam globalnog poravnanja pod nazivom Smith-Waterman\cite{Smith1981195}. Rješenje dobiveno tim algoritmom može se smatrati veoma točnim zbog toga što ima statistički opravdano značenje, međutim zbog velike vremenske složenosti algoritma nije praktično za korištenje.\\
-Većina boljih modernih alata za mapiranje - \emph{mappera} (poput SNAP-a\cite{SNAP} i SeqAlto-a\cite{seqalto}) koriste seed-and-extend pristup. U tom pristupu prvo se od referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi tablicu raspršenog adresiranja kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch}\cite{@nw} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
+Većina boljih modernih alata za mapiranje - \emph{mappera} (poput SNAP-a\cite{SNAP} i SeqAlto-a\cite{seqalto}) koriste \emph{seed-and-extend} pristup. U tom pristupu prvo se od 
+referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi tablicu raspršenog adresiranja kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch}\cite{@nw} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
 Naš mapper indeks izgrađuje po uzoru na SeqAlto, međutim uvodimo novu metriku ocjene kvalitete koja za red složenosti poboljšava postojeće algoritme bez gubitka točnosti što ćemo potkrijepiti eksperimentima u kasnijim poglavljima.
 Metrika kvalitete bazira se na traženju najduljeg uzlaznog podniza\footnote{engl. Longest Increasing Subsequence; odatle dolazi inspiracija za naziv LISA - LIS Aligner}\\
 
 \section{Opis pristupa}
 
-Glavna inspiracija prema našem algoritmu dolazi iz nekoliko činjenica. Prvo, za malu količinu grešaka (to je realan slučaj, očitanja s velikim postotkom greške nisu korisna za ikakve zaključke) unutar očitanja postojat će mnogo nizova uzastopnih znakova koji nisu dotaknuti greškom. Mi želimo iskoristiti tu činjenicu pa dizajniramo algoritam koji nastoji poravnati dijelove netaknute greškom, a one koji je sadrže ignorira. Pokazuje se da je za veće duljine očitanja ovaj pristup iznimno uspješan\footnote{Trenutna pretpostavka koju radimo je da dugačka očitanja imaju svoje jedinstveno mjesto u genomu. Neki drugi mapperi ne rade tu pretpostavku pa je u daljnjim planovima razvoja LISA-e dopustiti mogućnost poravnanja na više različitih mjesta unutar genoma.}
+Glavna inspiracija prema našem algoritmu proizlazi iz nekoliko svojstava. Prvo, za malu količinu grešaka (koje predstavljaju realan slučaj, očitanja s velikim postotkom greške nisu korisna za ikakve zaključke) unutar očitanja postojat će mnogo nizova uzastopnih znakova koji nisu dotaknuti greškom. Mi želimo iskoristiti tu činjenicu pa dizajniramo algoritam koji nastoji poravnati dijelove netaknute greškom, a one koji je sadrže ignorira. Pokazuje se da je za veće duljine očitanja ovaj pristup iznimno uspješan\footnote{Trenutna pretpostavka koju radimo je da dugačka očitanja imaju svoje jedinstveno mjesto u genomu. Neki drugi mapperi ne rade tu pretpostavku pa je u daljnjim planovima razvoja LISA-e dopustiti mogućnost poravnanja na više različitih mjesta unutar genoma.}
 \\
 \\
 
