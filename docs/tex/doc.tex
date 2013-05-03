@@ -287,7 +287,7 @@ podijeljenu s duljinom cjelokupne sekvence.}
 
 Cjelokupna izgradnja indeksa nakon optimizacija traje otprilike 4 sata računalu performansa 188 GB RAM-a i Intel(R) Xeon(R) procesorom s 24 jezgre koje rade na 2.40 GHz.
 
-\section{Mapiranje očitanja}
+\section{Mapiranje očitanih fragmenata}
 
 Mapiranje očitanja na referentnu bazu zahtjeva izgrađeni dio indeksa koji se u potpunosti učitava u radnu memoriju. Iz ovog razloga je potrebno unaprijed odrediti prihvatljivu veličinu indeksa koju je moguće u potpunosti učitati.
 
@@ -307,7 +307,22 @@ korištenjem reda dretvenih zadataka (engl. \emph{ThreadPool}) uz rotirajući bi
 kako bi se fragmenti fino granulirali i radi osiguranja što efikasnije sinkronizacije među dretvama. Koristimo
 biblioteku \emph{pthreads} kako bi omogućili višedretveno mapiranje.
 
-\section{Distribucija algoritma}
+\section{Distribucija mapiranja}
+Veliki volumen podataka prisutan pri rješavanju ovog problema nas je potakao da distribuiramo algoritam na
+više računala. Specifično, korisnik pokreće sustav za mapiranje na jednom računalu koje potom dijeli ulaznu 
+datoteku očitanih fragmenata na jednake dijelove te ih šalje na farmu servera koji potpuno paralelno obrađuju
+dane podatke i pri završetku šalju rezultate natrag na originalno računalo. Distribucija se vrši preko biblioteke
+MPI, kao što je prikazano na slici:
+
+\nopagebreak
+\begin{figure}[!ht]
+\begin{center}
+	\includegraphics[width=0.3\textwidth]{../img/MPI.png}
+	\caption{}
+\end{center}
+\end{figure}
+
+Isplativost distribucije mapiranja proizlazi iz fine granularnosti originalnog problema - višestruko se riješava identična zadaća mapiranja fragmenta na referentni genom, što svakoj paralelizaciji na broj računala znatno manji od broja fragmenata osigurava linearno ubrzanje vremena izvršavanja.
 
 \chapter{Rezultati}
 
