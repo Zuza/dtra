@@ -21,6 +21,9 @@
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{subfig}
+\usepackage{algpseudocode}
+\usepackage[Algoritam]{algorithm}
 
 \lstset { %
     language=C++,
@@ -182,13 +185,62 @@ Metrika kvalitete bazira se na traženju najduljeg uzlaznog podniza\footnote{eng
 \section{Opis pristupa}
 
 Glavna inspiracija prema našem algoritmu dolazi iz nekoliko činjenica. Prvo, za malu količinu grešaka (to je realan slušaj, očitanja s velikim postotkom greške nisu korisna za ikakve zaključke) unutar očitanja postojat će mnogo nizova uzastopnih znakova koji nisu dotaknuti greškom. Mi želimo iskoristiti tu činjenicu pa dizajniramo algoritam koji nastoji poravnati dijelove netaknute greškom, a one koji je sadrže ignorira. Pokazuje se da je za veće duljine očitanja ovaj pristup iznimno uspješan\footnote{Trenutna pretpostavka koju radimo je da dugačka očitanja imaju svoje jedinstveno mjesto u genomu. Neki drugi mapperi ne rade tu pretpostavku pa je u daljnjim planovima razvoja LISA-e dopustiti mogućnost poravnanja na više različitih mjesta unutar genoma.}
+\\
+\\
 
-TODO: slika koja stavlja read ispod genoma i dočarava prianjanje
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{../img/poravnanje-intuicija.pdf}
+\caption{Primjer poravnanja - dobro poravnanje ima jako puno preklapajućih dijelova}\label{poravnanje-intuicija}
+\end{figure}
 
 \subsection{Indeks}
 U pregledu poglavlja spomenuli smo da za izgradnju indeksa pratimo smjernice SeqAlto mappera. Svaki niz $i$ od $k=20$ uzastopnih znakova na poziciji $p_i$ unutar genoma kodiramo jednim cijelim brojem $h_i$ koji predstavlja hash bez kolizije. Indeks nam čini polje uređenih parova $(h_i, p_i)$. To je polje sortirano pa koristimo binarno pretraživanje kako bi dohvat pozicija za neki zadani hash bio efikasan. Dodatno, one $h_i$-ove koji se pojavljuju jako velik broj puta njihove parove mičemo iz niza jer takvi ne donose korisnu informaciju, a samo povećavaju vremensku i memorijsku složenost. 
 
-TODO: neka slika koja reprezentira DNA+indeks 
+
+\begin{table}[H]
+  \centering
+  \subfloat[DNA nad kojom gradimo indeks, uz $k=5$]{
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+      \hline
+      A&C&G&T&A&G&A&C&G&T&A&G&A&T&A&G&A&A\\
+	\hline
+	1&2&3&4&5&6&7&8&9&10&11&12&13&14&15&16&17&18\\
+	  \hline
+    \end{tabular}
+  }
+  
+  \subfloat[Indeks]{
+    \centering
+    \begin{tabular}{|c|c|}\hline
+ACGTA&1,7\\
+\hline
+AGACG&5\\
+\hline
+AGATA&11\\
+\hline
+ATAGA&13\\
+\hline
+CGTAG&2,8\\
+\hline
+GACGT&6\\
+\hline
+GATAG&12\\
+\hline
+GTAGA&3,9\\
+\hline
+TAGAA&14\\
+\hline
+TAGAC&4\\
+\hline
+TAGAT&10\\
+\hline
+    \end{tabular}
+  }
+  
+  \caption{Konceptualni prikaz indeksa}\label{indeks}
+\end{table}
 
 \subsection{LISA algoritam poravnanja}
 Algoritam poravnanja sastoji se od dva koraka:
@@ -200,7 +252,28 @@ Algoritam poravnanja sastoji se od dva koraka:
 \subsubsection{Grubo određivanje pozicije očitanja}
 
 U ovoj baznoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{algoritam je opisan u dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
-Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to ucinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrecemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u TODO: pseudokod.
+Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to ucinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrecemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u \ref{grubo}.
+
+
+
+\begin{algorithm}[H]
+\begin{algorithmic}
+\State $P \gets \{\}$
+\For{$i=1...length(O)-k+1$}
+	\State $in \gets dohvatiPozicijeIzIndeksa(O[i...i+k-1])$
+	\ForAll{$p \in pos$}
+		\State $P \gets P \cup (pos, i) $
+	\EndFor
+	
+	\State $P \gets sortirajPoPrvomBroju(P)$
+	\State \Return $L \gets najduljiRastuciPodniz(P)$
+\EndFor
+
+\end{algorithmic}
+\caption{$GruboPoravnanje(O)$}\label{grubo}
+\end{algorithm}
+
+
 
 \subsubsection{Fino određivanje pozicije očitanja}
 
@@ -208,7 +281,7 @@ Razlog zašto je ova faza potrebna je vidljiv na TODO: dodati sliku. Očito je d
 
 \subsubsection{Mjera pouzdanosti}
 
-Mjerenje pouzdanosti je još uvijek otvoren problem za LISA-u. Trenutno koristimo omjer duljine pronađenog rastućeg niza i duljine očitanja.
+Mjerenje pouzdanosti je još uvijek otvoren problem za LISA-u. Trenutno je u uporabi omjer duljine pronađenog rastućeg niza i duljine očitanja.
 
 \chapter{Implementacija}
 
