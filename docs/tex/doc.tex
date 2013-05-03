@@ -218,10 +218,31 @@ Prije bilo kakvog mapiranja potrebno je jednokratno izgraditi indeks, ali je nak
 \end{center}
 \end{figure}
 
-
 Ostatak poglavlja će detaljnije obraditi pojedine komponente opisanog algoritma te njihove ulazne/izlazne podatke.
 
 \section{Priprema podataka}
+Jedini ulazni podatak koji je potreban za izgradnju indeksa je referentna baza genoma. Koristimo preporučanu 
+NT bazu\footnote{dostupnu na ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nt.gz} koja u sebi
+kongregira oko 1,6 milijuna ne-redundantnih DNA sekvenci iz popularnih baza poput GenBank, EMBL, DDBJ i PDB. Veličine te baze je oko 47 GB i zadana je u popularnom FASTA formatu, ljudski čitljivom tekstualnom formatu koji
+sprema niz sekvenci u obliku jedne opisne linije te potom niza linija nukleotidnih baza, primjerice:
+
+\begin{verbatim}
+>gi|4|emb|X17276.1| Giant Panda satellite 1 DNA
+GATCCTCCCCAGGCCCCTACACCCAATGTGGAACCG
+GGACGCTCTGCTTTGTTACCAATGAGAAGGGCGCTG
+ACGAGAGATGATGATCGTTGATATTTCCCTGGACTT
+CGCGACCACGTTCCCTCATGTTTCCCTATTAACGAC
+GACAGACGTGTTTTGGGCCTTTTCGTTCCATTGCCA
+GGAAACGGGTTTTGGCCGAATTGTCTTTCTCAGTGT
+TTGTTCCACCCTCCATAAGGCCGTCGTGACTTCACA
+>gi|7|emb|X51700.1| Bos taurus mRNA for bone Gla protein
+GTCCACGCAGCCGCTGACAGACACACCATGAGAAGCA
+TGGCCGGGCAGATGCAAAGCCTGGTGATGCAGAAGTT
+TGGTGAAGAGACTCAGGCGCTACCTGGACCACCCCCG
+GAGGTGTGTGAGCTCAACCCTGACTGTGACGAGATTA
+CCCAGTCTAGAGCTTGCAGCCCTGCCCACCTATCCAA
+GTCATCCCCGCTGCTCTAGAATAAACTCCAGAAGAGG
+\end{verbatim} 
 
 \section{Izgradnja indeksa}
 \section{Mapiranje podataka}
