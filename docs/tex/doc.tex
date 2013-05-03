@@ -230,58 +230,10 @@ Prije bilo kakvog mapiranja potrebno je jednokratno izgraditi indeks, ali je nak
 \end{center}
 \end{figure}
 
+
 Ostatak poglavlja će detaljnije obraditi pojedine komponente opisanog algoritma te njihove ulazne/izlazne podatke.
 
 \section{Priprema podataka}
-Jedini ulazni podatak koji je potreban za izgradnju indeksa je referentna baza genoma. Koristimo preporučanu 
-NT bazu\footnote{dostupnu na ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nt.gz} koja u sebi
-kongregira oko 1,6 milijuna ne-redundantnih DNA sekvenci iz popularnih baza poput GenBank, EMBL, DDBJ i PDB. Veličine te baze je oko 47 GB i zadana je u popularnom FASTA formatu, ljudski čitljivom tekstualnom formatu koji
-sprema niz sekvenci u obliku jedne opisne linije te potom niza linija nukleotidnih baza, primjerice:
-
-\begin{verbatim}
->gi|4|emb|X17276.1| Giant Panda satellite 1 DNA
-GATCCTCCCCAGGCCCCTACACCCAATGTGGAACCG
-GGACGCTCTGCTTTGTTACCAATGAGAAGGGCGCTG
-ACGAGAGATGATGATCGTTGATATTTCCCTGGACTT
-CGCGACCACGTTCCCTCATGTTTCCCTATTAACGAC
-GACAGACGTGTTTTGGGCCTTTTCGTTCCATTGCCA
-GGAAACGGGTTTTGGCCGAATTGTCTTTCTCAGTGT
-TTGTTCCACCCTCCATAAGGCCGTCGTGACTTCACA
->gi|7|emb|X51700.1| Bos taurus mRNA for bone Gla protein
-GTCCACGCAGCCGCTGACAGACACACCATGAGAAGCA
-TGGCCGGGCAGATGCAAAGCCTGGTGATGCAGAAGTT
-TGGTGAAGAGACTCAGGCGCTACCTGGACCACCCCCG
-GAGGTGTGTGAGCTCAACCCTGACTGTGACGAGATTA
-CCCAGTCTAGAGCTTGCAGCCCTGCCCACCTATCCAA
-GTCATCCCCGCTGCTCTAGAATAAACTCCAGAAGAGG
-\end{verbatim}
-
-Izgradnja indeksa će stvoriti niz binarnih datoteka (čija se veličina može predodrediti preko komandne linije)
-u kojima će se nalaziti procesirani geni prilagođeni za što brže pronalaženje mjesta u bazi gdje se određena
-podsekvena nukleotidnih baza pojavljuje.
-
-U drugu ruku, pri pokretanju samog sustava za poravnavanje potrebno je, osim navedenih datoteka indeksa, priložiti
-i datoteku s očitanjima u FASTQ formatu. Format je također tekstualan gdje je svako očitanje opisano s četiri linije: identifikatorom očitanja, očitane nukleotidne sekvence, separatora ``+'' te nizom kvaliteta očitanja.
-Kvaliteta očitanja predstavlja vjerojatnost $p$ da je pojedina nukleotidna baza krivo očitana. Specifično,
-pomoću $p$ se definira kvaliteta $Q$ prema formuli:
-
-$$ Q = -10 \cdot \log_{10}{\frac{p}{1-p}} $$
-
-\noindent gdje se kvaliteta kvantizira na najbliži cijeli broj te se potom taj broj iz intervala 0-93 preslikava 
-u ASCII vrijednost 33-126. U praktičnim primjenama popularnih alata za sekvenciranje kvaliteta varira od 40 za
-očitanja visoke kvalitete do 0 za očitanja niske kvalitete.
-
-Primjer jednostavne FASTQ datoteke:
-\begin{verbatim}
-@SEQ_ID
-GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAA
-+
-!''*((((***+))%%%++)(%%%%).1***-+*'')
-@HWI-EAS209_0006_FC706VJ:5:58:5894:21141#ATCACG/1
-TTAATTGGTAAATAAATCTCCTAATAGCTTAGATNTTACC
-+
-efcfffffcfeefffcffffffddf`@EE!]`]_Ba_^__
-\end{verbatim}
 
 \section{Izgradnja indeksa}
 Zbog iznimnog volumena referentne baze od 47 GB i procijenjene veličine izlaznog indeksa od 340 GB memorije nije
@@ -321,8 +273,10 @@ Ispostavilo se da je upravo ovaj korak najsporiji dio izgradnje indeksa.
 \section{Paralelizacija algoritma}
 
 \chapter{Rezultati}
+
+\section {Pregled}
 U ovoj sekciji analiziramo performanse LISA-e. Analiza se provodi poravnanjem nad poznatim vrstama bakterija - kuga, salmonela, streptokok i E. Coli. Motivacija iza preciznog poravnanja očitanja u genome bakterije je jasna - efikasno i točno određivanje primjerice mutacija omogućuje brži dizajn lijekova za bakterije koje su stekle otpornost na postojeće lijekove.\\
-Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim parametrima za generiranje greške. Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja.
+Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim parametrima za generiranje greške. Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja. 
 Svi testovi su provedni na računalu koje je opremljeno sa 188Gb RAM-a i Intel(R) Xeon(R) procesorom s 24 jezgre koje rade na 2.40 GHz. 
 
 \section {E. Coli}
@@ -395,19 +349,88 @@ Genom S. Enterica-e sastoji se od otprilike 5M parova nukoleotida. Proveli smo t
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{../img/streptococcus-time.pdf}
-\caption{Usporedba performansi mappera}
+\caption{Usporedba performansi mappera}\label{streptococcus-time}
 \end{figure}
+
+Genom S. Pneumoniae sadrži otprilike 3M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200 i 500. Na slici \ref{streptococcus-time} vidljivo je kako na ovim kraćim duljinama SNAP ima najbolje performanse. To je očekivan rezultat budući da je on pažljivo dizajniran za kratke duljine očitanja. LISA je bolja od preostalih mappera. Tablica \ref{streptococcus-correct} pokazuje vrhunsku preciznost svih mappera. Valja istaknuti kako SNAP ima nešto manju preciznost u usporedbi s ostalim mapperima.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500\\
+\hline
+\hline
+	BWA-MEM & 99.10 & 99.38 & 99.55\\
+\hline
+	BWA-SW  & 99.12 & 99.37 & 99.54\\
+\hline
+	SeqAlto & 98.57 & 99.31 & 99.52\\
+\hline
+	SNAP    & 97.74 & 96.26 & 98.82\\
+\hline
+	LISA    & 98.98 & 99.36 & 99.53\\
+\hline
+\end{tabular}
+\caption{Postotak točno poravnatih očitanja}\label{streptococcus-correct}
+\end{table}
+
 
 \section {Yersinia Pestis}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{../img/yersinia-time.pdf}
-\caption{Usporedba performansi mappera}
+\caption{Usporedba performansi mappera}\label{yersinia-time}
 \end{figure}
+
+Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000, 2000 i 5000. Slika \ref{yersinia-time} demonstrira efikasnost SNAP-a na manjim duljinama. SNAP je imao poteškoća s obrađivanjem očitanja duljina većih od 1000, iz tog razloga izostaju ti rezultati. Zbog preglednosti grafa na njemu nisu vidljiva vremena izvođenja SeqAlto-a za duljine 2000 (7m9s) i 5000 (19m27s). Za dugačka očitanja LISA se ponaša uvjerljivo najbolje, postižući ubrzanja 3-20x u usporedbi s ostalim mapperima. Točnosti svih mappera su vidljive u tablici \ref{yersinia-correct}. Svi mapperi su vrlo velike i točnosti zadovoljavajuće za praktičnu uporabu.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 2000 & 5000\\
+\hline
+\hline
+	BWA-MEM & 95.63 & 96.31 & 97.34 & 98.66 & 99.90 & 100.00\\
+\hline
+	BWA-SW  & 95.60 & 96.31 & 97.33 & 98.58 & 99.79 & 99.98\\
+\hline
+	SeqAlto & 95.12 & 96.29 & 97.37 & 98.63 & 99.88 & 63.85\\
+\hline
+	SNAP    & 96.64 & 93.34 & 96.57 & 96.22 & - & -\\
+\hline
+	LISA    & 95.53 & 96.21 & 97.21 & 98.54 & 99.72 & 99.81\\
+\hline
+\end{tabular}
+\caption{Postotak točno poravnatih očitanja}\label{yersinia-correct}
+\end{table}
 
 
 \section {Dodatne informacije}
+Ovdje navodimo naredbe kojima smo pokretali svaki od mappera.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+BWA-MEM & bwa mem -t 24 index ocitanja.fq > rezultat.sam\\
+\hline
+BWA-SW & bwa bwasw -t 24 index ocitanja.fq > rezultat.sam\\
+\hline
+SeqAlto & seqalto\_basic align index -n 1 -f -p 24 ocitanja.fq >rezultat.sam\\
+\hline
+ & Za duljine < 500: snap single index ocitanja.fq -t 24\\
+SNAP & Za duljinu 500: snap single index ocitanja.fq -t 24 -d 20\\
+& Za duljinu 1000: snap single index ocitanja.fq -t 24 -d 40 -h 100 -n 2000\\
+\hline
+LISA & client solve genom.fasta index ocitanja.fq /dev/null\\
+\hline
+\end{tabular}
+\label{komande}
+\end{table}
+
 
 \chapter{Zaključak i daljnji rad}
 Zaključak.
