@@ -37,8 +37,19 @@
 
 \maketitle
 
+\newcommand{\zahvalaX}[1]{%
+	\newpage
+ 	\setcounter{page}{3}
+	\vspace*{\fill}
+	\hfil {#1}\hfil
+	\vspace*{\fill}
+}
+
+
 % Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
-\zahvala{}
+\zahvalaX{Ovaj rad izrađen je na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu, na Zavodu \
+za elektroničke sustave i obradbu informacija pod vodstvom doc. dr. sc. Mile Šikića i predan je na natječaj \
+za dodjelu Rektorove nagrade u akademskoj godini 2012. / 2013.}
 
 \tableofcontents
 
