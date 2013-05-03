@@ -141,7 +141,7 @@ godina i uspješno identificirao većinu ljudskog genoma. Ukupna cijena projekta
 Od tada cijena sekvenciranja DNA strmoglavo pada i očekuje se će u sljedećih nekoliko godina dostići \$1.000 za
 cjelokupni ljudski genom.
 
-Sekvenciranje DNA se odvija u nekoliko faza: (1) prikupljanje kratkih očitanja, (2) poravnavanje s referentnim genomom, (3) izlistavanje varijanti i (4) filtriranje i označavanje.
+Sekvenciranje DNA se odvija u nekoliko faza: (1) prikupljanje kratkih očitanja, (2) poravnavanje s referentnim genomom, (3) izlistavanje varijanti i (4) filtriranje i označavanje. \cite{mardis2008next}
 
 \begin{description}
 \item[Prikupljanje kratkih očitanja] je biološki dio sekvenciranja tijekom kojeg se DNA višestruko replicira puta, slučajno lomi na dijelove duljine 100-3000 baza te se potom očitava složenim metodama. Te metode su podložne pogreškama uslijed krivog čitanja dijela sekvenci, gubljenja informacija i dvosmislenosti podataka koji se javljaju tijekom loma.
@@ -199,7 +199,7 @@ Algoritam poravnanja sastoji se od dva koraka:
 
 \subsubsection{Grubo određivanje pozicije očitanja}
 
-U ovoj baznoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{Algoritam je opisan u Dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
+U ovoj baznoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{algoritam je opisan u dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
 Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to ucinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrecemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u TODO: pseudokod.
 
 \subsubsection{Fino određivanje pozicije očitanja}
@@ -314,11 +314,10 @@ datoteku očitanih fragmenata na jednake dijelove te ih šalje na farmu servera 
 dane podatke i pri završetku šalju rezultate natrag na originalno računalo. Distribucija se vrši preko biblioteke
 MPI, kao što je prikazano na slici:
 
-\nopagebreak
-\begin{figure}[!ht]
+\begin{figure}[H]
 \begin{center}
-	\includegraphics[width=0.3\textwidth]{../img/MPI.png}
-	\caption{}
+	\includegraphics[width=0.45\textwidth]{../img/MPI.png}
+	\caption{Distribucija mapiranja na farmu servera}
 \end{center}
 \end{figure}
 
