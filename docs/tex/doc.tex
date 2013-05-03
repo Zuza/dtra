@@ -231,8 +231,10 @@ Ostatak poglavlja će detaljnije obraditi pojedine komponente opisanog algoritma
 \section{Paralelizacija algoritma}
 
 \chapter{Rezultati}
+
+\section {Pregled}
 U ovoj sekciji analiziramo performanse LISA-e. Analiza se provodi poravnanjem nad poznatim vrstama bakterija - kuga, salmonela, streptokok i E. Coli. Motivacija iza preciznog poravnanja očitanja u genome bakterije je jasna - efikasno i točno određivanje primjerice mutacija omogućuje brži dizajn lijekova za bakterije koje su stekle otpornost na postojeće lijekove.\\
-Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim parametrima za generiranje greške. Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja.
+Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim parametrima za generiranje greške. Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja. 
 Svi testovi su provedni na računalu koje je opremljeno sa 188Gb RAM-a i Intel(R) Xeon(R) procesorom s 24 jezgre koje rade na 2.40 GHz. 
 
 \section {E. Coli}
@@ -340,7 +342,7 @@ Genom S. Pneumoniae sadrži otprilike 3M parova nukleotida. Proveli smo testiran
 \caption{Usporedba performansi mappera}\label{yersinia-time}
 \end{figure}
 
-Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000, 2000 i 5000. Slika \ref{yersinia-time} demonstrira efikasnost SNAP-a na manjim duljinama. SNAP je imao poteškoća s obrađivanjem očitanja duljina većih od 1000, iz tog razloga izostaju ti rezultati. Zbog preglednosti grafa na njemu nisu vidljiva vremena izvođenja SeqAlto-a za duljine 2000 (7m9s) i 5000 (19m27s). Za dugačka očitanja LISA se ponaša uvjerljivo najbolje, postižući ubrzanja 3-20x u usporedbi s ostalim mapperima.
+Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000, 2000 i 5000. Slika \ref{yersinia-time} demonstrira efikasnost SNAP-a na manjim duljinama. SNAP je imao poteškoća s obrađivanjem očitanja duljina većih od 1000, iz tog razloga izostaju ti rezultati. Zbog preglednosti grafa na njemu nisu vidljiva vremena izvođenja SeqAlto-a za duljine 2000 (7m9s) i 5000 (19m27s). Za dugačka očitanja LISA se ponaša uvjerljivo najbolje, postižući ubrzanja 3-20x u usporedbi s ostalim mapperima. Točnosti svih mappera su vidljive u tablici \ref{yersinia-correct}. Svi mapperi su vrlo velike i točnosti zadovoljavajuće za praktičnu uporabu.
 
 \begin{table}[H]
 \centering
@@ -355,9 +357,9 @@ Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida.
 \hline
 	SeqAlto & 95.12 & 96.29 & 97.37 & 98.63 & 99.88 & 63.85\\
 \hline
-	SNAP    & 96.64 & 93.34 & 96.57 & - & - & -\\
+	SNAP    & 96.64 & 93.34 & 96.57 & 96.22 & - & -\\
 \hline
-	LISA    & 99.54 & 99.67 & 99.81 & 99.95 & 99.91\\
+	LISA    & 95.53 & 96.21 & 97.21 & 98.54 & 99.72 & 99.81\\
 \hline
 \end{tabular}
 \caption{Postotak točno poravnatih očitanja}\label{yersinia-correct}
@@ -365,6 +367,28 @@ Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida.
 
 
 \section {Dodatne informacije}
+Ovdje navodimo naredbe kojima smo pokretali svaki od mappera.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+BWA-MEM & bwa mem -t 24 index ocitanja.fq > rezultat.sam\\
+\hline
+BWA-SW & bwa bwasw -t 24 index ocitanja.fq > rezultat.sam\\
+\hline
+SeqAlto & seqalto\_basic align index -n 1 -f -p 24 ocitanja.fq >rezultat.sam\\
+\hline
+ & Za duljine < 500: snap single index ocitanja.fq -t 24\\
+SNAP & Za duljinu 500: snap single index ocitanja.fq -t 24 -d 20\\
+& Za duljinu 1000: snap single index ocitanja.fq -t 24 -d 40 -h 100 -n 2000\\
+\hline
+LISA & client solve genom.fasta index ocitanja.fq /dev/null\\
+\hline
+\end{tabular}
+\label{komande}
+\end{table}
+
 
 \chapter{Zaključak i daljnji rad}
 Zaključak.
