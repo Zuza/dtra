@@ -16,7 +16,10 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{caption}
+\usepackage{pdfpages}
+\usepackage{float}
 \usepackage[usenames, dvipsnames]{color}
+
 
 \begin{document}
 
@@ -242,23 +245,129 @@ TGGTGAAGAGACTCAGGCGCTACCTGGACCACCCCCG
 GAGGTGTGTGAGCTCAACCCTGACTGTGACGAGATTA
 CCCAGTCTAGAGCTTGCAGCCCTGCCCACCTATCCAA
 GTCATCCCCGCTGCTCTAGAATAAACTCCAGAAGAGG
-\end{verbatim} 
+\end{verbatim}
+
+Izgradnja indeksa će stvoriti niz binarnih datoteka (čija se veličina može predodrediti preko komandne linije)
+u kojima će se nalaziti procesirani geni prilagođeni za što brže pronalaženje mjesta u bazi gdje se određena
+podsekvena nukleotidnih baza pojavljuje.
+
+U drugu ruku, pri pokretanju samog sustava za poravnavanje potrebno je, osim navedenih datoteka indeksa, priložiti
+i datoteku s očitanjima u FASTQ formatu. Format je također tekstualan gdje je svako očitanje opisano s četiri linije: identifikatorom očitanja, očitane nukleotidne sekvence, separatora ``+'' te nizom kvaliteta očitanja.
+Kvaliteta očitanja predstavlja vjerojatnost $p$ da je pojedina nukleotidna baza krivo očitana. Specifično,
+pomoću $p$ se definira kvaliteta $Q$ prema formuli:
+
+$$ Q = -10 \cdot \log_{10}{\frac{p}{1-p}} $$
+
+\noindent gdje se kvaliteta kvantizira na najbliži cijeli broj te se potom taj broj iz intervala 0-93 preslikava 
+u ASCII vrijednost 33-126. U praktičnim primjenama popularnih alata za sekvenciranje kvaliteta varira od 40 za
+očitanja visoke kvalitete do 0 za očitanja niske kvalitete.
+
+Primjer jednostavne FASTQ datoteke:
+\begin{verbatim}
+@SEQ_ID
+GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAA
++
+!''*((((***+))%%%++)(%%%%).1***-+*'')
+@HWI-EAS209_0006_FC706VJ:5:58:5894:21141#ATCACG/1
+TTAATTGGTAAATAAATCTCCTAATAGCTTAGATNTTACC
++
+efcfffffcfeefffcffffffddf`@EE!]`]_Ba_^__
+\end{verbatim}
 
 \section{Izgradnja indeksa}
+
+
 \section{Mapiranje podataka}
 \section{Paralelizacija algoritma}
 
 \chapter{Rezultati}
 U ovoj sekciji analiziramo performanse LISA-e. Analiza se provodi poravnanjem nad poznatim vrstama bakterija - kuga, salmonela, streptokok i E. Coli. Motivacija iza preciznog poravnanja očitanja u genome bakterije je jasna - efikasno i točno određivanje primjerice mutacija omogućuje brži dizajn lijekova za bakterije koje su stekle otpornost na postojeće lijekove.\\
-Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi.
+Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim parametrima za generiranje greške. Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja.
+Svi testovi su provedni na računalu koje je opremljeno sa 188Gb RAM-a i Intel(R) Xeon(R) procesorom s 24 jezgre koje rade na 2.40 GHz. 
 
 \section {E. Coli}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/ecoli-time.pdf}
+\caption{Usporedba performansi mappera}
+\label{ecoli-time}
+\end{figure}
+
+Genom bakterije E. Coli sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljine 100, 200 i 500. Natjecanje vremenskih performansi je jasno pobijedio SNAP (\ref{ecoli-time}). To ne iznenađuje jer je on posebno dizajniran za kraće duljine očitanja. Kasnije ćemo vidjeti da prestaje biti praktičan kada duljine očitanja rastu. LISA performansama nadmašuje preostale mappere. U tablici \ref{ecoli-correct} je vidljivo da su na testiranju svi mapperi bili iznimno precizni.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500\\
+\hline
+\hline
+	BWA-MEM & 99.60 & 99.64 & 99.65\\
+\hline
+	BWA-SW  & 99.55 & 99.64 & 99.65\\
+\hline
+	SeqAlto & 99.10 & 99.63 & 99.64\\
+\hline
+	SNAP    & 99.61 & 97.37 & 99.56\\
+\hline
+	LISA    & 99.54 & 99.63 & 99.62\\
+\hline
+\end{tabular}
+\caption{Postotak točno poravnatih očitanja}\label{ecoli-correct}
+\end{table}
+
+
 \section {Salmonella Enterica}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.97\textwidth]{../img/salmonella-time.pdf}
+\caption{Usporedba performansi mappera}\label{salmonella-time}
+\end{figure}
+
+Genom S. Enterica-e sastoji se od otprilike 5M parova nukoleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000 i 2000. Na slici \ref{salmonella-time} je vidljivo da SNAP ima najbolje performanse za očitanja do duljine 1000. Za duljinu 2000 je imao poteškoća sa izvođenje pa nemamo rezultat. Zbog preglednosti grafa izostavili smo rezultat SeqAlto-a na očitanjima duljine 2000 (eksperiment je trajao 6m12s). LISA nadmašuje sve mappere osim SNAP-a na malim duljinama. Tablica \ref{salmonella-correct} ističe iznimnu točnost svih mappera.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 2000\\
+\hline
+\hline
+	BWA-MEM & 99.57 & 99.70 & 99.83 & 99.97 & 99.99\\
+\hline
+	BWA-SW  & 99.53 & 99.69 & 99.82 & 99.97 & 99.99\\
+\hline
+	SeqAlto & 99.06 & 99.69 & 99.83 & 99.97 & 99.99\\
+\hline
+	SNAP    & 99.13 & 97.02 & 99.47 & 97.95 & -\\
+\hline
+	LISA    & 99.54 & 99.67 & 99.81 & 99.95 & 99.91\\
+\hline
+\end{tabular}
+\caption{Postotak točno poravnatih očitanja}\label{salmonella-correct}
+\end{table}
+
 
 \section {Streptococcus Pneumoniae}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/streptococcus-time.pdf}
+\caption{Usporedba performansi mappera}
+\end{figure}
+
 \section {Yersinia Pestis}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/yersinia-time.pdf}
+\caption{Usporedba performansi mappera}
+\end{figure}
+
+
+\section {Dodatne informacije}
 
 \chapter{Zaključak i daljnji rad}
 Zaključak.
