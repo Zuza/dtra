@@ -21,6 +21,7 @@
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{natbib}
 
 \lstset { %
     language=C++,
@@ -137,7 +138,7 @@ Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Okvirno poznavanje mogu
 
 Prvi pokušaj sekvenciranja ljudskog DNA počinje 1990. s američkim \emph{Human Genome Project} koji je trajao 15
 godina i uspješno identificirao većinu ljudskog genoma. Ukupna cijena projekta je procijenjena na \$3.000.000.000.
-(TODO: referenca)
+\cite{genomefaq}
 Od tada cijena sekvenciranja DNA strmoglavo pada i očekuje se će u sljedećih nekoliko godina dostići \$1.000 za
 cjelokupni ljudski genom.
 
@@ -294,12 +295,12 @@ Mapiranje očitanja na referentnu bazu zahtjeva izgrađeni dio indeksa koji se u
 Algoritam mapira pojedini fragment tako da pokušava pronaći najbolje poravnanje s referentnom bazom. Za svaku
 podsekvencu pronalaze se sve pozicije u genima gdje se navedena podsekvenca pojavljuje. Pretraga se, zbog
 sortiranosti podataka vrši binarnim pretraživanjem, a može se zbog velike količine podataka i uniformne hash
-funkcije ubrzati interpoliranim binarnim pretraživanjem. (TODO: referenca)
+funkcije ubrzati interpoliranim binarnim pretraživanjem. \cite{weiss1998data}
 
 Za svaki gen u kojem je pronađena barem jedna odgovarajuća podsekvenca se poravnava s fragmentom pomoću opisanog
 algoritma najdužeg rastućeg podniza. Implementacija algoritma je ostvarena u složenosti $O(n \log n)$ pomoću
 vrlo efikasnog Fenwickovog stabla koje podržava sve potrebne operacije kao i klasično balansirano binarno stablo,
-ali uz puno bolju vremensku i memorijsku konstantu. (TODO: referenca)
+ali uz puno bolju vremensku i memorijsku konstantu. \cite{fenwick1994new}
 
 Kako bi se ubrzao proces mapiranja, očitani fragmenti su ravnomjerno podijeljeni među jezgrama računala (sustav
 automatski detektira broj jezgara i ravnomjerno dijeli posao). Osiguranje ravnomjerne zaposlenosti je ostvareno
@@ -495,8 +496,10 @@ Implementacijski prioritet je ispisivanje rezultata u standardiziranom SAM forma
 
 \chapter{Dodatak}
 
-\bibliographystyle{plain}
 \bibliography{literatura}
+\bibliographystyle{fer}
+% \bibliographystyle{plain}
+% \bibliography{literatura}
 
 \begin{sazetak}
 

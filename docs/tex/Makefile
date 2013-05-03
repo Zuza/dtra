@@ -5,3 +5,6 @@ all: $(TARGETS)
 
 %.pdf: %.tex
 	pdflatex $<
+	bibtex doc.aux
+	pdflatex $<
+	pdflatex $<
