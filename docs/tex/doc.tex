@@ -598,8 +598,64 @@ Implementacijski prioritet je ispisivanje rezultata u standardiziranom SAM forma
 \chapter{Dodatak}
 
 \section{Najdulji rastući podniz}
+\emph{Definicija:} Za zadani niz od $n$ brojeva $a_i$ potrebno je naći najveći podskup indeksa tako da u odabranom podskupu za svako $i < j$ vrijedi $a_i < a_j$. Pseudokod \ref{lis} rješava taj problem u složenosti $O(n$ lg $n)$.\\
+\\
+U ovom poglavlju dani su isječci koda koji jasno i jednostavno implementiraju algoritam koji rješava problem najduljeg rastućeg podniza. U svrhu sažetosti izostavljena je implementacija Fenwickovog stabla. To je stablo klasična struktura i njenu je implementaciju vrlo lako dobaviti. Samo napominjemo da operacije $Fenwick.get(x)$ dobavlja najveći element u intervalu $[1,x]$, dok $Fenwick.update(x, v)$ postavlja vrijednost na indeksu $x$ na vrijednost $v$.
 
-%\section{Edit distance}
+
+\begin{algorithm}[H]
+\begin{lstlisting}
+
+void reconstructLIS(vector<int>* result,
+                    int last,
+                    const vector<int>& reconstructionTable) {
+  result->clear();
+  result->reserve(reconstructionTable.size());
+  for ( ; last != -1; last = reconstructionTable[last]) {
+    result->push_back(last);
+  }
+  reverse(result->begin(), result->end());
+}
+
+\end{lstlisting}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+\begin{lstlisting}
+void calcLongestIncreasingSubsequence(
+    vector<int>* result,
+    const vector<pair<int, int> >& elements) {
+  int n = elements.size();
+
+  vector<int> dpTable(n, 0);
+  vector<int> reconstructionTable(n, -1);
+
+  int maxSecond = -1;
+  for (int i = 0; i < elements.size(); ++i) {
+    maxSecond = max(maxSecond, elements[i].second);
+  }
+
+  FenwickMax fm(maxSecond);
+
+  for (size_t i = 0; i < n; ++i) {
+    std::pair<int, int> best = fm.get(elements[i].second-1);
+    if (best.first) {
+      dpTable[i] = best.first+1;
+      reconstructionTable[i] = best.second;
+    } else {
+      dpTable[i] = 1;
+    }
+    fm.update(elements[i].second, make_pair(dpTable[i], i));
+  }
+
+  int last = 
+        max_element(dpTable.begin(), dpTable.end())-dpTable.begin();
+  reconstructLIS(result, last, reconstructionTable);
+}
+\end{lstlisting}
+\end{algorithm}
+
 
 \bibliography{literatura}
 \bibliographystyle{plain}
