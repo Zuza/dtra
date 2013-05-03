@@ -260,7 +260,7 @@ Algoritam poravnanja sastoji se od dva koraka:
 \item Fino određivanje pozicije očitanja unutar genoma
 \end{enumerate}
 
-\subsubsection{Grubo određivanje pozicije očitanja}
+\subsection{Grubo određivanje pozicije očitanja}
 
 U ovoj baznoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{algoritam je opisan u dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
 Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to ucinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrecemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u \ref{grubo}.
@@ -270,14 +270,15 @@ Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $
 \begin{algorithm}[H]
 \begin{algorithmic}
 \State $P \gets \{\}$
+\State $L \gets \{\}$
 \For{$i=1...length(O)-k+1$}
-	\State $in \gets dohvatiPozicijeIzIndeksa(O[i...i+k-1])$
-	\ForAll{$p \in pos$}
-		\State $P \gets P \cup (pos, i) $
+	\ForAll{$p \in dohvatiPozicijeIzIndeksa(O[i...i+k-1])$}
+		\State $P \gets P \cup (p, i) $
 	\EndFor
 	
 	\State $P \gets sortirajPoPrvomBroju(P)$
-	\State \Return $L \gets najduljiRastuciPodniz(P)$
+	\State $L \gets najduljiRastuciPodnizPoDrugomBroju(P)$
+	\State \Return $L$
 \EndFor
 
 \end{algorithmic}
@@ -285,10 +286,28 @@ Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $
 \end{algorithm}
 
 
+\subsection{Fino određivanje pozicije očitanja}
 
-\subsubsection{Fino određivanje pozicije očitanja}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{../img/fino.pdf}
+\caption{Višestruka poravnanja}\label{img:fino}
+\end{figure}
 
-Razlog zašto je ova faza potrebna je vidljiv na TODO: dodati sliku. Očito je da je pravo poravnanje smješteno oko pozicije TODO: pozicija, dok bismo pogrešnom naivnom procjenom možda rekli da je ono ipak TODO: pozicija. Pseudokod TODO: pseudokod jednostavno opisuje rad ove faze.
+Razlog zašto je ova faza potrebna je vidljiv na \ref{img:fino}. Očito je da je pravo poravnanje smješteno oko pozicije 9, dok bismo pogrešnom naivnom procjenom možda rekli da je ono ipak na poziciji 1. Pseudokod \ref{fino} opisuje rad ove faze.
+
+\begin{algorithm}[H]
+\begin{algorithmic}
+\State $brojac(-\infty...\infty) \gets 0$
+\ForAll{$l \in L$}
+	\State $++brojac(prvi(l)-drugi(l))$
+\EndFor
+\State $finaProcjena \gets \arg\max_i brojac(i)$
+\State \Return $finaProcjena$
+\end{algorithmic}
+\caption{$FinoPoravnanje(L)$}\label{fino}
+\end{algorithm}
+
 
 \subsubsection{Mjera pouzdanosti}
 
@@ -577,6 +596,10 @@ Najveći istraživački prioritet kojem su autori trenutno posvećeni je poveća
 Implementacijski prioritet je ispisivanje rezultata u standardiziranom SAM formatu jer se tada otvara mogućnost korištenja mnogih već razvijenih alata za analizu efikasnosti i rezultata.
 
 \chapter{Dodatak}
+
+\section{Najdulji rastući podniz}
+
+%\section{Edit distance}
 
 \bibliography{literatura}
 \bibliographystyle{plain}
