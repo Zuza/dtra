@@ -19,7 +19,14 @@
 \usepackage{pdfpages}
 \usepackage{float}
 \usepackage[usenames, dvipsnames]{color}
+\usepackage{listings}
+\usepackage{xcolor}
 
+\lstset { %
+    language=C++,
+    backgroundcolor=\color{black!5}, % set backgroundcolor
+    basicstyle=\footnotesize,% basic font setting
+}
 
 \begin{document}
 
@@ -205,6 +212,8 @@ Mjerenje pouzdanosti je još uvijek otvoren problem za LISA-u. Trenutno koristim
 
 \chapter{Implementacija}
 
+Sustav je implementiran u programskom jeziku C++ (zbog efikasnosti i ogromnog volumena podataka) koristeći nedavni standard C++0x/C++11 pomoću kompatibilnog GNU g++ prevoditelja.
+
 Implementacija sustava može biti vrlo prirodno razložena na dva osnovna dijela:
 
 \begin{enumerate}
@@ -275,7 +284,36 @@ efcfffffcfeefffcffffffddf`@EE!]`]_Ba_^__
 \end{verbatim}
 
 \section{Izgradnja indeksa}
+Zbog iznimnog volumena referentne baze od 47 GB i procijenjene veličine izlaznog indeksa od 340 GB memorije nije
+pogodno graditi indeks od cijele baze odjednom. Odabrali smo pristup gdje bazu dijelimo na više jednakih dijelova
+(čija se veličina može specificirati preko komandne linije) te gradimo zasebni indeks na svakom od tih dijelova.
 
+Implementacijski gledano, indeks je binarna datoteka koja sadrži sortiranu hash tablicu svih genskih podsekvenci
+duljine $N$ nukleotidnih baza\footnote{tipično, uzimamo $N = 16$ ili $N = 20$}. Specifično, svaku podsekvencu
+duljine $N$ možemo interpretirati kao broj u bazi 4 taj broj uzeti kao ključ dotične pozicije koji se s pozicijom
+sortira i sprema u indeks. Ovakav odabir omogućuje brzo pretraživanje po ključu pomoću logaritamskog binarnog 
+pretraživanja te omogućuje da za $N < 32$ zbog nepostojanja preljeva pretražujemo i podsekvence po ključu koji
+je kraći od $N$.
+
+Sama struktura binarne indeks datoteke je najbolje opisana opisnikom pretinaca hash tablice, prikazanim u sljedećem
+odsječku:
+
+\begin{lstlisting}
+  struct Entry {
+    size_t position;
+    hash_t hash;
+
+    friend bool operator < (const Entry& a, const Entry& b) {
+      return a.hash < b.hash;
+    }
+  };
+\end{lstlisting}
+
+Bitno je napomenuti kako koristimo razne implementacijske i algoritamske optimizacije radi efikasnijeg
+baratanja podataka ogromnog volumena s kakvima radimo u ovom projektu. Ovdje ćemo ukratko objasniti neke od njih:
+
+\begin{itemize}
+\end{itemize}
 
 \section{Mapiranje podataka}
 \section{Paralelizacija algoritma}
