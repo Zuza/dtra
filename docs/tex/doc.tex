@@ -33,7 +33,7 @@
 
 \begin{document}
 
-\title{LISA - Alat za poravnanje DNA fragmenata}
+\title{LISA - Alat za poravnanje DNA očitanja}
 
 \author{Filip Paveti\'{c}, Goran \v{Z}u\v{z}i\'{c}}
 
@@ -59,8 +59,8 @@ za dodjelu Rektorove nagrade u akademskoj godini 2012. / 2013.}
 Ovaj rad opisuje sustav za mapiranje DNA sekvenci na referentni genom. Rad je podijeljen na 4 dijela:
 \begin{itemize}
 \item u prvom dijelu ćemo napraviti kratki uvod u probleme bioinformatike i pozadinu problema kojeg sustav rješava
-\item drugi dio se bavi modelom, algoritmom i implementacijom nad kojim je sustav ostvaren
-\item slijede rezultati testiranja i usporedba s najpoznatijim analognim alatima
+\item u drugom dijelu se bavimo modelom, algoritmom i implementacijom nad kojim je sustav ostvaren
+\item nakon toga prezentiramo rezultate testiranja i usporedba s najpoznatijim analognim alatima
 \item naposlijetku dajemo kratki zaključak i smjernice za daljnji rad
 \end{itemize}
 
@@ -89,7 +89,7 @@ bez kojih bilo kakva obrada postaje nemoguća.
 
 Nedavni razvoj moderne tehnologije je doveo do strmoglavog pada cijene sekvenciranja molekule DNA do te razine da je
 postalo jasno kako će u bliskoj budućnosti najsporiji i najteži dio bioinformatike biti u konstrukciji efikasnih
-algoritama koji brzo i pouzdano obrađuju sve veču i veću količinu informacija na njihovom raspolaganju.
+algoritama koji brzo i pouzdano obrađuju sve veću i veću količinu informacija na njihovom raspolaganju.
 
 \section{DNA i mutacije}
 Kao što je spomenuto, DNA modeliramo kao linearni niz povezanih parova baza. U DNA se pojavljuju točno četiri različite baze i njih
@@ -149,10 +149,10 @@ Kroz vrijeme se na molekuli DNA javljaju razne mutacije. Okvirno poznavanje mogu
 
 \section{Sekvenciranje DNA}
 
-Prvi pokušaj sekvenciranja ljudskog DNA počinje 1990. s američkim \emph{Human Genome Project} koji je trajao 15
-godina i uspješno identificirao većinu ljudskog genoma. Ukupna cijena projekta je procijenjena na \$3.000.000.000.
+Prvi pokušaj sekvenciranja ljudskog DNA počinje 1990. američkim \emph{Human Genome Project}-om koji je trajao 15
+godina i uspješno identificirao većinu ljudskog genoma. Ukupna cijena projekta je procijenjena na 3.000.000.000\$.
 \cite{genomefaq}
-Od tada cijena sekvenciranja DNA strmoglavo pada i očekuje se će u sljedećih nekoliko godina dostići \$1.000 za
+Od tada cijena sekvenciranja DNA strmoglavo pada i očekuje se će u sljedećih nekoliko godina dostići 1.000\$ za
 cjelokupni ljudski genom.
 
 Sekvenciranje DNA se odvija u nekoliko faza: (1) prikupljanje kratkih očitanja, (2) poravnavanje s referentnim genomom, (3) izlistavanje varijanti i (4) filtriranje i označavanje. \cite{mardis2008next}
@@ -189,13 +189,13 @@ na tome natjecanju u sklopu tima Fakulteta elektrotehnike i računarstva Sveuči
 
 \section{Pregled}
 Ovo poglavlje počinjemo kratkih pregledom trendova u razvoju mappera te kasnije dajemo detaljan opis našeg pristupa. Jedan od prvih algoritama za poravnanje očitanja je algoritam globalnog poravnanja pod nazivom Smith-Waterman\cite{Smith1981195}. Rješenje dobiveno tim algoritmom može se smatrati veoma točnim zbog toga što ima statistički opravdano značenje, međutim zbog velike vremenske složenosti algoritma nije praktično za korištenje.\\
-Većina boljih modernih mappera (poput SNAP-a\cite{SNAP} i SeqAlto-a\cite{seqalto}) koriste tkzv. seed-and-extend pristup. U tom pristupu prvo se od referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi hash tablicu kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
+Većina boljih modernih alata za mapiranje - \emph{mappera} (poput SNAP-a\cite{SNAP} i SeqAlto-a\cite{seqalto}) koriste seed-and-extend pristup. U tom pristupu prvo se od referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi tablicu raspršenog adresiranja kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch}\cite{@nw} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
 Naš mapper indeks izgrađuje po uzoru na SeqAlto, međutim uvodimo novu metriku ocjene kvalitete koja za red složenosti poboljšava postojeće algoritme bez gubitka točnosti što ćemo potkrijepiti eksperimentima u kasnijim poglavljima.
 Metrika kvalitete bazira se na traženju najduljeg uzlaznog podniza\footnote{engl. Longest Increasing Subsequence; odatle dolazi inspiracija za naziv LISA - LIS Aligner}\\
 
 \section{Opis pristupa}
 
-Glavna inspiracija prema našem algoritmu dolazi iz nekoliko činjenica. Prvo, za malu količinu grešaka (to je realan slušaj, očitanja s velikim postotkom greške nisu korisna za ikakve zaključke) unutar očitanja postojat će mnogo nizova uzastopnih znakova koji nisu dotaknuti greškom. Mi želimo iskoristiti tu činjenicu pa dizajniramo algoritam koji nastoji poravnati dijelove netaknute greškom, a one koji je sadrže ignorira. Pokazuje se da je za veće duljine očitanja ovaj pristup iznimno uspješan\footnote{Trenutna pretpostavka koju radimo je da dugačka očitanja imaju svoje jedinstveno mjesto u genomu. Neki drugi mapperi ne rade tu pretpostavku pa je u daljnjim planovima razvoja LISA-e dopustiti mogućnost poravnanja na više različitih mjesta unutar genoma.}
+Glavna inspiracija prema našem algoritmu dolazi iz nekoliko činjenica. Prvo, za malu količinu grešaka (to je realan slučaj, očitanja s velikim postotkom greške nisu korisna za ikakve zaključke) unutar očitanja postojat će mnogo nizova uzastopnih znakova koji nisu dotaknuti greškom. Mi želimo iskoristiti tu činjenicu pa dizajniramo algoritam koji nastoji poravnati dijelove netaknute greškom, a one koji je sadrže ignorira. Pokazuje se da je za veće duljine očitanja ovaj pristup iznimno uspješan\footnote{Trenutna pretpostavka koju radimo je da dugačka očitanja imaju svoje jedinstveno mjesto u genomu. Neki drugi mapperi ne rade tu pretpostavku pa je u daljnjim planovima razvoja LISA-e dopustiti mogućnost poravnanja na više različitih mjesta unutar genoma.}
 \\
 \\
 
@@ -262,8 +262,8 @@ Algoritam poravnanja sastoji se od dva koraka:
 
 \subsection{Grubo određivanje pozicije očitanja}
 
-U ovoj baznoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{algoritam je opisan u dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
-Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to ucinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrecemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u \ref{grubo}.
+U ovoj osnovnoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{algoritam je opisan u dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
+Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to učinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrećemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u \ref{grubo}.
 
 
 
@@ -271,7 +271,7 @@ Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $
 \begin{algorithmic}
 \State $P \gets \{\}$
 \State $L \gets \{\}$
-\For{$i=1...length(O)-k+1$}
+\For{$i=1...duljina(O)-k+1$}
 	\ForAll{$p \in dohvatiPozicijeIzIndeksa(O[i...i+k-1])$}
 		\State $P \gets P \cup (p, i) $
 	\EndFor
@@ -381,20 +381,19 @@ redova veličina od prosjeka, kao što je prikazano na sljedećem grafu:
 \begin{figure}[!ht]
 \begin{center}
 	\includegraphics[width=0.9\textwidth]{../img/kmers_20.png}
-	\caption{Frekvencija pojavljivanja podsekvenci na log-log skali. Y-os predstavlja vjerjoatnost frekvenciju \
-podijeljenu s duljinom cjelokupne sekvence.}
+	\caption{Vrijednost y-ona predstavlja vjerojatnost da se slučajno odabrana podsekvenca u bazi javlja točno x puta.}
 \end{center}
 \end{figure}
 
 \end{description}
 
-Cjelokupna izgradnja indeksa nakon optimizacija traje otprilike 4 sata računalu performansa 188 GB RAM-a i Intel(R) Xeon(R) procesorom s 24 jezgre koje rade na 2.40 GHz.
+Cjelokupna izgradnja indeksa nakon optimizacija traje otprilike 4 sata računalu performansa 192 GB RAM-a i Intel(R) Xeon(R) procesorom s 12 jezgara koje rade na 2.40 GHz.
 
-\section{Mapiranje očitanih fragmenata}
+\section{Mapiranje očitanja}
 
 Mapiranje očitanja na referentnu bazu zahtjeva izgrađeni dio indeksa koji se u potpunosti učitava u radnu memoriju. Iz ovog razloga je potrebno unaprijed odrediti prihvatljivu veličinu indeksa koju je moguće u potpunosti učitati.
 
-Algoritam mapira pojedini fragment tako da pokušava pronaći najbolje poravnanje s referentnom bazom. Za svaku
+Algoritam mapira pojedino očitanje tako da pokušava pronaći najbolje poravnanje s referentnom bazom. Za svaku
 podsekvencu pronalaze se sve pozicije u genima gdje se navedena podsekvenca pojavljuje. Pretraga se, zbog
 sortiranosti podataka vrši binarnim pretraživanjem, a može se zbog velike količine podataka i uniformne hash
 funkcije ubrzati interpoliranim binarnim pretraživanjem. \cite{weiss1998data}
@@ -404,7 +403,7 @@ algoritma najdužeg rastućeg podniza. Implementacija algoritma je ostvarena u s
 vrlo efikasnog Fenwickovog stabla koje podržava sve potrebne operacije kao i klasično balansirano binarno stablo,
 ali uz puno bolju vremensku i memorijsku konstantu. \cite{fenwick1994new}
 
-Kako bi se ubrzao proces mapiranja, očitani fragmenti su ravnomjerno podijeljeni među jezgrama računala (sustav
+Kako bi se ubrzao proces mapiranja, očitanja su ravnomjerno podijeljena među jezgrama računala (sustav
 automatski detektira broj jezgara i ravnomjerno dijeli posao). Osiguranje ravnomjerne zaposlenosti je ostvareno
 korištenjem reda dretvenih zadataka (engl. \emph{ThreadPool}) uz rotirajući binarni semafor (engl. \emph{Spinlock})
 kako bi se fragmenti fino granulirali i radi osiguranja što efikasnije sinkronizacije među dretvama. Koristimo
@@ -415,7 +414,7 @@ Veliki volumen podataka prisutan pri rješavanju ovog problema nas je potakao da
 više računala. Specifično, korisnik pokreće sustav za mapiranje na jednom računalu koje potom dijeli ulaznu 
 datoteku očitanih fragmenata na jednake dijelove te ih šalje na farmu servera koji potpuno paralelno obrađuju
 dane podatke i pri završetku šalju rezultate natrag na originalno računalo. Distribucija se vrši preko biblioteke
-MPI, kao što je prikazano na slici:
+MPI\cite{gabriel04:_open_mpi}, kao što je prikazano na slici:
 
 \begin{figure}[H]
 \begin{center}
@@ -430,8 +429,8 @@ Isplativost distribucije mapiranja proizlazi iz fine granularnosti originalnog p
 
 \section {Pregled}
 U ovoj sekciji analiziramo performanse LISA-e. Analiza se provodi poravnanjem nad poznatim vrstama bakterija - kuga, salmonela, streptokok i E. Coli. Motivacija iza preciznog poravnanja očitanja u genome bakterije je jasna - efikasno i točno određivanje primjerice mutacija omogućuje brži dizajn lijekova za bakterije koje su stekle otpornost na postojeće lijekove.\\
-Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim parametrima za generiranje greške. Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja. 
-Svi testovi su provedni na računalu koje je opremljeno sa 188Gb RAM-a i Intel(R) Xeon(R) procesorom s 24 jezgre koje rade na 2.40 GHz. 
+Dajemo usporedbu LISA-e sa nekoliko modernih mappera. Uspoređujemo točnost i brzinu sa BWA-SW, BWA-MEM\cite{Li:2010:FAL:1741823.1741825}, SNAP i SeqAlto mapperom. Testna očitanja su generirana alatom za simuliranje wgsim koji je široko prihvaćen u bioinformatičkim krugovima i korišten u većini usporedbi. wgsim je korišten sa predodređenim paramet-rima za generiranje greške (greška se unosi u 2\% nukleotida). Svaki test je napravljen na uzorku od 100000 slučajno generiranih očitanja. 
+Svi testovi su provedni na računalu koje je opremljeno sa 192Gb RAM-a i Intel(R) Xeon(R) procesorom s 12 jezgre koje rade na 2.40 GHz. 
 
 \section {E. Coli}
 
@@ -442,7 +441,7 @@ Svi testovi su provedni na računalu koje je opremljeno sa 188Gb RAM-a i Intel(R
 \label{ecoli-time}
 \end{figure}
 
-Genom bakterije E. Coli sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljine 100, 200 i 500. Natjecanje vremenskih performansi je jasno pobijedio SNAP (\ref{ecoli-time}). To ne iznenađuje jer je on posebno dizajniran za kraće duljine očitanja. Kasnije ćemo vidjeti da prestaje biti praktičan kada duljine očitanja rastu. LISA performansama nadmašuje preostale mappere. U tablici \ref{ecoli-correct} je vidljivo da su na testiranju svi mapperi bili iznimno precizni.
+Genom bakterije \emph{E. Coli} sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljine 100, 200 i 500. Natjecanje vremenskih performansi je jasno pobijedio SNAP (\ref{ecoli-time}). To ne iznenađuje jer je on posebno dizajniran za kraće duljine očitanja. Kasnije ćemo vidjeti da prestaje biti praktičan kada duljine očitanja rastu. LISA performansama nadmašuje preostale mappere. U tablici \ref{ecoli-correct} je vidljivo da su na testiranju svi mapperi bili iznimno precizni.
 
 \begin{table}[H]
 \centering
@@ -474,7 +473,7 @@ Genom bakterije E. Coli sadrži otprilike 5M parova nukleotida. Proveli smo test
 \caption{Usporedba performansi mappera}\label{salmonella-time}
 \end{figure}
 
-Genom S. Enterica-e sastoji se od otprilike 5M parova nukoleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000 i 2000. Na slici \ref{salmonella-time} je vidljivo da SNAP ima najbolje performanse za očitanja do duljine 1000. Za duljinu 2000 je imao poteškoća sa izvođenje pa nemamo rezultat. Zbog preglednosti grafa izostavili smo rezultat SeqAlto-a na očitanjima duljine 2000 (eksperiment je trajao 6m12s). LISA nadmašuje sve mappere osim SNAP-a na malim duljinama. Tablica \ref{salmonella-correct} ističe iznimnu točnost svih mappera.
+Genom \emph{S. Enterica}-e sastoji se od otprilike 5M parova nukoleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000 i 2000. Na slici \ref{salmonella-time} je vidljivo da SNAP ima najbolje performanse za očitanja do duljine 1000. Za duljinu 2000 je imao poteškoća sa izvođenje pa nemamo rezultat. Zbog preglednosti grafa izostavili smo rezultat SeqAlto-a na očitanjima duljine 2000 (eksperiment je trajao 6m12s). LISA nadmašuje sve mappere osim SNAP-a na malim duljinama. Tablica \ref{salmonella-correct} ističe iznimnu točnost svih mappera.
 
 \begin{table}[H]
 \centering
@@ -506,7 +505,7 @@ Genom S. Enterica-e sastoji se od otprilike 5M parova nukoleotida. Proveli smo t
 \caption{Usporedba performansi mappera}\label{streptococcus-time}
 \end{figure}
 
-Genom S. Pneumoniae sadrži otprilike 3M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200 i 500. Na slici \ref{streptococcus-time} vidljivo je kako na ovim kraćim duljinama SNAP ima najbolje performanse. To je očekivan rezultat budući da je on pažljivo dizajniran za kratke duljine očitanja. LISA je bolja od preostalih mappera. Tablica \ref{streptococcus-correct} pokazuje vrhunsku preciznost svih mappera. Valja istaknuti kako SNAP ima nešto manju preciznost u usporedbi s ostalim mapperima.
+Genom \emph{S. Pneumoniae} sadrži otprilike 3M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200 i 500. Na slici \ref{streptococcus-time} vidljivo je kako na ovim kraćim duljinama SNAP ima najbolje performanse. To je očekivan rezultat budući da je on pažljivo dizajniran za kratke duljine očitanja. LISA je bolja od preostalih mappera. Tablica \ref{streptococcus-correct} pokazuje vrhunsku preciznost svih mappera. Valja istaknuti kako SNAP ima nešto manju preciznost u usporedbi s ostalim mapperima.
 
 \begin{table}[H]
 \centering
@@ -538,7 +537,7 @@ Genom S. Pneumoniae sadrži otprilike 3M parova nukleotida. Proveli smo testiran
 \caption{Usporedba performansi mappera}\label{yersinia-time}
 \end{figure}
 
-Genom Y. Pestis, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000, 2000 i 5000. Slika \ref{yersinia-time} demonstrira efikasnost SNAP-a na manjim duljinama. SNAP je imao poteškoća s obrađivanjem očitanja duljina većih od 1000, iz tog razloga izostaju ti rezultati. Zbog preglednosti grafa na njemu nisu vidljiva vremena izvođenja SeqAlto-a za duljine 2000 (7m9s) i 5000 (19m27s). Za dugačka očitanja LISA se ponaša uvjerljivo najbolje, postižući ubrzanja 3-20x u usporedbi s ostalim mapperima. Točnosti svih mappera su vidljive u tablici \ref{yersinia-correct}. Svi mapperi su vrlo velike i točnosti zadovoljavajuće za praktičnu uporabu.
+Genom \emph{Y. Pestis}, šire poznate kao kuga, sadrži otprilike 5M parova nukleotida. Proveli smo testiranja poravnanja očitanja duljina 100, 200, 500, 1000, 2000 i 5000. Slika \ref{yersinia-time} demonstrira efikasnost SNAP-a na manjim duljinama. SNAP je imao poteškoća s obrađivanjem očitanja duljina većih od 1000, iz tog razloga izostaju ti rezultati. Zbog preglednosti grafa na njemu nisu vidljiva vremena izvođenja SeqAlto-a za duljine 2000 (7m9s) i 5000 (19m27s). Za dugačka očitanja LISA se ponaša uvjerljivo najbolje, postižući ubrzanja 3-20x u usporedbi s ostalim mapperima. Točnosti svih mappera su vidljive u tablici \ref{yersinia-correct}. Svi mapperi su vrlo velike i točnosti zadovoljavajuće za praktičnu uporabu.
 
 \begin{table}[H]
 \centering
@@ -597,8 +596,8 @@ Implementacijski prioritet je ispisivanje rezultata u standardiziranom SAM forma
 
 \chapter{Dodatak}
 
-\section{Najdulji rastući podniz}
-\emph{Definicija:} Za zadani niz od $n$ brojeva $a_i$ potrebno je naći najveći podskup indeksa tako da u odabranom podskupu za svako $i < j$ vrijedi $a_i < a_j$. Pseudokod \ref{lis} rješava taj problem u složenosti $O(n$ lg $n)$.\\
+\section{Najdulji rastući podniz\cite{Fredman197529}}
+\emph{Definicija:} Za zadani niz od $n$ brojeva $a_i$ potrebno je naći najveći podskup indeksa tako da u odabranom podskupu za svako $i < j$ vrijedi $a_i < a_j$.
 \\
 U ovom poglavlju dani su isječci koda koji jasno i jednostavno implementiraju algoritam koji rješava problem najduljeg rastućeg podniza. U svrhu sažetosti izostavljena je implementacija Fenwickovog stabla. To je stablo klasična struktura i njenu je implementaciju vrlo lako dobaviti. Samo napominjemo da operacije $Fenwick.get(x)$ dobavlja najveći element u intervalu $[1,x]$, dok $Fenwick.update(x, v)$ postavlja vrijednost na indeksu $x$ na vrijednost $v$.
 
@@ -656,22 +655,23 @@ void calcLongestIncreasingSubsequence(
 \end{lstlisting}
 \end{algorithm}
 
+\nocite{Pabinger21012013}
+\nocite{Johnson:2008:BAU:1593105.1593117}
 
 \bibliography{literatura}
 \bibliographystyle{plain}
 
 \begin{sazetak}
 
-DNA je struktura koja kodira živi svijet. Bolje razumijevanje funkcija pojedinih dijelova može dovesti do pravovremene detekcije i liječenja mnogih bolesti. Strojevi za očitanje DNA iz dana u dan napreduju i proizvode velike količine sve duljih fragmenata. Lociranje fragmenata unutar referentnog genoma jedan je od temeljnih otvorenih problema u bioinformatici. U ovom radu predlažemo novi algoritam poravnanja DNA temeljen na brzom traženju najduljeg rastućeg podniza, posebno pogodnim za dulje fragmente. Napravljena je usporedba točnosti i brzine s trenutno najefikasnijim i najpopularnijim alatima.
+DNA je struktura koja kodira živi svijet. Bolje razumijevanje funkcija pojedinih dijelova može dovesti do pravovremene detekcije i liječenja mnogih bolesti. Strojevi za očitanje DNA iz dana u dan napreduju i proizvode velike količine sve duljih očitanja. Lociranje očitanja unutar referentnog genoma jedan je od temeljnih otvorenih problema u bioinformatici. U ovom radu predlažemo novi algoritam poravnanja DNA temeljen na brzom traženju najduljeg rastućeg podniza, posebno pogodnim za dulja očitanja. Napravljena je usporedba točnosti i brzine s trenutno najefikasnijim i najpopularnijim alatima.
 
 \kljucnerijeci{poravnavanje DNA, bioinformatika, algoritmi, hash, LISA, najdulji rastući podniz}
 \end{sazetak}
 
-\engtitle{LISA - DNA fragment alignment tool}
+\engtitle{LISA - DNA reads alignment tool}
 \begin{abstract}
 DNA is a structure which encodes all of the living world. Better understanding of it's particular section could lead to detection and curing of many diseases. DNA sequencing machines are getting better every day and producing
-big amounts of ever longer fragments. Locating these fragments inside a reference genome is a fundemental open
-problem in bioinformatics. This paper presents a novel DNA alignment algorithm, based on a fast longest increasing subsequence search. It is very feasible for long fragments. Detailed analysis and comparison with state-of-the-art tools is given.
+big amounts of ever longer reads. Locating these reads inside a reference genome is a fundemental open problem in bioinformatics. This paper presents a novel DNA alignment algorithm, based on a fast longest increasing subsequence search. It is very feasible for long reads. Detailed analysis and comparison with state-of-the-art tools is given.
 
 \keywords{DNA alignment, bioinformatics, algorithms, hash, LISA, longest increasing subsequence}
 \end{abstract}
