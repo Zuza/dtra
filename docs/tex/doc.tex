@@ -179,7 +179,27 @@ TODO: slika koja stavlja read ispod genoma i dočarava prianjanje
 \subsection{Indeks}
 U pregledu poglavlja spomenuli smo da za izgradnju indeksa pratimo smjernice SeqAlto mappera. Svaki niz $i$ od $k=20$ uzastopnih znakova na poziciji $p_i$ unutar genoma kodiramo jednim cijelim brojem $h_i$ koji predstavlja hash bez kolizije. Indeks nam čini polje uređenih parova $(h_i, p_i)$. To je polje sortirano pa koristimo binarno pretraživanje kako bi dohvat pozicija za neki zadani hash bio efikasan. Dodatno, one $h_i$-ove koji se pojavljuju jako velik broj puta njihove parove mičemo iz niza jer takvi ne donose korisnu informaciju, a samo povećavaju vremensku i memorijsku složenost. 
 
-TODO: neka slika koja reprezentira DNA+indeks
+TODO: neka slika koja reprezentira DNA+indeks 
+
+\subsection{LISA algoritam poravnanja}
+Algoritam poravnanja sastoji se od dva koraka:
+\begin{enumerate}
+\item Grubo određivanje pozicije očitanja unutar genoma
+\item Fino određivanje pozicije očitanja unutar genoma
+\end{enumerate}
+
+\subsubsection{Grubo određivanje pozicije očitanja}
+
+U ovoj baznoj fazi algoritma poravnanja određujemo poziciju unutar genoma oko koje je očitanje koncentrirano. Opća ideja iza algoritma je konstrukcija niza brojeva (kojeg ćemo uskoro opisati) nad kojim pokrećemo algoritam nalaženja najduljeg rastućeg podniza\footnote{Algoritam je opisan u Dodatku}. Nađeni podniz ugrubo opisuje poziciju poravnanja i koristi se u sljedećoj fazi za traženje točne pozicije poravnanja.\\
+Potreban niz $P$ konstruiramo tako da promatramo sve nizove uzastopnih znakova $i$ duljine $k$ unutar očitanja s lijeva na desno. Za svaki od njih vršimo upit za pozicije unutar kojih se nalazi u indeksu. Na kraj niza $P$ za svaku od dobivenih pozicija $x$ dodajemo par $(x,i)$. Kada smo to ucinili za sve nizove $i$, sortiramo $P$ po prvom broju u paru i pokrecemo algoritam pronalaska najduljeg zajedničkog podniza $L$ nad nizom drugih brojeva parova u $P$. $L$ koristimo u sljedećoj fazi. Pseudokod algoritma dan je u TODO: pseudokod.
+
+\subsubsection{Fino određivanje pozicije očitanja}
+
+Razlog zašto je ova faza potrebna je vidljiv na TODO: dodati sliku. Očito je da je pravo poravnanje smješteno oko pozicije TODO: pozicija, dok bismo pogrešnom naivnom procjenom možda rekli da je ono ipak TODO: pozicija. Pseudokod TODO: pseudokod jednostavno opisuje rad ove faze.
+
+\subsubsection{Mjera pouzdanosti}
+
+Mjerenje pouzdanosti je još uvijek otvoren problem za LISA-u. Trenutno koristimo omjer duljine pronađenog rastućeg niza i duljine očitanja.
 
 \chapter{Implementacija}
 
