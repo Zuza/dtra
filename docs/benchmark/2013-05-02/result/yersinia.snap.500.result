@@ -1,0 +1,5 @@
+Welcome to SNAP version 0.15.7.
+
+Loading index from directory... 0s.  4658411 bases, seed size 20
+ConfDif	MaxHits	MaxDist	MaxSeed	ConfAd	%Used	%Unique	%Multi	%!Found	%Error	Reads/s
+2	250	20	25	4	100.00%	96.57%	3.20%	0.23%	-	105263
