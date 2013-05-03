@@ -61,12 +61,12 @@ Ovaj rad opisuje sustav za mapiranje DNA sekvenci na referentni genom. Rad je po
 \item u prvom dijelu ćemo napraviti kratki uvod u probleme bioinformatike i pozadinu problema kojeg sustav rješava
 \item u drugom dijelu se bavimo modelom, algoritmom i implementacijom nad kojim je sustav ostvaren
 \item nakon toga prezentiramo rezultate testiranja i usporedba s najpoznatijim analognim alatima
-\item naposlijetku dajemo kratki zaključak i smjernice za daljnji rad
+\item naposljetku dajemo kratki zaključak i smjernice za daljnji rad
 \end{itemize}
 
 Sustav je razvijen u sklopu natjecanja identifikacija organizama iz toka DNA sekvenci
 kojeg je objavila tvrtka \emph{InnoCentive} pod sponzorstvom vlade Sjedinjenih Američkih Država
-i koje je u tijeku \footnote{više informacija o samom natjecaju možete pronaći na \emph{http://tinyurl.com/dna-dtra}}.
+i koje je u tijeku \footnote{više informacija o samom natjecanju možete pronaći na \emph{http://tinyurl.com/dna-dtra}}.
 
 \section{Bioinformatika}
 
@@ -92,7 +92,7 @@ algoritama koji brzo i pouzdano obrađuju rastuću količinu informacija na njih
 \section{DNA i mutacije}
 Kao što je spomenuto, DNA modeliramo kao linearni niz povezanih parova baza. U DNA se pojavljuju točno četiri različite baze i njih
 označavamo slovima \emph{A, G, T} i \emph{C}\footnote{skraćeno od adenin, guanin, timin i citozin, vrsta nukleinskih kiselina koje se pojavljuju}.
-Na taj način DNA reprezentiramo dugim nizom slova nad gornjom četvoroslovnom abecedom, primjerice:
+Tako DNA reprezentiramo dugim nizom slova nad gornjom četvoroslovnom abecedom, primjerice:
 
 \begin{verbatim}
 ... AGTGAGGAAAAAAAAAGGTCAATGCAGCACTTGAGCCAACATTGTAGAT
@@ -166,7 +166,7 @@ ruše kvalitetu svim preostalim dijelovima sekvenciranja.
 mutacije mogu biti uzročnici nasljednih bolesti ili mogu jednostavno biti genski šum bez funkcionalnih svojstava.
 
 \item [Filtriranje i označavanje] procjenjuje koja od potencijalnih razlika između interesantnih gena pridonosi 
-patološkom procesu kojeg proučavamo. Filtriraju se mutacije bez funkcionalnih značajki te se propoznaju česte prisutne populacijske mutacije.
+patološkom procesu kojeg proučavamo. Filtriraju se mutacije bez funkcionalnih značajki te se prepoznaju česte populacijske mutacije.
 \end{description}
 
 \section{Obrazloženje teme}
@@ -188,7 +188,7 @@ na tome natjecanju u sklopu tima Fakulteta elektrotehnike i računarstva Sveuči
 \section{Pregled postojećih rješenja}
 Ovo poglavlje počinjemo kratkih pregledom trendova u razvoju mappera te kasnije dajemo detaljan opis našeg pristupa. Jedan od prvih algoritama za poravnanje očitanja je algoritam globalnog poravnanja pod nazivom Smith-Waterman\cite{Smith1981195}. Rješenje dobiveno tim algoritmom može se smatrati veoma točnim zbog toga što ima statistički opravdano značenje, međutim zbog velike vremenske složenosti algoritma nije praktično za korištenje.\\
 Većina boljih modernih alata za mapiranje - \emph{mappera} (poput SNAP-a\cite{SNAP} i SeqAlto-a\cite{seqalto}) koriste \emph{seed-and-extend} pristup. U tom pristupu prvo se od 
-referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerica SNAP koristi tablicu raspršenog adresiranja kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch}\cite{@nw} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
+referentnog genoma gradi indeks koji mapira niz od svakih uzastopnih k-znakova genoma na sve pozicije unutar genoma na kojima se taj podniz nalazi. Ukupan broj takvih različitih podnizova je $4^k$, što je i prva praktična opaska, jer za $k\le32$ možemo takav podniz zakodirati u $64$-bitni cjelobrojni tip podataka. Očitanja se obrađuju na način da se ponovno promatraju podnizi uzastopnih znakova duljine $k$ te se vrši upit u prethodno izgrađeni indeks. Pozicije dobivene takvim upitom daju kandidatne pozicije u čijoj se okolini nalazi potencijalno poravnanje očitanja na genom. Razlike između mappera ovog tipa su primarno u načinu izgradnje indeksa i načinu ocjene kvalitete poravnanja na nekoj kandidatnoj poziciji. Tako primjerice SNAP koristi tablicu raspršenog adresiranja kao strukturu podataka nad kojom je izgrađen indeks, dok SeqAlto koristi sortirano polje. Za ocjenu kvalitete SNAP koristi \emph{edit-distance} metriku, dok SeqAlto koristi općenitiju \emph{Needleman-Wunsch}\cite{@nw} metriku. Oba pristupa daju značajno poboljšanje efikasnosti u odnosu na pristup spomenut na početku ove sekcije, međutim ti su mapperi i dalje nepraktični budući da kroz vrijeme strojevi za izradu očitanja napreduju i duljine očitanja postaju sve veće čime pretpostavke koje osiguravaju efikasnost ovih alata postaju prejake (glavni razlog je što u njihovim implementacijama izračun tih metrika ima vremensku složenost linearno proporcionalno s duljinama očitanja).\\
 Naš mapper indeks izgrađuje po uzoru na SeqAlto, međutim uvodimo novu metriku ocjene kvalitete koja za red složenosti poboljšava postojeće algoritme bez gubitka točnosti što ćemo potkrijepiti eksperimentima u kasnijim poglavljima.
 Metrika kvalitete bazira se na traženju najduljeg uzlaznog podniza\footnote{engl. Longest Increasing Subsequence; odatle dolazi inspiracija za naziv LISA - LIS Aligner}\\
 
@@ -344,10 +344,9 @@ pogodno graditi indeks od cijele baze odjednom. Odabrali smo pristup gdje bazu d
 
 Implementacijski gledano, indeks je binarna datoteka koja sadrži sortiranu hash tablicu svih genskih podsekvenci
 duljine $N$ nukleotidnih baza\footnote{tipično, uzimamo $N = 16$ ili $N = 20$}. Specifično, svaku podsekvencu
-duljine $N$ možemo interpretirati kao broj u bazi 4 taj broj uzeti kao ključ dotične pozicije koji se s pozicijom
-sortira i sprema u indeks. Ovakav odabir omogućuje brzo pretraživanje po ključu pomoću logaritamskog binarnog 
-pretraživanja te omogućuje da za $N < 32$ zbog nepostojanja preljeva pretražujemo i podsekvence po ključu koji
-je kraći od $N$.
+duljine $N$ možemo interpretirati kao broj u bazi 4 te tako dobiveni broj uzimamo kao ključ dotične pozicije koji se sortira i sprema u indeks. Ovakav odabir omogućuje brzo pretraživanje po ključu pomoću logaritamskog binarnog 
+pretraživanja. Dodatno, moguće je i pretraživati podsekvence po ključu koji je manji od $N$
+iz razloga što za $N < 32$ i 64-bitni tip podataka nema preljeva.
 
 Sama struktura binarne indeks datoteke je najbolje opisana opisnikom pretinaca hash tablice, prikazanim u sljedećem
 odsječku:
@@ -369,7 +368,7 @@ baratanja podataka ogromnog volumena s kakvima radimo u ovom projektu. Ovdje će
 \begin{description}
 \item [Paralelno sortiranje pretinaca] se pokazalo kao prirodna optimizacija nakon profiliranja programskog koda.
 Ispostavilo se da je upravo ovaj korak najsporiji dio izgradnje indeksa. Za ubrzanje koristimo paralelni stabilni
-sort implementiran u OpenMP biblioteci (trenutne verzije 1.3).
+sort implementiran u OpenMP biblioteci (verzije 1.3).
 \item [Micanje podsekvenci s visokom frekvencijom pojavljivanja]. Intuitivno je jasno kako podsekvence s vrlo visokom frekvencijom pojavljivanja (preko 6 redova veličine više od prosjeka) kodiraju repetitive regije ili 
 regije niske složenosti i pritome nimalo ne pridonose kvaliteti poravnanja. Kako bismo što smanjili obujam podataka
 i ubrzali fazu poravnavanja, sustav izbacuje one podsekvence čija frekvencija pojavljivanja je 5 puta veća od
@@ -590,7 +589,7 @@ LISA & client solve genom.fasta index ocitanja.fq /dev/null\\
 U ovom radu prezentirali smo LISA-u, novi alat za poravnanje očitanja na referentni genom. Proveli smo usporedbu s trenutno najpopularnijim alatima i pokazali da LISA već u svojoj ranoj fazi razvoja pokazuje jako dobre performanse, pogotovo za očitanja velike duljine. Duljine očitanja su u trendu porasta tako da predviđamo da će tehnike korištene biti od značaja u bližoj i daljoj budućnosti.
 
 \section{Daljnji rad}
-Najveći istraživački prioritet kojem su autori trenutno posvećeni je povećanje točnosti mapiranja očitanja malih duljina kao i onih s velikom greškom. Slutnja koju još valja potvrditi je da zadovoljavajuće točnosti možemo dobiti aproksimiranjem metrika kvalitete koje koriste SNAP ili SeqAlto. Te se metrike mogu aproksimirati sa manjom računskom složenosti od izračuna pravih vrijednosti pa vjerujemo da neće biti znatnog gubitka vremenskih performansi.\\
+Najveći istraživački prioritet kojem su autori trenutno posvećeni je povećanje točnosti mapiranja očitanja malih duljina kao i onih s velikom greškom. Slutnja koju još valja potvrditi je da zadovoljavajuće točnosti možemo dobiti aproksimiranjem metrika kvalitete koje koriste SNAP ili SeqAlto. Te se metrike mogu aproksimirati s manjom računskom složenosti od izračuna pravih vrijednosti pa vjerujemo da neće biti znatnog gubitka vremenskih performansi.\\
 Implementacijski prioritet je ispisivanje rezultata u standardiziranom SAM formatu jer se tada otvara mogućnost korištenja mnogih već razvijenih alata za analizu efikasnosti i rezultata.
 
 \chapter{Dodatak}
