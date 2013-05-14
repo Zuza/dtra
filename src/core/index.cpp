@@ -16,6 +16,81 @@ DEFINE_double(avg_multiplier, 5.0, "Index will discard every kmer that " \
 DEFINE_bool(use_parallel_sort, true, "Sorting the index will use " \
             "__gnu_parallel::stable_sort");
 
+Index::iterator::iterator(const Index* idx,
+			  const hash_t& hash,
+			  const int& querySeedLen) : idx_(idx) {
+  // TODO: trenutno je querySeedLen ignoriran, treba
+  // dodati da u equal_range usporedbama uzimam samo
+  // najznacajnijih querySeedLen znamenki u bazi 4
+
+  // zakomentirani dijelovi micu binary search 
+  // kod svakog seeda (jer trazi u kojem se genomu nalazi)
+  // zakomentirano je jer nisam spavao i ne da mi se testirati
+
+  Index::Entry tmp; tmp.hash = hash;
+  auto pair_lb_ub = 
+    equal_range(idx->index_.begin(), idx->index_.end(), tmp);
+  begin = distance(idx->index_.begin(), pair_lb_ub.first);
+  end   = distance(idx->index_.begin(), pair_lb_ub.second);
+  reset();
+}
+
+// void Index::iterator::setStartingPos(size_t where) {
+//   int position = idx_->index_[where].position;
+  
+//   auto it = upper_bound(idx_->geneStartingPos_.begin(), 
+// 			idx_->geneStartingPos_.end(), position);
+//   assert(it != idx_->geneStartingPos_.begin());
+//   --it;
+//   currStartingPos = distance(idx_->geneStartingPos_.begin(), it);  
+// }
+
+void Index::iterator::reset() {
+  curr = begin;
+  // setStartingPos(curr);
+}
+
+bool Index::iterator::done() {
+  return curr == end;
+}
+
+void Index::iterator::advance() {
+  ++curr;
+
+  // size_t next = curr+1;
+  // setStartingPos(curr = next);
+  
+  // if (next < end) {
+  //   size_t currPosition = idx_->index_[curr].position;
+  //   size_t nextPosition = idx_->index_[next].position;
+
+  //   if (nextPosition < currPosition) {
+  //     // ovo je potrebno u slucaju kad je querySeedLen manji
+  //     // od duljine kojom smo izgradili index. tad se moze
+  //     // dogoditi da unutar istog hash ne budu sortirane pozicije
+  //     // vec se sastoje od slijepljenih sortiranih nizova
+  //     setStartingPos(next); 
+  //   } else {
+  //     if (currStartingPos+1 < idx_->geneStartingPos_.size()) {
+  // 	if (nextPosition >= idx_->geneStartingPos_[currStartingPos+1]) {
+  // 	  ++currStartingPos;
+  // 	}
+  //     }
+  //   }
+  // }
+
+  // curr = next;
+}
+
+pair<unsigned int, unsigned int> Index::iterator::get() {
+  return idx_->position_to_gene_position(idx_->index_[curr].position);
+  // int position = 
+  //   idx_->index_[curr].position - 
+  //   idx_->geneStartingPos_[currStartingPos];
+  // return make_pair<unsigned int, unsigned int>(currStartingPos,
+  // 					       position);
+}
+
 Index::Index(int seedLength) : seedLength_(seedLength) {
   indexPrepared_ = false;
   startingPos_ = 0;
@@ -125,22 +200,20 @@ void Index::discardFrequentSeeds() {
   printf("Kmers left = %lld (%.2lf%%)\n", kmers_left, double(kmers_left) / kmers_cnt * 100.0);
 }
 
-pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) {
+
+pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t position) const {
   auto it = upper_bound(geneStartingPos_.begin(), geneStartingPos_.end(), position);
   assert(it != geneStartingPos_.begin());
   --it;
   return make_pair<unsigned int, unsigned int>(it - geneStartingPos_.begin(), position - *it);
 }
 
-void Index::getPositions(vector<pair<unsigned int, unsigned int> >* retVal, hash_t hash) {
+Index::iterator Index::getPositions(const hash_t& hash,
+				    const int& querySeedLen) {
+#ifdef DEBUG
   assert(indexPrepared_);
-  assert(retVal->empty());
-  Entry tmp; tmp.hash = hash;
-  auto pair_lb_ub = equal_range(index_.begin(), index_.end(), tmp);
-  for ( ; pair_lb_ub.first != pair_lb_ub.second; ++pair_lb_ub.first) {
-    Entry& entry = *pair_lb_ub.first;
-    retVal->push_back(position_to_gene_position(entry.position));
-  }
+#endif
+  return iterator(this, hash, querySeedLen);
 }
 
 void Index::prepareIndex() {

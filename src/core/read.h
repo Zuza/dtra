@@ -11,8 +11,6 @@
 
 #include "core/bioinf_util.h"
 
-const int kMaxOffset = 5;
-
 struct OneMapping {
   double score;
   int genePos, isRC;
@@ -89,7 +87,8 @@ public:
   // ovo podrazumijeva da je ucitani read zapravo napravljen
   // simulatorom pa u liniji s imenom sadrzi i stvarne pozicije
   // na kojima se nalazi u genu
-  int getMappingQuality(int maxOffset = kMaxOffset);
+  int validateWgsimMapping();
+  int validateFluxMapping();
 
   unsigned long long checksum() {
     unsigned long long ret = 0;

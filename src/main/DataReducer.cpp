@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
+
 #include "core/gene.h"
 using namespace std;
 
@@ -14,11 +15,19 @@ inline bool throwCoin(double p) {
   return rand() % precision < precision*p;
 }
 
+string runningDir(const string& path = "@") {
+  static string runDir = "";
+  if (path != "@") {
+    runDir = path;
+  }
+  return runDir;
+}
+
 void printUsageAndExit() {
   printf("Usage:\n");
   printf("reducer nt random <prob gene selection> <nt input file>\n");
   printf("reducer nt first <no first genes> <nt input file>\n");
-  printf("reducer wgsim <nt input file> <reads output file> <read length>\n");
+  printf("reducer wgsim <nt input file> <reads output file> <read length> <readova po genu>\n");
   printf("reducer flux <nt input file> <reads output file> <sequencer type[illumina/roche454/pacbio/iontorrent]> <number of reads>\n");
   exit(1);
 }
@@ -128,7 +137,7 @@ void createFluxReads(int argc, char* argv[]) {
 }
 
 void createWgsimReads(int argc, char* argv[]) {
-  if (argc < 3) {
+  if (argc != 4) {
     printUsageAndExit();
   }
 
@@ -144,10 +153,11 @@ void createWgsimReads(int argc, char* argv[]) {
     printGene(&g, tmpGeneFile);
     fclose(tmpGeneFile);
 
-    const string wgsim = "./wgsim ";
-    const int readsPerGene = 7;
+    const string wgsim = runningDir() + "/wgsim ";
     
-    int readLength; sscanf(argv[2], "%d", &readLength);
+    int readLength; assert(sscanf(argv[2], "%d", &readLength) == 1);
+    int readsPerGene; assert(sscanf(argv[3], "%d", &readsPerGene) == 1);
+
     readLength = min(readLength, (int)g.dataSize());
     const string readsOutput1 = "reads.output.tmp.1";
     const string readsOutput2 = "reads.output.tmp.2";
@@ -178,6 +188,13 @@ int main(int argc, char* argv[]) {
   if (argc < 2) {
     printUsageAndExit();
   }
+
+  string prog = argv[0], dir;
+  int lastSlash = prog.find_last_of("/");
+  if (lastSlash != string::npos) {
+    dir = prog.substr(0, lastSlash);
+  }
+  runningDir(dir);
 
   if (strcmp(argv[1], "nt") == 0) {
     reduceNtDatabase(argc-2, argv+2);

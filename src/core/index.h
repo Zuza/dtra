@@ -22,6 +22,24 @@ public:
 
   Index(int seedLength);
 
+  struct iterator {
+    iterator(const Index* idx, 
+	     const hash_t& hash, 
+	     const int& querySeedLen);
+
+    void reset();
+    bool done();
+    void advance();
+    std::pair<unsigned int, unsigned int> get();
+
+    /* void setStartingPos(size_t where); */
+
+    const Index* idx_;
+    size_t begin, end, curr, currStartingPos;
+  };
+
+  friend class iterator;
+
   void insertGene(Gene* gene);
   void prepareIndex(); // sort the hashes
 
@@ -29,7 +47,8 @@ public:
   // out: retval
   //   -> vector of pairs -> first is the gene number
   //                         second is the position with the gene
-  void getPositions(std::vector<std::pair<unsigned int, unsigned int> >* retVal, hash_t hash);
+  Index::iterator getPositions(const hash_t& hash, 
+			       const int& querySeedLen);
 
   const int& getSeedLen() { return seedLength_; }
 
@@ -41,7 +60,7 @@ public:
   void discardFrequentSeeds();
 
 private:
-  std::pair<unsigned int, unsigned int> position_to_gene_position(size_t position);
+  std::pair<unsigned int, unsigned int> position_to_gene_position(size_t position) const;
 
   struct Entry {
     size_t position;
@@ -49,6 +68,9 @@ private:
 
     friend bool operator < (const Entry& a, const Entry& b) {
       return a.hash < b.hash;
+
+      // zbog toga sto se koristi stable_sort, oni s jednakim
+      // hashem bit ce sortirani po poziciji
     }
   };
 

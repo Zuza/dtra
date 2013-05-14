@@ -30,8 +30,10 @@ using namespace std;
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
 DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
              "Number of threads used by the solver");
-DEFINE_bool(validate_simulation, false, "Used for simulated tests, if true some statistics is printed on stdout.");
+DEFINE_string(validate_flux, "", "report/full");
+DEFINE_string(validate_wgsim, "", "report/full");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
+DEFINE_double(confidence, 0.5, "Confidence threshold.h");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -112,15 +114,48 @@ void solveReads(Database& db,
   }
 }
 
-void printSimulationStatistics(const vector<shared_ptr<Read> >& reads) {
+void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
   map<int, int> stats;
   for (int i = 0; i < reads.size(); ++i) {
     shared_ptr<Read> read = reads[i];
 
-    int mappingQuality = read->getMappingQuality();
+    int mappingQuality = -1;
+    if (what == "wgsim") {
+      mappingQuality = read->validateWgsimMapping();
+    } else if (what == "flux") {
+      mappingQuality = read->validateFluxMapping();
+    } else {
+      assert(0);
+    }
+
     ++stats[mappingQuality];
 
-    if (mappingQuality != 0) {      
+    if (mappingQuality == 0) { // tocan je na prvom mjestu!
+      double confidence1 = read->topMapping(0).score/read->size();
+      double confidence2 = 1e10;
+      
+      // confidence2 trenutno nema toliku ulogu jer
+      // na jednom genu/genomu mi podrazumijevamo samo jednu
+      // poziciju
+      //
+      // TODO: razmatranje vise pozicija na genu/genomu moze
+      // se rijesiti dodatnom podjelom svakog genoma/gena na
+      // blokove pa u svakom bloku mozemo naci jedinstvenu poziciju
+      // i uzeti blok s najvecim scoreom
+      if (read->topMappings().size() >= 2) {
+	confidence2 = 
+	  read->topMapping(0).score/read->topMapping(1).score;
+      }
+
+      if (confidence1 > FLAGS_confidence) {
+	++stats[-2];
+      }
+    }
+
+    bool validateFull = 
+      FLAGS_validate_flux == "full" || FLAGS_validate_wgsim == "full";
+      
+    if (mappingQuality != 0 && validateFull) {      
       printf("READ #%04d:\n", i);
       printf("mappingQuality = %d\n", mappingQuality);
       printf("id: %s\n", read->id().c_str());
@@ -137,12 +172,15 @@ void printSimulationStatistics(const vector<shared_ptr<Read> >& reads) {
 
   printf("Total reads: %d\n", (int)reads.size());
   printf("Number of reads not mapped: %d\n", stats[-1]);
+  printf("Reads mapped with high confidence: %d\n", stats[-2]);
   for (map<int, int>::iterator it = stats.begin(); it != stats.end(); ++it) {
-    if (it->first != -1) {
+    if (it->first >= 0) {
       printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
     }
   }
 }
+
+
 
 void printReads(const vector<shared_ptr<Read> >& reads,
 		const string& resultFilePath) {
@@ -168,8 +206,11 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 
   fclose(resultOut);
 
-  if (FLAGS_validate_simulation) {
-    printSimulationStatistics(reads);
+  if (FLAGS_validate_flux != "") {
+    printStats(reads, "flux");
+  }
+  if (FLAGS_validate_wgsim != "") {
+    printStats(reads, "wgsim");
   }
 }
 

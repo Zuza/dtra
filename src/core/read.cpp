@@ -10,7 +10,7 @@
 using namespace std;
 
 DEFINE_int32(no_top_mappings, 5, "Number of best mappings a read records.");
-
+DEFINE_int32(read_pos_max_offset, 5, "Offset tolerance for correct read placement.");
 
 bool Read::read(FILE* fi) {
   static char id[100001];
@@ -54,7 +54,7 @@ void Read::print(FILE* out) {
   }
 }
 
-int Read::getMappingQuality(int maxOffset) {
+int Read::validateFluxMapping() {
   vector<string> tokens = Split(id_, ':');
   int pos1 = atoi(tokens[5].c_str()), pos2 = atoi(tokens[6].c_str());
 
@@ -69,8 +69,39 @@ int Read::getMappingQuality(int maxOffset) {
       geneMatch = true;
 
     if (geneMatch &&
-        (abs(topMappings_[i].genePos-pos1) < maxOffset ||
-         abs(topMappings_[i].genePos+size()-pos2) < maxOffset)) {
+        (abs(topMappings_[i].genePos-pos1) < FLAGS_read_pos_max_offset ||
+         abs(topMappings_[i].genePos+size()-pos2) < FLAGS_read_pos_max_offset)) {
+      return i;
+    }
+  }
+  
+  return -1;
+}
+
+
+int Read::validateWgsimMapping() {
+  vector<string> tokens = Split(id_, '_');
+  int pos1 = -1000000, pos2 = -1000000;
+  
+  string readInGene = tokens[0].substr(1);
+
+  assert(sscanf(tokens[1].c_str(), "%d", &pos1) == 1);
+  assert(sscanf(tokens[2].c_str(), "%d", &pos2) == 1);
+  
+  --pos1; --pos2;
+  
+  for (int i = 0; i < topMappings_.size(); ++i) {
+    bool geneMatch = false;
+
+    // ovo nije nuzno savrseno tocno, ali mislim da se u stvarnosti ne
+    // dogadja slucaj kada ne radi
+     if (topMappings_[i].geneDescriptor.find(readInGene) != string::npos) {
+      geneMatch = true;
+    }
+
+    if (geneMatch &&
+        (abs(topMappings_[i].genePos-pos1) < FLAGS_read_pos_max_offset ||
+         abs(topMappings_[i].genePos-(pos2-size())) < FLAGS_read_pos_max_offset)) {
       return i;
     }
   }

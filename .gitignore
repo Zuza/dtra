@@ -4,4 +4,11 @@
 *.h~
 client
 reducer
-
+*.log
+*.aux
+*.out
+*.toc
+*.pdf
+_region_.tex
+*.bbl
+*.blg

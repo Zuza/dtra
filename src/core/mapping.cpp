@@ -64,27 +64,24 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       hsh &= andMask;
       
       if (noN == 0 && i+1 >= seedLen) {
-        vector<pair<unsigned int, unsigned int> > positions;
-	
-	// TODO: mozda u Index mogu staviti metodu koja direktno puni
-	// positionsByGene kako bih izbjegao kopiranje podataka
-	
-        // vector kojeg vrati ova metoda je sortiran poretkom
-        // u kojem se pairovi standardno sortiraju
-        idx->getPositions(&positions, hsh);
-	
-        for (auto x : positions) {
+	Index::iterator it = idx->getPositions(hsh, seedLen);
+	for ( ; !it.done(); it.advance()) {
+	  pair<unsigned int, unsigned int> x = it.get();
           int geneId = x.first;
-          int position = x.second;
-          
-          // TODO: positions vector je sortiran kao sto se pairovi inace
-          // sortiraju pa mozda mogu izbjeci trazenje po mapi svaki put
-          if (!positionsByGene.count(geneId)) {
-            positionsByGene[geneId] = 
-              shared_ptr<vector<pair<int, int> > > (new vector<pair<int, int> >);
-          }
-          positionsByGene[geneId]->push_back(make_pair(position, i+1-seedLen));
-        }
+	  int position = x.second;
+	  //printf("geneId=%d, position=%d\n", geneId, position);
+	  
+	  shared_ptr<vector<pair<int, int> > >& posVec =
+	    positionsByGene[geneId];
+	  
+	  if (!posVec) {
+	    posVec = shared_ptr<vector<pair<int, int> > > (
+                            new vector<pair<int, int> >());
+	  }
+
+	  assert(positionsByGene.count(geneId));
+	  posVec->push_back(make_pair(position, i+1-seedLen));
+	} 
       }
     }
 
