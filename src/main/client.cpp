@@ -148,7 +148,7 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
       }
 
       if (confidence1 > FLAGS_confidence) {
-	++stats[-2];
+	++stats[-3];
       }
     }
 
@@ -172,7 +172,8 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
 
   printf("Total reads: %d\n", (int)reads.size());
   printf("Number of reads not mapped: %d\n", stats[-1]);
-  printf("Reads mapped with high confidence: %d\n", stats[-2]);
+  printf("Not even one kmer found: %d\n", stats[-2]);
+  printf("Reads mapped with high confidence: %d\n", stats[-3]);
   for (map<int, int>::iterator it = stats.begin(); it != stats.end(); ++it) {
     if (it->first >= 0) {
       printf("hitova na %d-tom mjestu: %d\n", it->first+1, it->second);
