@@ -10,7 +10,7 @@
 using namespace std;
 
 DEFINE_int32(no_top_mappings, 5, "Number of best mappings a read records.");
-DEFINE_int32(read_pos_max_offset, 5, "Offset tolerance for correct read placement.");
+DEFINE_int32(read_pos_max_offset, 10, "Offset tolerance for correct read placement.");
 
 bool Read::read(FILE* fi) {
   static char id[100001];
@@ -80,6 +80,11 @@ int Read::validateFluxMapping() {
 
 
 int Read::validateWgsimMapping() {
+  if (topMappings_.size() == 0) {
+    return -2; // nema tog kmera uopce
+  }
+
+
   vector<string> tokens = Split(id_, '_');
   int pos1 = -1000000, pos2 = -1000000;
   
@@ -105,7 +110,8 @@ int Read::validateWgsimMapping() {
       return i;
     }
   }
-  
+
+  // pogresno smjestio
   return -1;
 }
 
