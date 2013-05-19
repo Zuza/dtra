@@ -6,7 +6,7 @@
 
 using namespace std;
 
-DEFINE_bool(discard_freq_seeds, true, "If true, discard seeds with frequency more " \
+DEFINE_bool(discard_freq_seeds, false, "If true, discard seeds with frequency more " \
             "than avg_freq * avg_multiplier (see below)");
 
 DEFINE_int32(indexPartSize, 100, "Maximum size of each part of "

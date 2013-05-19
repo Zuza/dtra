@@ -50,7 +50,7 @@ public:
   Index::iterator getPositions(const hash_t& hash, 
 			       const int& querySeedLen);
 
-  const int& getSeedLen() { return seedLength_; }
+  const int& getSeedLen() const { return seedLength_; }
 
   // serialize & deserialize
   void writeIndex(BufferedBinaryWriter& writer);
@@ -71,6 +71,18 @@ private:
 
       // zbog toga sto se koristi stable_sort, oni s jednakim
       // hashem bit ce sortirani po poziciji
+    }
+  };
+
+  struct VariableSeedLenCmp {
+    VariableSeedLenCmp(int targetSeedLen, int indexSeedLen) {
+      trimLen = indexSeedLen - targetSeedLen;
+    }
+    
+    int trimLen;
+    
+    bool operator() (const Index::Entry& a, const Index::Entry& b) {
+      return (a.hash >> (2*trimLen)) < (b.hash >> (2*trimLen));
     }
   };
 

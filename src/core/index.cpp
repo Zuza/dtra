@@ -16,38 +16,20 @@ DEFINE_double(avg_multiplier, 5.0, "Index will discard every kmer that " \
 DEFINE_bool(use_parallel_sort, true, "Sorting the index will use " \
             "__gnu_parallel::stable_sort");
 
+
 Index::iterator::iterator(const Index* idx,
 			  const hash_t& hash,
 			  const int& querySeedLen) : idx_(idx) {
-  // TODO: trenutno je querySeedLen ignoriran, treba
-  // dodati da u equal_range usporedbama uzimam samo
-  // najznacajnijih querySeedLen znamenki u bazi 4
-
-  // zakomentirani dijelovi micu binary search 
-  // kod svakog seeda (jer trazi u kojem se genomu nalazi)
-  // zakomentirano je jer nisam spavao i ne da mi se testirati
-
   Index::Entry tmp; tmp.hash = hash;
   auto pair_lb_ub = 
-    equal_range(idx->index_.begin(), idx->index_.end(), tmp);
+    equal_range(idx->index_.begin(), idx->index_.end(), tmp, VariableSeedLenCmp(querySeedLen, idx_->getSeedLen()));
   begin = distance(idx->index_.begin(), pair_lb_ub.first);
   end   = distance(idx->index_.begin(), pair_lb_ub.second);
   reset();
 }
 
-// void Index::iterator::setStartingPos(size_t where) {
-//   int position = idx_->index_[where].position;
-  
-//   auto it = upper_bound(idx_->geneStartingPos_.begin(), 
-// 			idx_->geneStartingPos_.end(), position);
-//   assert(it != idx_->geneStartingPos_.begin());
-//   --it;
-//   currStartingPos = distance(idx_->geneStartingPos_.begin(), it);  
-// }
-
 void Index::iterator::reset() {
   curr = begin;
-  // setStartingPos(curr);
 }
 
 bool Index::iterator::done() {
@@ -56,39 +38,10 @@ bool Index::iterator::done() {
 
 void Index::iterator::advance() {
   ++curr;
-
-  // size_t next = curr+1;
-  // setStartingPos(curr = next);
-  
-  // if (next < end) {
-  //   size_t currPosition = idx_->index_[curr].position;
-  //   size_t nextPosition = idx_->index_[next].position;
-
-  //   if (nextPosition < currPosition) {
-  //     // ovo je potrebno u slucaju kad je querySeedLen manji
-  //     // od duljine kojom smo izgradili index. tad se moze
-  //     // dogoditi da unutar istog hash ne budu sortirane pozicije
-  //     // vec se sastoje od slijepljenih sortiranih nizova
-  //     setStartingPos(next); 
-  //   } else {
-  //     if (currStartingPos+1 < idx_->geneStartingPos_.size()) {
-  // 	if (nextPosition >= idx_->geneStartingPos_[currStartingPos+1]) {
-  // 	  ++currStartingPos;
-  // 	}
-  //     }
-  //   }
-  // }
-
-  // curr = next;
 }
 
 pair<unsigned int, unsigned int> Index::iterator::get() {
   return idx_->position_to_gene_position(idx_->index_[curr].position);
-  // int position = 
-  //   idx_->index_[curr].position - 
-  //   idx_->geneStartingPos_[currStartingPos];
-  // return make_pair<unsigned int, unsigned int>(currStartingPos,
-  // 					       position);
 }
 
 Index::Index(int seedLength) : seedLength_(seedLength) {
