@@ -20,27 +20,30 @@ bool Read::read(FILE* fi) {
                                  // ignore za sada
 
   id[100000] = 0;
-  if (fscanf(fi, "%s", id) != 1) return 0;
+  if (!fgets(id, sizeof id, fi)) { return 0; }
   assert(id[100000] == 0);
 
   data[100000] = 0;
-  if(fscanf(fi, "%s", data) != 1) {
+  if (!fgets(data, sizeof data, fi)) {
     printf("%s\n", id);
     assert(0);
   }
   assert(data[100000] == 0);
 
   nesto[100000] = 0;
-  assert(fscanf(fi, "%s", nesto) == 1);
+  assert(fgets(nesto, sizeof nesto, fi));
   assert(nesto[100000] == 0);
 
   kvaliteta[100000] = 0;
-  assert(fscanf(fi, "%s", kvaliteta) == 1);
+  assert(fgets(kvaliteta, sizeof kvaliteta, fi));
   assert(kvaliteta[100000] == 0);
   
   this->id_ = id;
   this->data_ = data;
   
+  trim(this->id_);
+  trim(this->data_);
+
   return 1;
 }
 
