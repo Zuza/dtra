@@ -25,6 +25,7 @@ Index::iterator::iterator(const Index* idx,
     equal_range(idx->index_.begin(), idx->index_.end(), tmp, VariableSeedLenCmp(querySeedLen, idx_->getSeedLen()));
   begin = distance(idx->index_.begin(), pair_lb_ub.first);
   end   = distance(idx->index_.begin(), pair_lb_ub.second);
+  //if (end-begin > 10000) { begin = end; }
   reset();
 }
 

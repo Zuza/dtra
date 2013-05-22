@@ -18,13 +18,14 @@ using namespace std;
 // ostali algoritmom za dulje
 const int kShortLongBorder = 0;
 
+DEFINE_string(long_read_algorithm, "coverage", "Algorithm for long reads (lis|coverage)");
+
 namespace {
 
 void performMappingLong(vector<shared_ptr<Gene> >& genes,
 			shared_ptr<Index> idx, shared_ptr<Read> read) {
   unsigned long long hsh = 0;
   int seedLen = idx->getSeedLen();
-  //int seedLen = 14;
   unsigned long long andMask = (1LL<<(2*seedLen))-1;
  
   for (int rc = 0; rc < 2; ++rc) {
@@ -74,7 +75,7 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       for (size_t i = 0; i < positions.size(); ++i) {
 	int position = positions[i].first;
 	int kmer = positions[i].second;
-	const int blockSize = read->size()/10; // 10% duljine
+	const int blockSize = 20;
 	int block = (position-kmer)/blockSize;
 	++beginEstimate[make_pair(geneIdx, max(0,block*blockSize))];
 	++totalCount;
@@ -94,8 +95,8 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
     for (size_t i = 0; i < revBegEst.size(); ++i) {
       currCount += revBegEst[i].first;
       if (1.0 * currCount / totalCount > usableFraction) {
-	while (revBegEst.size() > i+1) { revBegEst.pop_back(); }
-	break;
+    	while (revBegEst.size() > i+1) { revBegEst.pop_back(); }
+    	break;
       }
     }
 
@@ -121,30 +122,40 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 
       int windowSize = 2*read->size();
       int b = 0, e = 0;
+      int lastStart = -1000000000;
 
       for (auto start : starts) {
+        if (lastStart + 1.7 * read->size() > start) {
+            continue;
+        }
+        lastStart=start;
+
 	while (b < positions.size() && 
 	       positions[b].first < start) { ++b; }
 	while (e < positions.size() &&
 	       positions[e].first < start+windowSize) { ++e; }
 	assert(b <= e);
 
-	vector<pair<int, int> > pripremaZaLis;
+        int score = 0;
+if (FLAGS_long_read_algorithm == "lis") {
+        vector<pair<int, int> > pripremaZaLis;
 	for (int i = b; i < e; ++i) {
 	  pripremaZaLis.push_back(positions[i]);
 	}
 
 	vector<int> lisResult;
         calcLongestIncreasingSubsequence(&lisResult, pripremaZaLis);
-	int score = lisResult.size();
-	// vector<Interval> intervals;
-	// for (int i = b; i < e; ++i) {
-	//   int a = positions[i].first;
-	//   int b = positions[i].first + seedLen - 1;
-	//   int c = positions[i].second;
-	//   intervals.push_back(Interval(a,b,c));
-	// }
-	// cover(NULL, &score, intervals);
+	score = lisResult.size();
+} else if (FLAGS_long_read_algorithm == "coverage") {
+	vector<Interval> intervals;
+	for (int i = b; i < e; ++i) {
+	  int a = positions[i].first;
+	  int b = positions[i].first + seedLen - 1;
+	  int c = positions[i].second;
+	  intervals.push_back(Interval(a,b,c));
+	}
+	cover(NULL, &score, intervals);
+}
 	
 #ifdef DEBUG
 	string geneSegment = cstrToString(genes[geneIdx]->data() + begin, 
@@ -164,7 +175,11 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 }
 
 void performMapping(vector<shared_ptr<Gene> >& genes,
-		    shared_ptr<Index> idx, shared_ptr<Read> read) {
+		    shared_ptr<Index> idx, 
+		    shared_ptr<Read> read) {
+  assert(FLAGS_long_read_algorithm == "lis" || 
+	 FLAGS_long_read_algorithm == "coverage");
+
   if (read->size() < kShortLongBorder) {
 
   } else {
