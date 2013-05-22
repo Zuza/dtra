@@ -26,6 +26,7 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 			shared_ptr<Index> idx, shared_ptr<Read> read) {
   unsigned long long hsh = 0;
   int seedLen = idx->getSeedLen();
+  //int seedLen = 14;
   unsigned long long andMask = (1LL<<(2*seedLen))-1;
  
   for (int rc = 0; rc < 2; ++rc) {
@@ -75,7 +76,9 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
       for (size_t i = 0; i < positions.size(); ++i) {
 	int position = positions[i].first;
 	int kmer = positions[i].second;
+
 	const int blockSize = 20;
+
 	int block = (position-kmer)/blockSize;
 	++beginEstimate[make_pair(geneIdx, max(0,block*blockSize))];
 	++totalCount;
@@ -122,6 +125,7 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 
       int windowSize = 2*read->size();
       int b = 0, e = 0;
+
       int lastStart = -1000000000;
 
       for (auto start : starts) {
