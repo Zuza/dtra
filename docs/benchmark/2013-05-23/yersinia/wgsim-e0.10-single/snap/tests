@@ -1,0 +1,21 @@
+fpavetic@genome:~/snap$ time ./snap single yersinia/ ~/db/bacteria/yersinia/wgsim-e0.10-single/100.fq -t 24 -d 100 -h 300 -n 200
+Welcome to SNAP version 0.15.7.
+
+Loading index from directory... 0s.  4658411 bases, seed size 20
+ConfDif MaxHits MaxDist MaxSeed ConfAd  %Used   %Unique %Multi  %!Found %Error  Reads/s
+2       300     100     200     4       100.00% 73.04%  3.94%   23.01%  -       116009
+
+real    0m0.930s
+user    0m9.933s
+sys     0m3.380s
+fpavetic@genome:~/snap$ time ./snap single yersinia/ ~/db/bacteria/yersinia/wgsim-e0.10-single/100.fq -t 24 -d 100 -h 500 -n 500
+Welcome to SNAP version 0.15.7.
+
+Loading index from directory... 0s.  4658411 bases, seed size 20
+ConfDif MaxHits MaxDist MaxSeed ConfAd  %Used   %Unique %Multi  %!Found %Error  Reads/s
+2       500     100     500     4       100.00% 73.04%  3.94%   23.01%  -       69396
+
+real    0m1.509s
+user    0m13.533s
+sys     0m10.009s
+
