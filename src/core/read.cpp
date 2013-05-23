@@ -9,7 +9,7 @@
 #include "util.h"
 using namespace std;
 
-DEFINE_int32(no_top_mappings, 5, "Number of best mappings a read records.");
+DEFINE_double(mapping_keep_ratio, 1.25, "Ratio of the best mapping with the last kept.");
 DEFINE_int32(read_pos_max_offset, 10, "Offset tolerance for correct read placement.");
 
 bool Read::read(FILE* fi) {
@@ -126,8 +126,8 @@ void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
     swap(topMappings_[i-1], topMappings_[i]);
   }
   
-  if (topMappings_.size() > FLAGS_no_top_mappings) {
-      topMappings_.pop_back();
+  while (topMappings_.size() > 1 && topMappings_[0].score / topMappings_.back().score > FLAGS_mapping_keep_ratio) {
+    topMappings_.pop_back();
   }
 }
 
