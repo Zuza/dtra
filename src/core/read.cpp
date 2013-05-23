@@ -24,10 +24,7 @@ bool Read::read(FILE* fi) {
   assert(id[100000] == 0);
 
   data[100000] = 0;
-  if (!fgets(data, sizeof data, fi)) {
-    printf("%s\n", id);
-    assert(0);
-  }
+  if (!fgets(data, sizeof data, fi)) { return 0; }
   assert(data[100000] == 0);
 
   nesto[100000] = 0;
@@ -44,7 +41,7 @@ bool Read::read(FILE* fi) {
   trim(this->id_);
   trim(this->data_);
 
-  return 1;
+  return this->id_ != "" && this->data_ != "";
 }
 
 void Read::print(FILE* out) {
