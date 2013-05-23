@@ -118,6 +118,11 @@ int Read::validateWgsimMapping() {
 void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
 			 string geneDescriptor, 
 			 string geneSegment) {
+  if (!topMappings_.empty() && topMappings_[0].score / score > FLAGS_read_pos_max_offset) {
+    // ovo sluzi da nemam insertion sort dolje ako mi bas ne treba
+    return;
+  }
+
   topMappings_.push_back(OneMapping(score, genePos, isRC, geneIdx,
 				    geneDescriptor, geneSegment));
   size_t i = topMappings_.size()-1;
