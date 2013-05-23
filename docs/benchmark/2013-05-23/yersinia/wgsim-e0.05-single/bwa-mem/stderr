@@ -1,0 +1,49 @@
+[M::main_mem] read 100000 sequences (10000000 bp)...
+[main] Version: 0.7.4-r385
+[main] CMD: ./bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-e0.05-single/100.fq
+[main] Real time: 1.343 sec; CPU: 25.794 sec
+
+real	0m1.354s
+user	0m25.558s
+sys	0m0.244s
+[M::main_mem] read 100000 sequences (20000000 bp)...
+[main] Version: 0.7.4-r385
+[main] CMD: ./bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-e0.05-single/200.fq
+[main] Real time: 3.996 sec; CPU: 86.825 sec
+
+real	0m4.013s
+user	1m26.557s
+sys	0m0.276s
+[M::main_mem] read 100000 sequences (50000000 bp)...
+[main] Version: 0.7.4-r385
+[main] CMD: ./bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-e0.05-single/500.fq
+[main] Real time: 17.572 sec; CPU: 386.064 sec
+
+real	0m17.605s
+user	6m25.236s
+sys	0m0.836s
+[M::main_mem] read 100000 sequences (100000000 bp)...
+[main] Version: 0.7.4-r385
+[main] CMD: ./bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-e0.05-single/1000.fq
+[main] Real time: 40.549 sec; CPU: 853.221 sec
+
+real	0m40.603s
+user	14m5.269s
+sys	0m7.972s
+[M::main_mem] read 100000 sequences (200000000 bp)...
+[main] Version: 0.7.4-r385
+[main] CMD: ./bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-e0.05-single/2000.fq
+[main] Real time: 76.292 sec; CPU: 1636.962 sec
+
+real	1m16.394s
+user	26m57.005s
+sys	0m19.985s
+[M::main_mem] read 80000 sequences (240000000 bp)...
+[M::main_mem] read 20000 sequences (60000000 bp)...
+[main] Version: 0.7.4-r385
+[main] CMD: ./bwa mem -t 24 yersinia /home/fpavetic/db/bacteria/yersinia/wgsim-e0.05-single/3000.fq
+[main] Real time: 110.248 sec; CPU: 2379.157 sec
+
+real	1m50.365s
+user	39m8.683s
+sys	0m30.486s

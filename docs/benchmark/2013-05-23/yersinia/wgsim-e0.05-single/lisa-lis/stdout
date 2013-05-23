@@ -1,0 +1,64 @@
+done (21.65s)
+Total reads: 100000
+Number of reads not mapped: 3293
+Not even one kmer found: 1911
+Reads mapped with high confidence: 10835
+Reads mapped with high confidence2: 93522
+hitova na 1-tom mjestu: 93522
+hitova na 2-tom mjestu: 599
+hitova na 3-tom mjestu: 270
+hitova na 4-tom mjestu: 207
+hitova na 5-tom mjestu: 198
+done (46.87s)
+Total reads: 100000
+Number of reads not mapped: 2978
+Not even one kmer found: 24
+Reads mapped with high confidence: 8446
+Reads mapped with high confidence2: 95921
+hitova na 1-tom mjestu: 95921
+hitova na 2-tom mjestu: 440
+hitova na 3-tom mjestu: 241
+hitova na 4-tom mjestu: 202
+hitova na 5-tom mjestu: 194
+done (123.36s)
+Total reads: 100000
+Number of reads not mapped: 2224
+Not even one kmer found: 0
+Reads mapped with high confidence: 3452
+Reads mapped with high confidence2: 96981
+hitova na 1-tom mjestu: 96981
+hitova na 2-tom mjestu: 292
+hitova na 3-tom mjestu: 186
+hitova na 4-tom mjestu: 175
+hitova na 5-tom mjestu: 142
+done (251.14s)
+Total reads: 100000
+Number of reads not mapped: 1238
+Not even one kmer found: 0
+Reads mapped with high confidence: 807
+Reads mapped with high confidence2: 98244
+hitova na 1-tom mjestu: 98244
+hitova na 2-tom mjestu: 221
+hitova na 3-tom mjestu: 129
+hitova na 4-tom mjestu: 85
+hitova na 5-tom mjestu: 83
+done (511.88s)
+Total reads: 100000
+Number of reads not mapped: 390
+Not even one kmer found: 0
+Reads mapped with high confidence: 45
+Reads mapped with high confidence2: 99453
+hitova na 1-tom mjestu: 99453
+hitova na 2-tom mjestu: 98
+hitova na 3-tom mjestu: 40
+hitova na 4-tom mjestu: 8
+hitova na 5-tom mjestu: 11
+done (770.01s)
+Total reads: 100000
+Number of reads not mapped: 435
+Not even one kmer found: 0
+Reads mapped with high confidence: 2
+Reads mapped with high confidence2: 99502
+hitova na 1-tom mjestu: 99502
+hitova na 2-tom mjestu: 51
+hitova na 3-tom mjestu: 12
