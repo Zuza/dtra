@@ -10,7 +10,7 @@
 using namespace std;
 
 DEFINE_int32(no_top_mappings, 5, "Number of best mappings a read records.");
-DEFINE_int32(read_pos_max_offset, 5, "Offset tolerance for correct read placement.");
+DEFINE_int32(read_pos_max_offset, 10, "Offset tolerance for correct read placement.");
 
 bool Read::read(FILE* fi) {
   static char id[100001];
@@ -20,27 +20,30 @@ bool Read::read(FILE* fi) {
                                  // ignore za sada
 
   id[100000] = 0;
-  if (fscanf(fi, "%s", id) != 1) return 0;
+  if (!fgets(id, sizeof id, fi)) { return 0; }
   assert(id[100000] == 0);
 
   data[100000] = 0;
-  if(fscanf(fi, "%s", data) != 1) {
+  if (!fgets(data, sizeof data, fi)) {
     printf("%s\n", id);
     assert(0);
   }
   assert(data[100000] == 0);
 
   nesto[100000] = 0;
-  assert(fscanf(fi, "%s", nesto) == 1);
+  assert(fgets(nesto, sizeof nesto, fi));
   assert(nesto[100000] == 0);
 
   kvaliteta[100000] = 0;
-  assert(fscanf(fi, "%s", kvaliteta) == 1);
+  assert(fgets(kvaliteta, sizeof kvaliteta, fi));
   assert(kvaliteta[100000] == 0);
   
   this->id_ = id;
   this->data_ = data;
   
+  trim(this->id_);
+  trim(this->data_);
+
   return 1;
 }
 
@@ -80,6 +83,11 @@ int Read::validateFluxMapping() {
 
 
 int Read::validateWgsimMapping() {
+  if (topMappings_.size() == 0) {
+    return -2; // nema tog kmera uopce
+  }
+
+
   vector<string> tokens = Split(id_, '_');
   int pos1 = -1000000, pos2 = -1000000;
   
@@ -105,7 +113,8 @@ int Read::validateWgsimMapping() {
       return i;
     }
   }
-  
+
+  // pogresno smjestio
   return -1;
 }
 
