@@ -1,0 +1,215 @@
+**seqalto-basic
+Version: 0.5-r123
+http://www.stanford.edu/group/wonglab
+http://binatechnologies.com/
+
+Loading genome...
+Record size: 8 bytes
+k-mer size: 22
+22bp - 34bp reads: max mismatch = 3
+35bp - 50bp reads: max mismatch = 4
+51bp - 66bp reads: max mismatch = 5
+67bp - 83bp reads: max mismatch = 6
+84bp - 101bp reads: max mismatch = 7
+102bp - 119bp reads: max mismatch = 8
+120bp - 137bp reads: max mismatch = 9
+138bp - 156bp reads: max mismatch = 10
+157bp - 175bp reads: max mismatch = 11
+176bp - 194bp reads: max mismatch = 12
+195bp - 213bp reads: max mismatch = 13
+214bp - 233bp reads: max mismatch = 14
+234bp - 253bp reads: max mismatch = 15
+254bp - 273bp reads: max mismatch = 16
+274bp - 293bp reads: max mismatch = 17
+294bp - 313bp reads: max mismatch = 18
+314bp - 334bp reads: max mismatch = 19
+335bp - 354bp reads: max mismatch = 20
+355bp - 375bp reads: max mismatch = 21
+376bp - 396bp reads: max mismatch = 22
+397bp - 416bp reads: max mismatch = 23
+417bp - 437bp reads: max mismatch = 24
+438bp - 458bp reads: max mismatch = 25
+459bp - 479bp reads: max mismatch = 26
+480bp - 500bp reads: max mismatch = 27
+Loading index...
+Total index loading time: 0.516322s.
+Number of threads: 24
+Total alignment time: 1.05707
+Number of NW and SW   4025
+Alignment complete! 
+
+real	0m1.660s
+user	0m8.801s
+sys	0m2.500s
+**seqalto-basic
+Version: 0.5-r123
+http://www.stanford.edu/group/wonglab
+http://binatechnologies.com/
+
+Loading genome...
+Record size: 8 bytes
+k-mer size: 22
+22bp - 34bp reads: max mismatch = 3
+35bp - 50bp reads: max mismatch = 4
+51bp - 66bp reads: max mismatch = 5
+67bp - 83bp reads: max mismatch = 6
+84bp - 101bp reads: max mismatch = 7
+102bp - 119bp reads: max mismatch = 8
+120bp - 137bp reads: max mismatch = 9
+138bp - 156bp reads: max mismatch = 10
+157bp - 175bp reads: max mismatch = 11
+176bp - 194bp reads: max mismatch = 12
+195bp - 213bp reads: max mismatch = 13
+214bp - 233bp reads: max mismatch = 14
+234bp - 253bp reads: max mismatch = 15
+254bp - 273bp reads: max mismatch = 16
+274bp - 293bp reads: max mismatch = 17
+294bp - 313bp reads: max mismatch = 18
+314bp - 334bp reads: max mismatch = 19
+335bp - 354bp reads: max mismatch = 20
+355bp - 375bp reads: max mismatch = 21
+376bp - 396bp reads: max mismatch = 22
+397bp - 416bp reads: max mismatch = 23
+417bp - 437bp reads: max mismatch = 24
+438bp - 458bp reads: max mismatch = 25
+459bp - 479bp reads: max mismatch = 26
+480bp - 500bp reads: max mismatch = 27
+Loading index...
+Total index loading time: 0.569138s.
+Number of threads: 24
+Total alignment time: 1.45807
+Number of NW and SW   9409
+Alignment complete! 
+
+real	0m2.117s
+user	0m26.290s
+sys	0m1.768s
+**seqalto-basic
+Version: 0.5-r123
+http://www.stanford.edu/group/wonglab
+http://binatechnologies.com/
+
+Loading genome...
+Record size: 8 bytes
+k-mer size: 22
+22bp - 34bp reads: max mismatch = 3
+35bp - 50bp reads: max mismatch = 4
+51bp - 66bp reads: max mismatch = 5
+67bp - 83bp reads: max mismatch = 6
+84bp - 101bp reads: max mismatch = 7
+102bp - 119bp reads: max mismatch = 8
+120bp - 137bp reads: max mismatch = 9
+138bp - 156bp reads: max mismatch = 10
+157bp - 175bp reads: max mismatch = 11
+176bp - 194bp reads: max mismatch = 12
+195bp - 213bp reads: max mismatch = 13
+214bp - 233bp reads: max mismatch = 14
+234bp - 253bp reads: max mismatch = 15
+254bp - 273bp reads: max mismatch = 16
+274bp - 293bp reads: max mismatch = 17
+294bp - 313bp reads: max mismatch = 18
+314bp - 334bp reads: max mismatch = 19
+335bp - 354bp reads: max mismatch = 20
+355bp - 375bp reads: max mismatch = 21
+376bp - 396bp reads: max mismatch = 22
+397bp - 416bp reads: max mismatch = 23
+417bp - 437bp reads: max mismatch = 24
+438bp - 458bp reads: max mismatch = 25
+459bp - 479bp reads: max mismatch = 26
+480bp - 500bp reads: max mismatch = 27
+Loading index...
+Total index loading time: 0.569953s.
+Number of threads: 24
+Total alignment time: 10.8679
+Number of NW and SW   20832
+Alignment complete! 
+
+real	0m11.539s
+user	3m55.987s
+sys	0m1.996s
+**seqalto-basic
+Version: 0.5-r123
+http://www.stanford.edu/group/wonglab
+http://binatechnologies.com/
+
+Loading genome...
+Record size: 8 bytes
+k-mer size: 22
+22bp - 34bp reads: max mismatch = 3
+35bp - 50bp reads: max mismatch = 4
+51bp - 66bp reads: max mismatch = 5
+67bp - 83bp reads: max mismatch = 6
+84bp - 101bp reads: max mismatch = 7
+102bp - 119bp reads: max mismatch = 8
+120bp - 137bp reads: max mismatch = 9
+138bp - 156bp reads: max mismatch = 10
+157bp - 175bp reads: max mismatch = 11
+176bp - 194bp reads: max mismatch = 12
+195bp - 213bp reads: max mismatch = 13
+214bp - 233bp reads: max mismatch = 14
+234bp - 253bp reads: max mismatch = 15
+254bp - 273bp reads: max mismatch = 16
+274bp - 293bp reads: max mismatch = 17
+294bp - 313bp reads: max mismatch = 18
+314bp - 334bp reads: max mismatch = 19
+335bp - 354bp reads: max mismatch = 20
+355bp - 375bp reads: max mismatch = 21
+376bp - 396bp reads: max mismatch = 22
+397bp - 416bp reads: max mismatch = 23
+417bp - 437bp reads: max mismatch = 24
+438bp - 458bp reads: max mismatch = 25
+459bp - 479bp reads: max mismatch = 26
+480bp - 500bp reads: max mismatch = 27
+Loading index...
+Total index loading time: 0.515228s.
+Number of threads: 24
+Total alignment time: 63.031
+Number of NW and SW   54277
+Alignment complete! 
+
+real	1m3.667s
+user	24m39.572s
+sys	0m2.464s
+**seqalto-basic
+Version: 0.5-r123
+http://www.stanford.edu/group/wonglab
+http://binatechnologies.com/
+
+Loading genome...
+Record size: 8 bytes
+k-mer size: 22
+22bp - 34bp reads: max mismatch = 3
+35bp - 50bp reads: max mismatch = 4
+51bp - 66bp reads: max mismatch = 5
+67bp - 83bp reads: max mismatch = 6
+84bp - 101bp reads: max mismatch = 7
+102bp - 119bp reads: max mismatch = 8
+120bp - 137bp reads: max mismatch = 9
+138bp - 156bp reads: max mismatch = 10
+157bp - 175bp reads: max mismatch = 11
+176bp - 194bp reads: max mismatch = 12
+195bp - 213bp reads: max mismatch = 13
+214bp - 233bp reads: max mismatch = 14
+234bp - 253bp reads: max mismatch = 15
+254bp - 273bp reads: max mismatch = 16
+274bp - 293bp reads: max mismatch = 17
+294bp - 313bp reads: max mismatch = 18
+314bp - 334bp reads: max mismatch = 19
+335bp - 354bp reads: max mismatch = 20
+355bp - 375bp reads: max mismatch = 21
+376bp - 396bp reads: max mismatch = 22
+397bp - 416bp reads: max mismatch = 23
+417bp - 437bp reads: max mismatch = 24
+438bp - 458bp reads: max mismatch = 25
+459bp - 479bp reads: max mismatch = 26
+480bp - 500bp reads: max mismatch = 27
+Loading index...
+Total index loading time: 0.516033s.
+Number of threads: 24
+Total alignment time: 382.335
+Number of NW and SW   161344
+Alignment complete! 
+
+real	6m23.047s
+user	151m47.389s
+sys	0m9.725s
