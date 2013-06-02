@@ -9,7 +9,7 @@
 #include "util.h"
 using namespace std;
 
-DEFINE_int32(no_top_mappings, 5, "Number of best mappings a read records.");
+DEFINE_double(mapping_keep_ratio, 1.25, "Ratio of the best mapping with the last kept.");
 DEFINE_int32(read_pos_max_offset, 10, "Offset tolerance for correct read placement.");
 
 bool Read::read(FILE* fi) {
@@ -24,10 +24,7 @@ bool Read::read(FILE* fi) {
   assert(id[100000] == 0);
 
   data[100000] = 0;
-  if (!fgets(data, sizeof data, fi)) {
-    printf("%s\n", id);
-    assert(0);
-  }
+  if (!fgets(data, sizeof data, fi)) { return 0; }
   assert(data[100000] == 0);
 
   nesto[100000] = 0;
@@ -44,7 +41,7 @@ bool Read::read(FILE* fi) {
   trim(this->id_);
   trim(this->data_);
 
-  return 1;
+  return this->id_ != "" && this->data_ != "";
 }
 
 void Read::print(FILE* out) {
@@ -121,6 +118,11 @@ int Read::validateWgsimMapping() {
 void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
 			 string geneDescriptor, 
 			 string geneSegment) {
+  if (!topMappings_.empty() && topMappings_[0].score / score > FLAGS_read_pos_max_offset) {
+    // ovo sluzi da nemam insertion sort dolje ako mi bas ne treba
+    return;
+  }
+
   topMappings_.push_back(OneMapping(score, genePos, isRC, geneIdx,
 				    geneDescriptor, geneSegment));
   size_t i = topMappings_.size()-1;
@@ -129,8 +131,8 @@ void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
     swap(topMappings_[i-1], topMappings_[i]);
   }
   
-  if (topMappings_.size() > FLAGS_no_top_mappings) {
-      topMappings_.pop_back();
+  while (topMappings_.size() > 1 && topMappings_[0].score / topMappings_.back().score > FLAGS_mapping_keep_ratio) {
+    topMappings_.pop_back();
   }
 }
 
