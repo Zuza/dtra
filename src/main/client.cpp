@@ -30,7 +30,6 @@ using namespace std;
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
 DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
              "Number of threads used by the solver");
-DEFINE_string(validate_flux, "", "report/full");
 DEFINE_string(validate_wgsim, "", "report/full");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 DEFINE_double(confidence, 0.5, "Confidence threshold.h");
@@ -122,8 +121,6 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
     int mappingQuality = -1;
     if (what == "wgsim") {
       mappingQuality = read->validateWgsimMapping();
-    } else if (what == "flux") {
-      mappingQuality = read->validateFluxMapping();
     } else {
       assert(0);
     }
@@ -131,7 +128,7 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
     ++stats[mappingQuality];
 
     if (mappingQuality == 0) { // tocan je na prvom mjestu!
-      double confidence1 = read->topMapping(0).score/read->size();
+      double confidence1 = read->topMapping().score/read->size();
       double confidence2 = 1e10;
       
       // confidence2 trenutno nema toliku ulogu jer
@@ -143,8 +140,9 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
       // blokove pa u svakom bloku mozemo naci jedinstvenu poziciju
       // i uzeti blok s najvecim scoreom
       if (read->topMappings().size() >= 2) {
-	confidence2 = 
-	  read->topMapping(0).score/read->topMapping(1).score;
+	OneMapping top1 = *(read->topMappings().begin());
+	OneMapping top2 = *(++read->topMappings().begin());
+	confidence2 = top1.score / top2.score;
       }
 
       if (confidence1 > FLAGS_confidence) {
@@ -155,8 +153,7 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
       }
     }
 
-    bool validateFull = 
-      FLAGS_validate_flux == "full" || FLAGS_validate_wgsim == "full";
+    bool validateFull = FLAGS_validate_wgsim == "full";
       
     if (mappingQuality != 0 && validateFull) {      
       printf("READ #%04d:\n", i);
@@ -165,8 +162,7 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
       printf("data: %s\n", read->data().c_str());
       printf("mappings (%d):\n", (int)read->topMappings().size());
       
-      for (int x = 0; x < read->topMappings().size(); ++x) {
-        OneMapping mapping = read->topMapping(x);
+      for (auto mapping : read->topMappings()) {
         mapping.print(stdout);
       }
       puts("END READ\n");
@@ -199,11 +195,10 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 
     fprintf(resultOut, "%s,%d", read->id().c_str(), 
 	    (int)read->topMappings().size());
-    
-    for (int x = 0; x < read->topMappings().size(); ++x) {
-      const OneMapping& onemap = read->topMapping(x);
-      
-      fprintf(resultOut, ";%s,%lf,%d,%d,%d", onemap.geneDescriptor.c_str(),
+
+    for (auto onemap : read->topMappings()) {
+      fprintf(resultOut, ";%s,%lf,%d,%d,%d", 
+	      onemap.geneDescriptor.c_str(),
       	      onemap.score, onemap.genePos, 
       	      onemap.genePos+read->size(), onemap.isRC);
     }
@@ -212,9 +207,6 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 
   fclose(resultOut);
 
-  if (FLAGS_validate_flux != "") {
-    printStats(reads, "flux");
-  }
   if (FLAGS_validate_wgsim != "") {
     printStats(reads, "wgsim");
   }

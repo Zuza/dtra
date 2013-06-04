@@ -9,7 +9,7 @@
 #include "util.h"
 using namespace std;
 
-DEFINE_double(mapping_keep_ratio, 1.25, "Ratio of the best mapping with the last kept.");
+DEFINE_double(mapping_keep_ratio, 1.20, "Ratio of the best mapping with the last kept.");
 DEFINE_int32(read_pos_max_offset, 10, "Offset tolerance for correct read placement.");
 
 bool Read::read(FILE* fi) {
@@ -49,33 +49,9 @@ void Read::print(FILE* out) {
   fprintf(out, "read: %s\n", data_.c_str());
 
   fprintf(out, "mappings:\n");
-  for (int i = 0; i < topMappings_.size(); ++i) {
-    topMappings_[i].print(out);
+  for (auto mapping : topMappings_) {
+    mapping.print(out);
   }
-}
-
-int Read::validateFluxMapping() {
-  vector<string> tokens = Split(id_, ':');
-  int pos1 = atoi(tokens[5].c_str()), pos2 = atoi(tokens[6].c_str());
-
-  int geneIdx = atoi(tokens[0].c_str() + 1);
-  --pos1; --pos2; // is this true?
-  --geneIdx;
-  
-  for (int i = 0; i < topMappings_.size(); ++i) {
-    bool geneMatch = false;
-
-    if (geneIdx == topMappings_[i].geneIdx)
-      geneMatch = true;
-
-    if (geneMatch &&
-        (abs(topMappings_[i].genePos-pos1) < FLAGS_read_pos_max_offset ||
-         abs(topMappings_[i].genePos+size()-pos2) < FLAGS_read_pos_max_offset)) {
-      return i;
-    }
-  }
-  
-  return -1;
 }
 
 
@@ -94,19 +70,21 @@ int Read::validateWgsimMapping() {
   assert(sscanf(tokens[2].c_str(), "%d", &pos2) == 1);
   
   --pos1; --pos2;
-  
-  for (int i = 0; i < topMappings_.size(); ++i) {
+
+  int i = 0;
+  for (auto mapping = topMappings_.begin(); 
+       mapping != topMappings_.end(); ++mapping, ++i) {
     bool geneMatch = false;
 
     // ovo nije nuzno savrseno tocno, ali mislim da se u stvarnosti ne
     // dogadja slucaj kada ne radi
-     if (topMappings_[i].geneDescriptor.find(readInGene) != string::npos) {
+     if (mapping->geneDescriptor.find(readInGene) != string::npos) {
       geneMatch = true;
     }
 
     if (geneMatch &&
-        (abs(topMappings_[i].genePos-pos1) < FLAGS_read_pos_max_offset ||
-         abs(topMappings_[i].genePos-(pos2-size())) < FLAGS_read_pos_max_offset)) {
+        (abs(mapping->genePos-pos1) < FLAGS_read_pos_max_offset ||
+         abs(mapping->genePos-(pos2-size())) < FLAGS_read_pos_max_offset)) {
       return i;
     }
   }
@@ -118,21 +96,13 @@ int Read::validateWgsimMapping() {
 void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
 			 string geneDescriptor, 
 			 string geneSegment) {
-  if (!topMappings_.empty() && topMappings_[0].score / score > FLAGS_read_pos_max_offset) {
-    // ovo sluzi da nemam insertion sort dolje ako mi bas ne treba
-    return;
-  }
-
-  topMappings_.push_back(OneMapping(score, genePos, isRC, geneIdx,
-				    geneDescriptor, geneSegment));
-  size_t i = topMappings_.size()-1;
+  topMappings_.insert(OneMapping(score, genePos, isRC, geneIdx,
+				 geneDescriptor, geneSegment));
   
-  for ( ; i >= 1 && topMappings_[i-1] < topMappings_[i]; --i) {
-    swap(topMappings_[i-1], topMappings_[i]);
-  }
-  
-  while (topMappings_.size() > 1 && topMappings_[0].score / topMappings_.back().score > FLAGS_mapping_keep_ratio) {
-    topMappings_.pop_back();
+  while (topMappings_.size() > 1 && 
+	 topMappings_.rbegin()->score / topMappings_.begin()->score > 
+	 FLAGS_mapping_keep_ratio) {
+    topMappings_.erase(topMappings_.begin());
   }
 }
 

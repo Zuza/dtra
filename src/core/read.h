@@ -6,7 +6,9 @@
 #define MAPPER_READ
 
 #include <sys/types.h>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "core/bioinf_util.h"
@@ -33,7 +35,7 @@ struct OneMapping {
     }
   }
 
-  bool operator < (const OneMapping& m) {
+  bool operator < (const OneMapping& m) const {
     return score < m.score;
   }
 };
@@ -46,8 +48,8 @@ public:
   const std::string& id() const { return id_; }
   const std::string& data() const { return data_; }
   const int size() const { return data_.size(); }
-  const std::vector<OneMapping>& topMappings() { return topMappings_; }
-  const OneMapping& topMapping(size_t i) { return topMappings_[i]; }
+  const OneMapping& topMapping() { return *topMappings_.rbegin(); }
+  const std::multiset<OneMapping>& topMappings() { return topMappings_; }
 
   // ako je reverseComplement == true, 
   // onda ce vratiti i-tu bazu reverse
@@ -68,7 +70,6 @@ public:
   // simulatorom pa u liniji s imenom sadrzi i stvarne pozicije
   // na kojima se nalazi u genu
   int validateWgsimMapping();
-  int validateFluxMapping();
 
   unsigned long long checksum() {
     unsigned long long ret = 0;
@@ -81,7 +82,8 @@ public:
   std::string id_;
   std::string data_;
   
-  std::vector<OneMapping> topMappings_;
+  //std::vector<OneMapping> topMappings_;
+  std::multiset<OneMapping> topMappings_;
 };
 
 void splitReadInputFile(std::vector<unsigned long long>* filePos,
