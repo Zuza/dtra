@@ -72,8 +72,8 @@ int Read::validateWgsimMapping() {
   --pos1; --pos2;
 
   int i = 0;
-  for (auto mapping = topMappings_.begin(); 
-       mapping != topMappings_.end(); ++mapping, ++i) {
+  for (auto mapping = topMappings_.rbegin(); 
+       mapping != topMappings_.rend(); ++mapping, ++i) {
     bool geneMatch = false;
 
     // ovo nije nuzno savrseno tocno, ali mislim da se u stvarnosti ne
