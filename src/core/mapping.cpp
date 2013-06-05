@@ -80,7 +80,8 @@ void performMappingOld(vector<shared_ptr<Gene> >& genes,
 	    positionsByGene[geneId];
 	  
 	  if (!posVec) {
-	    posVec = shared_ptr<vector<pair<int, int> > > (new vector<pair<int, int> >());
+	    posVec = shared_ptr<vector<pair<int, int> > > (
+               new vector<pair<int, int> >());
 	    }
 	  
 	  assert(positionsByGene.count(geneId));
@@ -88,6 +89,7 @@ void performMappingOld(vector<shared_ptr<Gene> >& genes,
 	}
       }
     }
+    printf("%d\n", (int)positionsByGene.size());
     
     for (auto candidateGenes : positionsByGene) {
       int geneIdx = candidateGenes.first;
@@ -116,6 +118,68 @@ void performMappingOld(vector<shared_ptr<Gene> >& genes,
   }
 }
 
+void createBeginEstimates(
+  map<int, shared_ptr<map<int, int> > >& beginEstimateByGene,
+  const map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene
+) {
+  for (auto candidateGenes : positionsByGene) {
+    int geneIdx = candidateGenes.first;
+
+    vector<pair<int, int> >& positions = *candidateGenes.second;
+    shared_ptr<map<int, int> > beginEstimate(new map<int, int>());
+
+    for (size_t i = 0; i < positions.size(); ++i) {
+      int position = positions[i].first;
+      int kmer = positions[i].second;
+      
+      if (position-kmer >= 0) {
+	++((*beginEstimate)[position-kmer]);
+      }
+    }
+
+    beginEstimateByGene[geneIdx] = beginEstimate;
+  }
+}
+
+void groupNeighbouringEstimates(
+    map<int, shared_ptr<map<int, int> > >& beginEstimateByGeneGrouped,
+    const map<int, shared_ptr<map<int, int> > >& beginEstimateByGene) {
+  for (auto be : beginEstimateByGene) {
+    int geneIdx = be.first;
+    shared_ptr<map<int, int> >& beginEstimate = be.second;
+    shared_ptr<map<int, int> > beginEstimateGrouped(new map<int, int>());
+
+    for (map<int, int>::iterator it = beginEstimate->begin(); 
+	 it != beginEstimate->end(); ++it) {
+      int total = 0;
+      
+      for (map<int, int>::iterator prev = it; 
+	   prev != beginEstimate->begin(); ) {
+	--prev;
+	if (it->first-prev->first <= kBeginEstimateGroupDist) {
+	  total += it->second;
+	} else {
+	  break;
+	}
+      }
+     
+      map<int, int>::iterator next = it; ++next;
+      for ( ; next != beginEstimate->end(); ++next) {
+	if (next->first-it->first <= kBeginEstimateGroupDist) {
+	  total += it->second;
+	} else {
+	  break;
+	}
+      }
+
+      (*beginEstimateGrouped)[it->first] = total;
+    }
+
+    beginEstimateByGeneGrouped[geneIdx] = beginEstimateGrouped;
+  }
+}
+
+
 void performMappingLong(vector<shared_ptr<Gene> >& genes,
 			shared_ptr<Index> idx, shared_ptr<Read> read) {
   unsigned long long hsh = 0;
@@ -140,6 +204,7 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 	  pair<unsigned int, unsigned int> x = it.get();
           int geneId = x.first;
 	  int position = x.second;
+	  //printf("geneId=%d, position=%d\n", geneId, position);
 	  
 	  shared_ptr<vector<pair<int, int> > >& posVec =
 	    positionsByGene[geneId];
@@ -149,67 +214,32 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
                             new vector<pair<int, int> >());
 	  }
 
-#ifdef DEBUG
 	  assert(positionsByGene.count(geneId));
-#endif
 	  posVec->push_back(make_pair(position, i+1-seedLen));
 	} 
       }
     }
 
+    printf("%d\n", (int)positionsByGene.size());
 
-    // TODO: izdvojiti u zasebnu funkciju
-
-    // naive -> procjena pozicije naivnim brojanjem
     map<int, shared_ptr<map<int, int> > > beginEstimateByGene;
+    createBeginEstimates(beginEstimateByGene,
+			 positionsByGene);
+
     map<int, shared_ptr<map<int, int> > > beginEstimateByGeneGrouped;
+    groupNeighbouringEstimates(beginEstimateByGeneGrouped,
+			       beginEstimateByGene);
 
-    for (auto candidateGenes : positionsByGene) {
-      int geneIdx = candidateGenes.first;
-
-      vector<pair<int, int> >& positions = *candidateGenes.second;
-      shared_ptr<map<int, int> > beginEstimate(new map<int, int>());
-
-      for (size_t i = 0; i < positions.size(); ++i) {
-	int position = positions[i].first;
-	int kmer = positions[i].second;
-	
-	if (position-kmer >= 0) {
-	  ++(*beginEstimate)[position-kmer];
-	}
-      }
-
-      beginEstimateByGene[geneIdx] = beginEstimate;
-      shared_ptr<map<int, int> > beginEstimateGrouped(
-				    new map<int, int>());
-
-      for (map<int, int>::iterator it = beginEstimate->begin(); 
-	   it != beginEstimate->end(); ++it) {
-	int total = 0;
-	for (map<int, int>::iterator prev = it; 
-	     prev != beginEstimate->begin(); ) {
-	  --prev;
-	  if (it->first-prev->first <= kBeginEstimateGroupDist) {
-	    total += it->second;
-	  } else {
-	    break;
-	  }
-	}
-	map<int, int>::iterator next = it; ++next;
-	for ( ; next != beginEstimate->end(); ++next) {
-	  if (next->first-it->first <= kBeginEstimateGroupDist) {
-	    total += it->second;
-	  } else {
-	    break;
-	  }
-	}
-
-	(*beginEstimateGrouped)[it->first] = total;
-      }
-
-      beginEstimateByGeneGrouped[geneIdx] = beginEstimateGrouped;
+    // printf("%d %d %d\n", 
+    // 	   (int)positionsByGene.size(),
+    // 	   (int)beginEstimateByGene.size(),
+    // 	   (int)beginEstimateByGeneGrouped.size());
+    if (beginEstimateByGene.empty()) {
+      assert(positionsByGene.empty());
+      return;
     }
 
+    // naive -> procjena pozicije naivnim brojanjem
     if (FLAGS_long_read_algorithm == "naive") {
       for (auto iter : beginEstimateByGeneGrouped) {
 	int geneIdx = iter.first;
@@ -225,7 +255,6 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 	      bestHits = it->second;
 	    }
 	  }
-	  puts("tu");
 	  read->updateMapping(bestHits, bestPos, rc, geneIdx,
 			      genes[geneIdx]->description(), "");
 	} else {
@@ -234,67 +263,9 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
 	}
       }
     } else {
-//     for (auto candidatePositions : candidatePositionsByGene) {
-//       int geneIdx = candidatePositions.first;
-//       vector<int>& starts = *candidatePositions.second;
-//       sort(starts.begin(), starts.end());
 
-//       vector<pair<int, int> >& positions = *positionsByGene[geneIdx];
-//       sort(positions.begin(), positions.end());
-
-//       int windowSize = 2*read->size();
-//       int b = 0, e = 0;
-
-//       int lastStart = -1000000000;
-
-//       for (auto start : starts) {
-//         if (lastStart + read->size() > start) {
-//             continue;
-//         }
-//         lastStart=start;
-
-// 	while (b < positions.size() && 
-// 	       positions[b].first < start) { ++b; }
-// 	while (e < positions.size() &&
-// 	       positions[e].first < start+windowSize) { ++e; }
-// 	assert(b <= e);
-
-//         int score = 0;
-// if (FLAGS_long_read_algorithm == "lis") {
-//         vector<pair<int, int> > pripremaZaLis;
-// 	for (int i = b; i < e; ++i) {
-// 	  pripremaZaLis.push_back(positions[i]);
-// 	}
-
-// 	vector<int> lisResult;
-//         calcLongestIncreasingSubsequence(&lisResult, pripremaZaLis);
-// 	score = lisResult.size();
-// } else if (FLAGS_long_read_algorithm == "coverage") {
-// 	vector<Interval> intervals;
-// 	for (int i = b; i < e; ++i) {
-// 	  int a = positions[i].first;
-// 	  int b = positions[i].first + seedLen - 1;
-// 	  int c = positions[i].second;
-// 	  intervals.push_back(Interval(a,b,c));
-// 	}
-// 	cover(NULL, &score, intervals);
-// }
-	
-// #ifdef DEBUG
-// 	string geneSegment = cstrToString(genes[geneIdx]->data() + begin, 
-// 					  read->size());
-// #else
-// 	string geneSegment = "";
-// #endif
-	
-// 	read->updateMapping(score, start, rc, geneIdx,
-// 			    genes[geneIdx]->description(), geneSegment);
-	
-//       }
-//     }
-//   }
- }
- }
+    }
+  }
 }
 
 }
@@ -315,6 +286,6 @@ void performMapping(vector<shared_ptr<Gene> >& genes,
     }
   }
 
-  performMappingOld(genes, idx, read);
-  //performMappingLong(genes, idx, read);
+  //performMappingOld(genes, idx, read);
+  performMappingLong(genes, idx, read);
 }
