@@ -58,6 +58,9 @@ void calcLongestIncreasingSubsequence(
     vector<int>* result,
     const vector<pair<int, int> >& elements) {
   int n = elements.size();
+  if (n == 0) {
+    return;
+  }
 
   // for (int i = 1; i < n; ++i) {
   //   assert(elements[i-1].first <= elements[i].first);
