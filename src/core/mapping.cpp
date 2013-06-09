@@ -214,7 +214,7 @@ void windowedAlignment(shared_ptr<Read> read,
 
 	// gdje procjenjujemo da je pocetna pozicija
 	// mapiranja reada na gen?
-	int begin = estimateBeginFromLis(positions, lisResult);
+	int begin = estimateBeginFromLis(lisPrepare, lisResult);
 	read->updateMapping(lisResult.size(), begin, rc, geneIdx,
 			    genes[geneIdx]->description(), "");
       } else if (FLAGS_long_read_algorithm == "coverage") {
