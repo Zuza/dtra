@@ -28,6 +28,9 @@ client: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES)
 reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) 
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/main/DataReducer.o $(LD_FLAGS)
 
+lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) 
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/main/lisa.o $(LD_FLAGS)
+
 test: test_coverage
 
 test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES)
