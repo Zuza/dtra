@@ -19,12 +19,11 @@ DEFINE_bool(use_parallel_sort, true, "Sorting the index will use " \
 
 Index::iterator::iterator(const Index* idx,
 			  const hash_t& hash,
-			  const int& querySeedLen) : idx_(idx) {
+			  const int& querySeedLen) : idx_(idx)
+                                 , hash_(hash) {
   Index::Entry tmp; tmp.hash = hash;
-  auto pair_lb_ub = 
-    equal_range(idx->index_.begin(), idx->index_.end(), tmp, VariableSeedLenCmp(querySeedLen, idx_->getSeedLen()));
-  begin = distance(idx->index_.begin(), pair_lb_ub.first);
-  end   = distance(idx->index_.begin(), pair_lb_ub.second);
+  auto lb_it = lower_bound(idx->index_.begin(), idx->index_.end(), tmp, VariableSeedLenCmp(querySeedLen, idx_->getSeedLen()));
+  begin = distance(idx->index_.begin(), lb_it);
   reset();
 }
 
@@ -33,7 +32,7 @@ void Index::iterator::reset() {
 }
 
 bool Index::iterator::done() {
-  return curr == end;
+  return idx_->index_[curr].hash != hash_;
 }
 
 void Index::iterator::advance() {

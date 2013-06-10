@@ -26,4 +26,4 @@ client-index:
 	$(BIN_DIR)/client --indexPartSize 40 index $(DB_DIR)/nt.part $(DB_DIR)/index.part/
 
 client-solve:
-	$(BIN_DIR)/client --long_read_algorithm ssw --validate_wgsim report solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/hello.fq.small $(READS_DIR)/hello.out
+	$(BIN_DIR)/client --validate_wgsim report solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/hello.fq $(READS_DIR)/hello.out
