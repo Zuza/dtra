@@ -35,6 +35,7 @@ public:
     /* void setStartingPos(size_t where); */
 
     const Index* idx_;
+    hash_t hash_;
     size_t begin, end, curr, currStartingPos;
   };
 

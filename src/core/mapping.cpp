@@ -10,12 +10,14 @@
 #include "core/lis.h"
 #include "core/util.h"
 #include "core/Coverage.h"
+#include "ssw/ssw_cpp.h"
+
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
 // 32 bitni int dovoljan svuda
 
-DEFINE_string(long_read_algorithm, "lis", "Algorithm for long reads (naive|lis|coverage)");
+DEFINE_string(long_read_algorithm, "lis", "Algorithm for long reads (naive|lis|coverage|ssw)");
 DEFINE_bool(multiple_hits, false, "Allow multiple placements on a single gene.");
 
 const int kBeginEstimateGroupDist = 15;
@@ -23,11 +25,13 @@ const int kBeginEstimateGroupDist = 15;
 namespace {
 
 void printUsageAndExit() {
- printf("For single hits: --long_read_algorithm=lis|naive\n");
+ printf("For single hits: --long_read_algorithm=lis|naive|ssw\n");
  printf("For multiple hits: --multiple_hits --long_read_algorithm=lis|coverage\n");
  exit(1);
 }
 
+// TODO: malo popraviti, trenutno je implementirana dosta jednostavna
+// verzija, moguce je napraviti da bolje handle-a indele
 int estimateBeginFromLis(const vector<pair<int, int> >& positions,
 			 const vector<int>& lis) {
   map<int, int> beginEstimate;
@@ -50,6 +54,8 @@ int estimateBeginFromLis(const vector<pair<int, int> >& positions,
   return begin;
 }
 
+// funkcija izmjenjuje vektore sadrzane u positionsByGene,
+// oni ce postati sortirani
 void singleLis(shared_ptr<Read> read, 
 	       const map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene,
 	       const vector<shared_ptr<Gene> >& genes,
@@ -66,17 +72,8 @@ void singleLis(shared_ptr<Read> read,
     // gdje procjenjujemo da je pocetna pozicija
     // mapiranja reada na gen?
     int begin = estimateBeginFromLis(positions, lisResult);
-      
-    // segment na genu gdje procjenjujemo mapiranje
-#ifdef DEBUG
-    string geneSegment = cstrToString(genes[geneIdx]->data() + begin,
-				      read->size());
-#else
-    string geneSegment = "";
-#endif
-    
     read->updateMapping(lisResult.size(), begin, rc, geneIdx,
-			genes[geneIdx]->description(), geneSegment);
+			genes[geneIdx]->description(), "");
   }
 }
 
@@ -103,44 +100,6 @@ void createBeginEstimates(
   }
 }
 
-void groupNeighbouringEstimates(
-    map<int, shared_ptr<map<int, int> > >& beginEstimateByGeneGrouped,
-    const map<int, shared_ptr<map<int, int> > >& beginEstimateByGene) {
-  for (auto be : beginEstimateByGene) {
-    int geneIdx = be.first;
-    shared_ptr<map<int, int> >& beginEstimate = be.second;
-    shared_ptr<map<int, int> > beginEstimateGrouped(new map<int, int>());
-
-    for (map<int, int>::iterator it = beginEstimate->begin(); 
-	 it != beginEstimate->end(); ++it) {
-      int total = 0;
-      
-      for (map<int, int>::iterator prev = it; 
-	   prev != beginEstimate->begin(); ) {
-	--prev;
-	if (it->first-prev->first <= kBeginEstimateGroupDist) {
-	  total += it->second;
-	} else {
-	  break;
-	}
-      }
-     
-      map<int, int>::iterator next = it; ++next;
-      for ( ; next != beginEstimate->end(); ++next) {
-	if (next->first-it->first <= kBeginEstimateGroupDist) {
-	  total += it->second;
-	} else {
-	  break;
-	}
-      }
-
-      (*beginEstimateGrouped)[it->first] = total;
-    }
-
-    beginEstimateByGeneGrouped[geneIdx] = beginEstimateGrouped;
-  }
-}
-
 void singleNaive(shared_ptr<Read> read, 
 		 const map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene,
 		 const vector<shared_ptr<Gene> >& genes,
@@ -148,22 +107,13 @@ void singleNaive(shared_ptr<Read> read,
   map<int, shared_ptr<map<int, int> > > beginEstimateByGene;
   createBeginEstimates(beginEstimateByGene, positionsByGene);
   
-  map<int, shared_ptr<map<int, int> > > beginEstimateByGeneGrouped;
-  // groupNeighbouringEstimates(beginEstimateByGeneGrouped,
-  // 			       beginEstimateByGene);
-    
-  beginEstimateByGeneGrouped = beginEstimateByGene;
-    
-  // TODO: trenutno ovo vrijedi, nece nakon updatea grupiranja
-  assert(beginEstimateByGene.size() == beginEstimateByGeneGrouped.size());
-
   if (beginEstimateByGene.empty()) {
     assert(positionsByGene.empty());
     return;
   }
 
   // naive -> procjena pozicije naivnim brojanjem
-  for (auto iter : beginEstimateByGeneGrouped) {
+  for (auto iter : beginEstimateByGene) {
     int geneIdx = iter.first;
     shared_ptr<map<int, int> > beginEstimateGrouped = iter.second;
     
@@ -223,114 +173,107 @@ void populatePositions(map<int, shared_ptr<vector<pair<int, int> > > >& position
   }
 }
 
-// TODO: ova se funkcija moze srediti tako da koristi 
-// helper funkcije napisane u ovom fileu,
-// trenutno je ovo samo kopi pejst nekog starog commita
-// PROBLEM: cini se da ne radi trenutno bas
 void windowedAlignment(shared_ptr<Read> read,
 		       map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene,
 		       const shared_ptr<Index> idx,
 		       const vector<shared_ptr<Gene> >& genes,
 		       const int rc) {
-  // a) prvo procijenim koje su pozicije najizglednije
-  // da na njih smjestam read
-  int seedLen = idx->getSeedLen();
-
-  map<pair<int, int>, int> beginEstimate;
-  int totalCount = 0;
-
   for (auto candidateGenes : positionsByGene) {
     int geneIdx = candidateGenes.first;
     
     vector<pair<int, int> >& positions = *candidateGenes.second;
-    for (size_t i = 0; i < positions.size(); ++i) {
-      int position = positions[i].first;
-      int kmer = positions[i].second;
-      const int blockSize = 20;
-      int block = (position-kmer)/blockSize;
-      ++beginEstimate[make_pair(geneIdx, max(0,block*blockSize))];
-      ++totalCount;
-    }
-  }
-  
-  // b) odredim prozore za provjeru, a to su oni koji imaju zajedno
-  // preko odredjenog postotka hitova
-  vector<pair<int, pair<int, int> > > revBegEst;
-  for (auto iter : beginEstimate) {
-    revBegEst.push_back(make_pair(iter.second, iter.first));
-  }
-  sort(revBegEst.rbegin(), revBegEst.rend());
-  
-  map<int, shared_ptr<vector<int> > > candidatePositionsByGene;
-  for (size_t i = 0; i < revBegEst.size(); ++i) {
-    int geneIdx = revBegEst[i].second.first;
-    int pos = revBegEst[i].second.second;
-    shared_ptr<vector<int> >& vecPtr =
-      candidatePositionsByGene[geneIdx];
-    if (!vecPtr) {
-      vecPtr = shared_ptr<vector<int> > (new vector<int>());
-    }
-    vecPtr->push_back(pos);
-  }
-  
-  for (auto candidatePositions : candidatePositionsByGene) {
-    int geneIdx = candidatePositions.first;
-    vector<int>& starts = *candidatePositions.second;
-    sort(starts.begin(), starts.end());
-    
-    vector<pair<int, int> >& positions = *positionsByGene[geneIdx];
     sort(positions.begin(), positions.end());
+
+    int start = 0, end = 0, lastStart = -1000000000;
     
-    int windowSize = 2*read->size();
-    int b = 0, e = 0;
-    int lastStart = -1000000000;
-
-    for (auto start : starts) {
-      if (lastStart + read->size() > start) {
-	continue;
+    while (true) {
+      while (start < positions.size() && 
+	     lastStart + read->size() > positions[start].first) {
+	++start;
       }
-      lastStart=start;
-      
-      while (b < positions.size() &&
-	     positions[b].first < start) { ++b; }
-      while (e < positions.size() &&
-	     positions[e].first < start+windowSize) { ++e; }
-      assert(b <= e);
 
-      int score = 0;
+      if (start < positions.size()) {
+	lastStart = positions[start].first;
+      } else {
+	break;
+      }
+
+      while (end < positions.size() && 
+	     positions[start].first + 2 * read->size() > positions[end].first) {
+	++end;
+      }
+
+      assert(start <= end);
+
       if (FLAGS_long_read_algorithm == "lis") {
-        vector<pair<int, int> > pripremaZaLis;
-	for (int i = b; i < e; ++i) {
-	  pripremaZaLis.push_back(positions[i]);
+	vector<pair<int, int> > lisPrepare;
+	for (int i = start; i < end; ++i) {
+	  lisPrepare.push_back(positions[i]);
 	}
 
 	vector<int> lisResult;
-        calcLongestIncreasingSubsequence(&lisResult, pripremaZaLis);
-	score = lisResult.size();
+	calcLongestIncreasingSubsequence(&lisResult, lisPrepare);
+
+	// gdje procjenjujemo da je pocetna pozicija
+	// mapiranja reada na gen?
+	int begin = estimateBeginFromLis(lisPrepare, lisResult);
+	read->updateMapping(lisResult.size(), begin, rc, geneIdx,
+			    genes[geneIdx]->description(), "");
       } else if (FLAGS_long_read_algorithm == "coverage") {
+	printf("not done yet, reconstruction needed!\n");
+	exit(1);
+      
+	int seedLen = idx->getSeedLen();
 	vector<Interval> intervals;
-	for (int i = b; i < e; ++i) {
+	for (int i = start; i < end; ++i) {
 	  int a = positions[i].first;
 	  int b = positions[i].first + seedLen - 1;
 	  int c = positions[i].second;
 	  intervals.push_back(Interval(a,b,c));
 	}
-	cover(NULL, &score, intervals);
+	//cover(NULL, &score, intervals);
       }
-
-#ifdef DEBUG
-      string geneSegment = cstrToString(genes[geneIdx]->data() + begin,
-					read->size());
-#else
-      string geneSegment = "";
-#endif
-
-      read->updateMapping(score, start, rc, geneIdx,
-			  genes[geneIdx]->description(), geneSegment);
-
     }
   }
 }
+
+DEFINE_int32(ssw_match, 1, "ssw match");
+DEFINE_int32(ssw_mismatch, 2, "ssw mismatch");
+DEFINE_int32(ssw_gap_open, 5, "ssw gap open");
+DEFINE_int32(ssw_gap_extend, 2, "ssw gap extend");
+
+void singleSsw(shared_ptr<Read> read, 
+	       const map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene,
+	       const vector<shared_ptr<Gene> >& genes,
+	       const int rc) {
+
+  shared_ptr<Read> read_orig(new Read());
+  *read_orig = *read;
+  read_orig->removeAllLower();
+
+  for (size_t geneIdx = 0; geneIdx < genes.size(); ++geneIdx) {
+    // ----------- SSW part -------------------
+    // Declares a default Aligner
+    StripedSmithWaterman::Aligner aligner(FLAGS_ssw_match,
+                                          FLAGS_ssw_mismatch, 
+                                          FLAGS_ssw_gap_open,
+                                          FLAGS_ssw_gap_extend);
+    // Declares a default filter
+    StripedSmithWaterman::Filter filter;
+    // Declares an alignment that stores the result
+    StripedSmithWaterman::Alignment alignment;
+    // Aligns the query to the ref
+
+    aligner.Align(read_orig->data().c_str(),
+                  genes[geneIdx]->data(), genes[geneIdx]->dataSize(),
+                  filter, &alignment);
+
+    read->updateMapping(alignment.sw_score,
+                        alignment.ref_begin, rc, geneIdx,
+                        genes[geneIdx]->description(), "");
+  }
+}
+
 
 void performMappingLong(vector<shared_ptr<Gene> >& genes,
 			shared_ptr<Index> idx, shared_ptr<Read> read) {
@@ -340,15 +283,16 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
     
     if (!FLAGS_multiple_hits) {
       if (FLAGS_long_read_algorithm == "lis") {
-	singleLis(read, positionsByGene, genes, rc);
+        singleLis(read, positionsByGene, genes, rc);
       } else if (FLAGS_long_read_algorithm == "naive") {
-	singleNaive(read, positionsByGene, genes, rc);
+        singleNaive(read, positionsByGene, genes, rc);
+      } else if (FLAGS_long_read_algorithm == "ssw") {        
+        singleSsw(read, positionsByGene, genes, rc);
       } else {
-	printUsageAndExit();
+        printUsageAndExit();
       }
     } else { // --multiple_hits
-      // TODO: ovo je trenutno potrgano, ako stignem popravljam
-      // windowedAlignment(read, positionsByGene, idx, genes, rc);
+      windowedAlignment(read, positionsByGene, idx, genes, rc);
     }
   }
 }

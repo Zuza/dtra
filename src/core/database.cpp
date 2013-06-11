@@ -9,8 +9,8 @@ using namespace std;
 DEFINE_bool(discard_freq_seeds, false, "If true, discard seeds with frequency more " \
             "than avg_freq * avg_multiplier (see below)");
 
-DEFINE_int32(indexPartSize, 100, "Maximum size of each part of "
-             "the index file, in MB (only used during index construction)");
+DEFINE_int32(indexPartSize, 100, "Sequence size in MBs that will go to"
+             "one idnex file (only used during index construction)");
 
 Database::Database(const string& databasePath,
                    const string& indexFolderPath,
@@ -63,7 +63,7 @@ bool Database::readDbStoreIndex() {
 
     currentBlockNoBytes_ += g->nameSize();
     currentBlockNoBytes_ += g->dataSize();
-    if (currentBlockNoBytes_*100 > last_percentage*kMaxBlockSize) {
+    while (currentBlockNoBytes_*100 > last_percentage*kMaxBlockSize) {
       printf("%d%%.. ", last_percentage); fflush(stdout);
       ++last_percentage;
     }

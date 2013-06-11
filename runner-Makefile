@@ -19,17 +19,11 @@ reducer-flux:
 
 reducer-wgsim:
 	ln -f -s $(BIN_DIR)/wgsim wgsim
-	$(BIN_DIR)/reducer wgsim $(DB_DIR)/nt.part $(READS_DIR)/hello.fq 500
+	$(BIN_DIR)/reducer wgsim $(DB_DIR)/nt.part $(READS_DIR)/hello.fq 200 1
 	rm wgsim
 
 client-index:
 	$(BIN_DIR)/client --indexPartSize 40 index $(DB_DIR)/nt.part $(DB_DIR)/index.part/
 
-client-solve-illumina:
-	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-illumina.fq $(READS_DIR)/test-illumina.out.fq
-client-solve-roche454:
-	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-roche454.fq $(READS_DIR)/test-roche454.out.fq
-client-solve-pacbio:
-	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-pacbio.fq $(READS_DIR)/test-pacbio.out.fq
-client-solve-iontorrent:
-	$(BIN_DIR)/client --validate_flux solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/test-iontorrent.fq $(READS_DIR)/test-iontorrent.out.fq
+client-solve:
+	$(BIN_DIR)/client --validate_wgsim report solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/hello.fq $(READS_DIR)/hello.out
