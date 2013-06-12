@@ -24,6 +24,7 @@
 \usepackage{subfig}
 \usepackage{algpseudocode}
 \usepackage[Algoritam]{algorithm}
+\usepackage{amssymb}
 
 \lstset { %
     language=C++,
@@ -101,13 +102,84 @@ Transcription step is conceptually straight forward - one of the strands of DNA 
 
 \section{Shotgun DNA sequencing}
 
-Modern DNA sequencing methods can read strands up to only few thousands of bases at the time. That is why \emph{shotgun} sequencing was developed. Shotgun sequencing (shotgun cloning) is a method for sequencing long DNA strands. s name is motivated by a random firing pattern of a real shotgun - a long strand is broken at random places and each piece is read with classic DNA sequencing method.
+Shotgun sequencing is a method of determining the order of nucleotides in long DNA strands. Current technologies allow efficients sequencing of fairly short strands (100 to 1000 basepairs). That is why a long strand is copied several times and each clone broken at random places into \emph{fragments}. This process inspired the name of the method since it imitates random firing pattern of an actual shotgun. Due to loss of precision not entire fragments are actually read. In the case of \emph{single} end sequencing some number of bases from one end of the fragment is read whereas in the case of \emph{paired} end sequencing both ends are read simultaneously, keeping track of distance between them and their orientation. After DNA reads of an organism have been accumulated\footnote{One accepted way is to produce one or two files in the FASTQ format, depending on whether it is a single or paired end sequencing involved.}, DNA is then assembled with the help of computers. 
 
+\begin{figure}[!ht]
+\begin{center}
+	\includegraphics[width=0.85\textwidth]{../img/Whole_genome_shotgun_sequencing.png}
+	\caption{Whole genome shotgun sequencing}\label{shotgun.sequencing}
+\end{center}
+\end{figure}
 
 \section{Alignment algorithms}
-Prodiskutirati Needleman Wunscha i Smith Watermana te staviti detaljan
-opis bandede edit(levenstein) distance algoritma.
-\subsection{Edit distance}
+
+One of the fundamental problems of finding good overlap between reads or aligning them to a reference genome is that the matchings we are looking for need not to be perfect. This is a consequence of errors which are introduced to the reads, either by the sequencing process or by mutations. In order to deal with that, algorithms such as Smith-Waterman, Needleman-Wunsch and Levenshtein distance have been developed (TODO: referencirati). In the succeeding section algorithm for calculating the Levenshtein distance is described. The section will introduce the basic concept on top of the other mentioned algorithms are built as well.
+
+\subsection{Edit (Levenshtein) distance}
+
+Levenshtein or edit distance is a metric measuring the difference between two sequences. Simply stated, it is a minimum number of single character edits (insertions, deletions and substitutions) required to change one word into the other.
+\\
+\\
+Mathematically, edit distance of strings $a$ and $b$ is given by $d_{a,b}(|a|,|b|)$ where:
+
+\begin{eqnarray}
+	\label{levenshtein}
+	d_{a,b}\left(i,j\right) & = & 
+							\left\{
+								\begin{array}{ll}
+								max(i,j) & \mbox{if } min(i,j) = 0\\	
+								min\left\{
+									\begin{array}{ll}
+									d_{a,b}(i-1,j)\\	
+									d_{a,b}(i,j-1)\\	
+									d_{a,b}(i-1,j-1) + [a_i\ne b_i]\\	
+									\end{array}
+									\right.&\mbox{otherwise}\\
+								\end{array}
+							\right.
+\end{eqnarray}
+
+\subsubsection{Example}
+Levenhstein distance between words "kitten" and "sitting" is 3, with the following sequence of operations:
+
+\begin{enumerate}\itemsep0pt
+\item \textbf{k}itten $\rightarrow$ \textbf{s}itten (substitution)
+\item sitt\textbf{e}n $\rightarrow$ sitt\textbf{i}n (substitution)
+\item sittin $\rightarrow$ sittin\textbf{g} (insertion)
+\end{enumerate}
+The simplest way to do the calculation is to fill out a table like this:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+	   &   & \textbf{k} & \textbf{i} & \textbf{t} & \textbf{t} & \textbf{e} & \textbf{n}\\
+\hline
+	   & 0 & 1 & 2 & 3 & 4 & 5 & 6\\
+\hline
+	 \textbf{s} & 1 & 1 & 2 & 3 & 4 & 5 & 6\\
+\hline
+	 \textbf{i} & 2 & 2 & 1 & 2 & 3 & 4 & 5\\
+\hline
+	 \textbf{t} & 3 & 3 & 2 & 1 & 2 & 3 & 4\\
+\hline
+	 \textbf{t} & 4 & 4 & 3 & 2 & 1 & 2 & 3\\
+\hline
+	 \textbf{i} & 5 & 5 & 4 & 3 & 2 & 2 & 3\\
+\hline
+	 \textbf{n} & 6 & 6 & 5 & 4 & 3 & 3 & 2\\
+\hline
+	 \textbf{g} & 7 & 7 & 6 & 5 & 4 & 4 & 3\\
+\hline
+
+\end{tabular}
+\caption{Calculating Levenshtein distance between "kitten" and "sitting"}\label{levenshtein.table}
+\end{table}
+
+\subsubsection{Complexity}
+Direct implementation of the above calculation is proportional with lengths of both input string. More precisely, there are $O(|a||b|)$ operations needed (and the same ammount of memory). If assumption that a distance between $a$ and $b$ does not exceed $k$ is fullfilled, it is enough only to fill diagonal stripe of width $2k+1$ in the matrix. Using that observation complexity is reduced to $O(k*min(|a|,|b|))$. In practice, this implementation is shown to be very usefull (for example, SNAP (TODO: citiraj)
+
 
 \chapter{LISA - Longest Increasing Subsequence Aligner}
 \section{Overview}
