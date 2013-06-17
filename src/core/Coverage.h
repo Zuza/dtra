@@ -15,6 +15,6 @@ void cover(std::vector<Interval>* resultCoverage,
 
 void coverSlow(std::vector<Interval>* resultCoverage,
 	       int* result,
-	       const std::vector<Interval>& intervals);
+	       std::vector<Interval> intervals);
 
 #endif

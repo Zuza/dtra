@@ -14,7 +14,7 @@ TEST_CPP_FILES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJ_FILES := $(addprefix obj/test/,$(notdir $(TEST_CPP_FILES:.cpp=.o)))
 
 
-CC := mpiCC
+CC := mpiCC.openmpi
 LD_FLAGS := -pthread -lgflags
 CC_FLAGS := -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
 

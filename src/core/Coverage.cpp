@@ -51,7 +51,7 @@ namespace {
     };
     
     void insertOpened(int value, int id, int x, int best) {
-      NodeItem ni(best-x, x, value);
+      NodeItem ni(best-x, x, value/*, id*/);
       insertOpened(0, 0, offset_-1, ni);
       idToNodeItem_[id] = ni;
     }
@@ -74,14 +74,17 @@ namespace {
       int best;
       int x;
       int value;
+      //      int id;
 
-      NodeItem(int best = 0, int x = 0, int value = 0) : 
-	best(best), x(x), value(value) {}
+      NodeItem(int best = 0, int x = 0, int value = 0/*, int id = 0*/) : 
+	best(best), x(x), value(value)/*, id(id)*/ {}
       
       bool operator < (const NodeItem& a) const {
 	if (best != a.best) { return best < a.best; }
 	if (x != a.x) { return x < a.x; }
-	return value < a.value;
+	if (value != a.value) { value < a.value; }
+	//return id < a.id;
+	return false;
       }
     };
     
@@ -179,6 +182,47 @@ namespace {
 
 };
 
+struct CoverSlowCmp {
+  bool operator () (const Interval& a, const Interval& b) const {
+    return a.left < b.left;
+  }
+};
+
+void reconstruct(vector<Interval>* resultCoverage,
+		 const vector<int>& dpRecon,
+		 const int endIndex,
+		 const vector<Interval>& intervals) {
+  int leftBorder = -1;
+  int rightBorder = -1;
+  int minVal = -1;
+    
+  for (int curr = endIndex; curr != -1; ) {
+    //printf("%d %d\n", curr, dpRecon[curr]);
+    bool pushback = false;
+    if (leftBorder == -1) {
+      minVal = intervals[curr].value;
+      leftBorder = intervals[curr].left;
+      rightBorder = intervals[curr].right;
+      curr = dpRecon[curr];
+    } else if (intervals[curr].right >= leftBorder) {
+      minVal = intervals[curr].value;
+      leftBorder = intervals[curr].left;
+      curr = dpRecon[curr];
+    } else {
+      pushback = true;
+    }
+
+    if (curr == -1 || pushback) {
+      resultCoverage->push_back(Interval(leftBorder,rightBorder,minVal));
+      leftBorder = -1;
+      rightBorder = -1;
+      minVal = -1;
+    }
+  }
+
+  sort(resultCoverage->begin(), resultCoverage->end(), CoverSlowCmp());
+}
+
 void cover(vector<Interval>* resultCoverage,
 	   int* result,
 	   const vector<Interval>& intervals) {
@@ -216,28 +260,24 @@ void cover(vector<Interval>* resultCoverage,
   }
 }
 
-struct CoverSlowCmp {
-  bool operator () (const Interval& a, const Interval& b) const {
-    return a.left < b.left;
-  }
-};
-
 void coverSlow(vector<Interval>* resultCoverage,
 	       int* result,
-	       const vector<Interval>& intervals) {
-  vector<Interval> sortedIntervals = intervals;
-  sort(sortedIntervals.begin(), sortedIntervals.end(), CoverSlowCmp());
+	       vector<Interval> intervals) {
+  sort(intervals.begin(), intervals.end(), CoverSlowCmp());
 
-  int n = sortedIntervals.size();
+  int n = intervals.size();
   vector<int> dp(n);
+  vector<int> dpRecon(n, -1);
+
   *result = 0;
+  int endIndex = -1;
 
   for (int i = 0; i < n; ++i) {
-    const Interval& curr = sortedIntervals[i];
+    const Interval& curr = intervals[i];
     dp[i] = curr.right - curr.left + 1;
 
     for (int j = i-1; j >= 0; --j) {
-      const Interval& prev = sortedIntervals[j];
+      const Interval& prev = intervals[j];
 
       if (prev.value < curr.value) {
 	int extend = 0;
@@ -246,9 +286,20 @@ void coverSlow(vector<Interval>* resultCoverage,
 	} else if (curr.right >= prev.right) {
 	  extend = dp[j] + curr.right - prev.right;
 	}
-	dp[i] = max(dp[i], extend);
+	if (extend > dp[i]) {
+	  dp[i] = extend;
+	  dpRecon[i] = j;
+	}
       }
     }
-    *result = max(*result, dp[i]);
+
+    if (dp[i] > *result) {
+      *result = dp[i];
+      endIndex = i;
+    }
   }
+
+  // slijedi rekonstrukcija
+  // (*result sadrzi u ovom trenutku najbolje rjesenje)
+  reconstruct(resultCoverage, dpRecon, endIndex, intervals);
 }
