@@ -51,7 +51,7 @@ namespace {
     };
     
     void insertOpened(int value, int id, int x, int best) {
-      NodeItem ni(best-x, x, value/*, id*/);
+      NodeItem ni(best-x, x, value, id);
       insertOpened(0, 0, offset_-1, ni);
       idToNodeItem_[id] = ni;
     }
@@ -74,17 +74,16 @@ namespace {
       int best;
       int x;
       int value;
-      //      int id;
+      int id;
 
-      NodeItem(int best = 0, int x = 0, int value = 0/*, int id = 0*/) : 
-	best(best), x(x), value(value)/*, id(id)*/ {}
+      NodeItem(int best = 0, int x = 0, int value = 0, int id = 0) : 
+	best(best), x(x), value(value), id(id) {}
       
       bool operator < (const NodeItem& a) const {
 	if (best != a.best) { return best < a.best; }
 	if (x != a.x) { return x < a.x; }
 	if (value != a.value) { value < a.value; }
-	//return id < a.id;
-	return false;
+	return id < a.id;
       }
     };
     

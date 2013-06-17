@@ -32,14 +32,14 @@ client: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
 reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/DataReducer.o $(LD_FLAGS)
 
-lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) 
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/main/lisa.o $(LD_FLAGS)
+lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/lisa.o $(LD_FLAGS)
 
 test: test_coverage
 
-test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES)
+test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
 	mkdir -p obj/test
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/test/testCoverage.o $(LD_FLAGS)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/test/testCoverage.o $(LD_FLAGS)
 
 $(CORE_OBJ_FILES): $(CORE_CPP_FILES) $(CORE_H_FILES)
 	mkdir -p obj/core

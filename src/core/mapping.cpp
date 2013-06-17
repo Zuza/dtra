@@ -11,7 +11,6 @@
 #include "core/util.h"
 #include "core/Coverage.h"
 #include "ssw/ssw_cpp.h"
-
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
