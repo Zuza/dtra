@@ -44,11 +44,33 @@ namespace {
     
     struct Result {
       int openedMax;
+      int openedMaxLastId;
+
       int closedMax;
+      int closedMaxLastId;
       
-      Result(int openedMax = 0, int closedMax = 0) :
-	openedMax(openedMax), closedMax(closedMax) {}
+      Result() {}
+      Result(int openedMax, int openedMaxLastId,
+	     int closedMax, int closedMaxLastId) :
+	openedMax(openedMax), openedMaxLastId(openedMaxLastId),
+	closedMax(closedMax), closedMaxLastId(closedMaxLastId) {}
     };
+
+    Result mergeResults(const Result& l, const Result& r) {
+      Result combined;
+      
+      combined.openedMax = 
+	l.openedMax > r.openedMax ? l.openedMax : r.openedMax;
+      combined.openedMaxLastId =
+	l.openedMax > r.openedMax ? l.openedMaxLastId : r.openedMaxLastId;
+
+      combined.closedMax =
+	l.closedMax > r.closedMax ? l.closedMax : r.closedMax;
+      combined.closedMaxLastId =
+	l.closedMax > r.closedMax ? l.closedMaxLastId : r.closedMaxLastId; 
+
+      return combined;
+    }
     
     void insertOpened(int value, int id, int x, int best) {
       NodeItem ni(best-x, x, value, id);
@@ -92,7 +114,10 @@ namespace {
       multiset<NodeItem> closed; // best = najbolje do sad
       
       int openedMax;
+      int openedMaxLastId;
+
       int closedMax;
+      int closedMaxLastId;
 
       Node() {
 	openedMax = -kInfinity;
@@ -100,19 +125,39 @@ namespace {
       }
 
       Result getResult() {
-	return Result(openedMax, closedMax);
+	return Result(openedMax, openedMaxLastId,
+		      closedMax, closedMaxLastId);
       }
     };
 
     Result get(int node, int lo, int hi, int value) {
       if (value >= hi) return ivec_[node].getResult();
-      if (lo > value) return Result(-kInfinity, 0);
+      if (lo > value) return Result(-kInfinity, -1, 0, -1);
       
       int mid = (lo+hi)/2;
       Result l = get(node*2+1, lo, mid, value);
       Result r = get(node*2+2, mid+1, hi, value);
-      return Result(max(l.openedMax, r.openedMax),
-		    max(l.closedMax, r.closedMax));
+      return mergeResults(l, r);
+    }
+
+    void updateNode(int node) {
+	// update opened
+	if (ivec_[node*2+1].openedMax > ivec_[node*2+2].openedMax) {
+	  ivec_[node].openedMax = ivec_[node*2+1].openedMax;
+	  ivec_[node].openedMaxLastId = ivec_[node*2+1].openedMaxLastId;
+	} else {
+	  ivec_[node].openedMax = ivec_[node*2+2].openedMax;
+	  ivec_[node].openedMaxLastId = ivec_[node*2+2].openedMaxLastId;
+	}
+
+	// update closed
+	if (ivec_[node*2+1].closedMax > ivec_[node*2+2].closedMax) {
+	  ivec_[node].closedMax = ivec_[node*2+1].closedMax;
+	  ivec_[node].closedMaxLastId = ivec_[node*2+1].closedMaxLastId;
+	} else {
+	  ivec_[node].closedMax = ivec_[node*2+2].openedMax;
+	  ivec_[node].closedMaxLastId = ivec_[node*2+2].closedMaxLastId;
+	}
     }
 
     void insertOpened(int node, int lo, int hi, const NodeItem& ni) {
@@ -122,21 +167,20 @@ namespace {
       if (lo == hi) {
 	ivec_[node].opened.insert(ni);
 	ivec_[node].openedMax = ivec_[node].opened.rbegin()->best;
+	ivec_[node].openedMaxLastId = ivec_[node].opened.rbegin()->id;
 
 	if (!ivec_[node].closed.empty()) {
 	  ivec_[node].closedMax = ivec_[node].closed.rbegin()->best;
+	  ivec_[node].closedMaxLastId = ivec_[node].closed.rbegin()->id;
 	} else {
 	  ivec_[node].closedMax = 0;
+	  ivec_[node].closedMaxLastId = -1;
 	}
       } else {
 	int mid = (lo+hi)/2;
 	insertOpened(node*2+1, lo, mid, ni);
 	insertOpened(node*2+2, mid+1, hi, ni);
-
-	ivec_[node].openedMax = max(ivec_[node*2+1].openedMax,
-				    ivec_[node*2+2].openedMax);
-	ivec_[node].closedMax = max(ivec_[node*2+1].closedMax,
-				    ivec_[node*2+2].closedMax);
+	updateNode(node);
       }
     }
 
@@ -157,19 +201,18 @@ namespace {
 
 	if (!ivec_[node].opened.empty()) {
 	  ivec_[node].openedMax = ivec_[node].opened.rbegin()->best;
+	  ivec_[node].openedMaxLastId = ivec_[node].opened.rbegin()->id;
 	} else {
 	  ivec_[node].openedMax = -kInfinity;
+	  ivec_[node].openedMaxLastId = -1;
 	}
 	ivec_[node].closedMax = ivec_[node].closed.rbegin()->best;
+	ivec_[node].closedMaxLastId = ivec_[node].closed.rbegin()->id;
       } else {
 	int mid = (lo+hi)/2;
 	convertOpenedToClosed(node*2+1, lo, mid, toRemove, toInsert);
 	convertOpenedToClosed(node*2+2, mid+1, hi, toRemove, toInsert);
-
-	ivec_[node].openedMax = max(ivec_[node*2+1].openedMax,
-				    ivec_[node*2+2].openedMax);
-	ivec_[node].closedMax = max(ivec_[node*2+1].closedMax,
-				    ivec_[node*2+2].closedMax);
+	updateNode(node);
       }
     }
 
@@ -227,8 +270,9 @@ void cover(vector<Interval>* resultCoverage,
 	   const vector<Interval>& intervals) {
   vector<Event> events;
   int maxValue = 0;
+  int n = intervals.size();
 
-  for (size_t i = 0; i < intervals.size(); ++i) {
+  for (size_t i = 0; i < n; ++i) {
     events.push_back(Event(intervals[i].left, intervals[i].value, LEFT, i));
     events.push_back(Event(intervals[i].right, intervals[i].value, RIGHT, i));
     maxValue = max(maxValue, intervals[i].value);
@@ -237,6 +281,8 @@ void cover(vector<Interval>* resultCoverage,
   sort(events.begin(), events.end());
   IntervalTree itree(maxValue+1);
   *result = 0;
+  vector<int> dpRecon(n, -1);
+  int endIndex = -1;
 
   for (size_t i = 0; i < events.size(); ++i) {
     int value = events[i].value;
@@ -248,15 +294,27 @@ void cover(vector<Interval>* resultCoverage,
       //printf("LEFT: r.openedMax=%d, r.closedMax=%d\n",
       //     r.openedMax, r.closedMax);
       int best = r.openedMax + x;
-      best = max(best, r.closedMax);
+      
+      if (best > r.closedMax) {
+	dpRecon[id] = r.openedMaxLastId;
+      } else {
+	best = r.closedMax;
+	dpRecon[id] = r.closedMaxLastId;
+      }
       itree.insertOpened(value, id, x, best);
     } else { // events[i].type == RIGHT
       itree.convertOpenedToClosed(id, x);
-      int bestClosed = itree.get(value).closedMax;
+      IntervalTree::Result r = itree.get(value);
       //printf("RIGHT: bestClosed=%d\n", bestClosed);
-      *result = max(*result, bestClosed);
+      
+      if (r.closedMax > *result) {
+	*result = r.closedMax;
+	endIndex = r.closedMaxLastId;
+      }
     }
   }
+
+  reconstruct(resultCoverage, dpRecon, endIndex, intervals);
 }
 
 void coverSlow(vector<Interval>* resultCoverage,

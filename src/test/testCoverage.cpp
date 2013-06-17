@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 	testReconstruction(reconstructionSlow, resultSlow, intervals, "slow");
 
 	// TEST BRZE REKONSTRUKCIJE
-	//testReconstruction(reconstructionFast, resultFast, intervals, "fast");
+	testReconstruction(reconstructionFast, resultFast, intervals, "fast");
 
 	printf("Test %d passed\n", testNo);
       }
