@@ -15,20 +15,21 @@
 
 struct OneMapping {
   double score;
-  int genePos, isRC;
+  int geneBegin, geneEnd, isRC;
 
   int geneIdx;
   std::string geneDescriptor;
   std::string geneSegment; // optional
 
-  OneMapping(double score, int genePos, int isRC, int geneIdx,
+  OneMapping(double score, int geneBegin, int geneEnd, int isRC, int geneIdx,
              std::string geneDescriptor, std::string geneSegment) :
-    score(score), genePos(genePos), isRC(isRC), geneIdx(geneIdx),
-    geneDescriptor(geneDescriptor), geneSegment(geneSegment) {}
+    score(score), geneBegin(geneBegin), geneEnd(geneEnd), 
+    isRC(isRC), geneIdx(geneIdx), geneDescriptor(geneDescriptor), 
+    geneSegment(geneSegment) {}
 
   void print(FILE* out) {
-    fprintf(out, "on gene %s (idx=%d), at position %d (RC=%d), score=%lf\n",
-            geneDescriptor.c_str(), geneIdx, genePos, isRC, score);
+    fprintf(out, "on gene %s (idx=%d), at position %d-%d (RC=%d), score=%lf\n",
+            geneDescriptor.c_str(), geneIdx, geneBegin, geneEnd, isRC, score);
 
     if (geneSegment.size() > 0) {
       fprintf(out, "segment: %s\n", geneSegment.c_str());
@@ -62,7 +63,8 @@ public:
     return getBaseComplement(data_[data_.size()-1-i]);
   }
 
-  void updateMapping(double score, int genePos, int isRC, int geneIdx,
+  void updateMapping(double score, int geneBegin, int geneEnd,
+		     int isRC, int geneIdx,
                      std::string geneDescriptor, 
                      std::string geneSegment = "");
 
@@ -90,8 +92,6 @@ public:
  private:
   std::string id_;
   std::string data_;
-  
-  //std::vector<OneMapping> topMappings_;
   std::multiset<OneMapping> topMappings_;
 };
 

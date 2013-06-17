@@ -9,12 +9,16 @@ struct Interval {
     left(left), right(right), value(value) {}
 };
 
-void cover(std::vector<Interval>* resultCoverage,
-	   int* result,
-	   const std::vector<Interval>& intervals);
+void coverFast(std::vector<Interval>* resultCoverage,
+	       int* result,
+	       const std::vector<Interval>& intervals);
 
 void coverSlow(std::vector<Interval>* resultCoverage,
 	       int* result,
 	       std::vector<Interval> intervals);
+
+void cover(std::vector<Interval>* resultCoverage,
+	   int* result,
+	   const std::vector<Interval>& intervals);
 
 #endif

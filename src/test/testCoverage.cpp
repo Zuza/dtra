@@ -9,9 +9,9 @@
 #include "core/Coverage.h"
 using namespace std;
 
-const int kNoTests = 20;
-const int kN = 30000;
-const int randMod = 3000;
+const int kNoTests = 1000;
+const int kN = 10000;
+const int randMod = 30000;
 
 void createIntervals(vector<Interval>* intervals, const int n) {
   for (int i = 0; i < n; ++i) {
@@ -162,15 +162,27 @@ int main(int argc, char* argv[]) {
 
     puts("slow cover...");
     int resultSlow;
-    coverSlow(NULL, &resultSlow, intervals);
-    printf("Slow result: %d\n", resultSlow);
-    
+    vector<Interval> reconstructionSlow;
+    coverSlow(&reconstructionSlow, &resultSlow, intervals);
+    // TEST SPORE REKONSTRUKCIJE
+    testReconstruction(reconstructionSlow, resultSlow, intervals, "slow");
+
     puts("fast cover...");
     int resultFast;
-    cover(NULL, &resultFast, intervals);
-    printf("Fast result: %d\n", resultFast);
+    vector<Interval> reconstructionFast;
+    cover(&reconstructionFast, &resultFast, intervals);
+    // TEST BRZE REKONSTRUKCIJE
+    testReconstruction(reconstructionFast, resultFast, intervals, "fast");
 
     drawIntervals(intervals);
+
+    printf("Slow result: %d\n", resultSlow);
+    printf("Fast result: %d\n", resultFast);
+    if (resultSlow == resultFast) {
+      printf("Slow == fast :)\n");
+    } else {
+      puts("Slow != fast :(\n");
+    }
   }
   
   return 0;

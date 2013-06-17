@@ -24,7 +24,6 @@
 #include "core/util.h"
 
 #include <mpi.h>
-
 using namespace std;
 
 DEFINE_int32(seed_len, 20, "Seed length that is stored/read from the index");
@@ -199,8 +198,8 @@ void printReads(const vector<shared_ptr<Read> >& reads,
     for (auto onemap : read->topMappings()) {
       fprintf(resultOut, ";%s,%lf,%d,%d,%d", 
 	      onemap.geneDescriptor.c_str(),
-      	      onemap.score, onemap.genePos, 
-      	      onemap.genePos+read->size(), onemap.isRC);
+      	      onemap.score, onemap.geneBegin, 
+      	      onemap.geneEnd, onemap.isRC);
     }
     fprintf(resultOut, "\n");
   }

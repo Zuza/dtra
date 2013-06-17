@@ -71,7 +71,8 @@ void singleLis(shared_ptr<Read> read,
     // gdje procjenjujemo da je pocetna pozicija
     // mapiranja reada na gen?
     int begin = estimateBeginFromLis(positions, lisResult);
-    read->updateMapping(lisResult.size(), begin, rc, geneIdx,
+    read->updateMapping(lisResult.size(), begin, begin+read->size(),
+			rc, geneIdx,
 			genes[geneIdx]->description(), "");
   }
 }
@@ -127,7 +128,8 @@ void singleNaive(shared_ptr<Read> read,
     }
     
     assert(bestHits > 0);
-    read->updateMapping(bestHits, bestPos, rc, geneIdx,
+    read->updateMapping(bestHits, bestPos, bestPos+read->size(),
+			rc, geneIdx,
 			genes[geneIdx]->description(), "");
   }
 }
@@ -216,12 +218,9 @@ void windowedAlignment(shared_ptr<Read> read,
 	// gdje procjenjujemo da je pocetna pozicija
 	// mapiranja reada na gen?
 	int begin = estimateBeginFromLis(lisPrepare, lisResult);
-	read->updateMapping(lisResult.size(), begin, rc, geneIdx,
-			    genes[geneIdx]->description(), "");
+	read->updateMapping(lisResult.size(), begin, begin+read->size(),
+			    rc, geneIdx, genes[geneIdx]->description(), "");
       } else if (FLAGS_long_read_algorithm == "coverage") {
-	printf("not done yet, reconstruction needed!\n");
-	exit(1);
-      
 	int seedLen = idx->getSeedLen();
 	vector<Interval> intervals;
 	for (int i = start; i < end; ++i) {
@@ -230,7 +229,17 @@ void windowedAlignment(shared_ptr<Read> read,
 	  int c = positions[i].second;
 	  intervals.push_back(Interval(a,b,c));
 	}
-	//cover(NULL, &score, intervals);
+
+	int score = 0;
+	vector<Interval> coverage;
+	cover(&coverage, &score, intervals);
+
+	assert(!coverage.empty());
+	int begin = coverage[0].left - coverage[0].value;
+	int end = coverage.back().right+read->size()-coverage.back().value;
+
+	read->updateMapping(score, begin, end, rc, geneIdx,
+			    genes[geneIdx]->description(), "");	
       }
     }
   }
@@ -268,7 +277,8 @@ void singleSsw(shared_ptr<Read> read,
                   filter, &alignment);
 
     read->updateMapping(alignment.sw_score,
-                        alignment.ref_begin, rc, geneIdx,
+                        alignment.ref_begin, alignment.ref_end,
+			rc, geneIdx,
                         genes[geneIdx]->description(), "");
   }
 }

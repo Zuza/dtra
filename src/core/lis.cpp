@@ -75,6 +75,10 @@ void calcLongestIncreasingSubsequence(
     maxSecond = max(maxSecond, elements[i].second);
   }
 
+  // OPASKA: ukoliko je potrebno ova se funkcija moze ubrzati
+  // tako da se u 'elements' na ulazi second clan sazme->
+  // u tom slucaju potrebno ga je kod rekonstrukcije vratiti
+  // na originalnu vrijednost
   FenwickMax fm(maxSecond);
 
   for (size_t i = 0; i < n; ++i) {
