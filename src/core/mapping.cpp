@@ -10,12 +10,14 @@
 #include "core/lis.h"
 #include "core/util.h"
 #include "core/Coverage.h"
+#include "ssw/ssw_cpp.h"
+
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
 // 32 bitni int dovoljan svuda
 
-DEFINE_string(long_read_algorithm, "lis", "Algorithm for long reads (naive|lis|coverage)");
+DEFINE_string(long_read_algorithm, "lis", "Algorithm for long reads (naive|lis|coverage|ssw)");
 DEFINE_bool(multiple_hits, false, "Allow multiple placements on a single gene.");
 
 const int kBeginEstimateGroupDist = 15;
@@ -23,7 +25,7 @@ const int kBeginEstimateGroupDist = 15;
 namespace {
 
 void printUsageAndExit() {
- printf("For single hits: --long_read_algorithm=lis|naive\n");
+ printf("For single hits: --long_read_algorithm=lis|naive|ssw\n");
  printf("For multiple hits: --multiple_hits --long_read_algorithm=lis|coverage\n");
  exit(1);
 }
@@ -235,6 +237,44 @@ void windowedAlignment(shared_ptr<Read> read,
   }
 }
 
+DEFINE_int32(ssw_match, 1, "ssw match");
+DEFINE_int32(ssw_mismatch, 2, "ssw mismatch");
+DEFINE_int32(ssw_gap_open, 5, "ssw gap open");
+DEFINE_int32(ssw_gap_extend, 2, "ssw gap extend");
+
+void singleSsw(shared_ptr<Read> read, 
+	       const map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene,
+	       const vector<shared_ptr<Gene> >& genes,
+	       const int rc) {
+
+  shared_ptr<Read> read_orig(new Read());
+  *read_orig = *read;
+  read_orig->removeAllLower();
+
+  for (size_t geneIdx = 0; geneIdx < genes.size(); ++geneIdx) {
+    // ----------- SSW part -------------------
+    // Declares a default Aligner
+    StripedSmithWaterman::Aligner aligner(FLAGS_ssw_match,
+                                          FLAGS_ssw_mismatch, 
+                                          FLAGS_ssw_gap_open,
+                                          FLAGS_ssw_gap_extend);
+    // Declares a default filter
+    StripedSmithWaterman::Filter filter;
+    // Declares an alignment that stores the result
+    StripedSmithWaterman::Alignment alignment;
+    // Aligns the query to the ref
+
+    aligner.Align(read_orig->data().c_str(),
+                  genes[geneIdx]->data(), genes[geneIdx]->dataSize(),
+                  filter, &alignment);
+
+    read->updateMapping(alignment.sw_score,
+                        alignment.ref_begin, rc, geneIdx,
+                        genes[geneIdx]->description(), "");
+  }
+}
+
+
 void performMappingLong(vector<shared_ptr<Gene> >& genes,
 			shared_ptr<Index> idx, shared_ptr<Read> read) {
   for (int rc = 0; rc < 2; ++rc) {
@@ -243,11 +283,13 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
     
     if (!FLAGS_multiple_hits) {
       if (FLAGS_long_read_algorithm == "lis") {
-	singleLis(read, positionsByGene, genes, rc);
+        singleLis(read, positionsByGene, genes, rc);
       } else if (FLAGS_long_read_algorithm == "naive") {
-	singleNaive(read, positionsByGene, genes, rc);
+        singleNaive(read, positionsByGene, genes, rc);
+      } else if (FLAGS_long_read_algorithm == "ssw") {        
+        singleSsw(read, positionsByGene, genes, rc);
       } else {
-	printUsageAndExit();
+        printUsageAndExit();
       }
     } else { // --multiple_hits
       windowedAlignment(read, positionsByGene, idx, genes, rc);

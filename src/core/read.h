@@ -78,6 +78,15 @@ public:
     return ret;
   }
 
+  void removeAllLower() {
+    std::string tmp;
+    for (char c : data_) {
+      if (isupper(c))
+        tmp += c;
+    }
+    data_ = tmp;
+  }
+
  private:
   std::string id_;
   std::string data_;
