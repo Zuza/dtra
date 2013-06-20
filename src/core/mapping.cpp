@@ -320,24 +320,30 @@ void calcEditDistance(vector<shared_ptr<Gene> >& genes,
     string description = it->geneDescriptor;
     int editDistance = -1;
     
-    if (genes[geneIdx]->description() == description) { 
+    if (genes[geneIdx]->description() == description) { // nuzna provjera jer
+                                                        // geneIdx je indeks na
+                                                        // razini bloka, a ne
+                                                        // cijele baze
       // kandidat je u trenutno procesuiranom bloku!
 
       const char* text = genes[geneIdx]->data() + it->geneBegin;
       int patternLen = read->size();
-      char* pattern = new char[patternLen+1];
-      read->toCharArray(pattern, it->isRC);
 
-      int windowSize = it->geneEnd-it->geneBegin+1;
-      double score = it->score;
+      int textWindowSize = it->geneEnd-it->geneBegin+1;
+      double score = it->score; // score je mjera identicnih poklapanja
       
-      int limit = (int)(fabs(windowSize-score)+fabs(patternLen-score));
+      // gornja granica na gresku je kad i u textu i u patternu ostavimo
+      // identicna poklapanja i obrisemo sve ostalo
+      int limit = (int)(fabs(textWindowSize-score)+fabs(patternLen-score));
       limit = min(limit, MAXD-1);
       limit = max(limit, 1);
       
-      editDistance = bsd.compute(text, pattern, patternLen, limit);
-      delete[] pattern;
+      char* pattern = new char[patternLen+1];
+      read->toCharArray(pattern, it->isRC);
 
+      editDistance = bsd.compute(text, pattern, patternLen, limit);
+
+      delete[] pattern;
       it->editDistance = editDistance;
     }
   }
