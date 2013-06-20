@@ -21,6 +21,10 @@ struct OneMapping {
   std::string geneDescriptor;
   std::string geneSegment; // optional
 
+  mutable int editDistance; // mora biti mutable jer je cijela ova struktura
+                            // drzana u multisetu unutar Read klase, a u 
+                            // nekom trenutku zelim updateati ovu vrijednost
+
   OneMapping(double score, int geneBegin, int geneEnd, int isRC, int geneIdx,
              std::string geneDescriptor, std::string geneSegment) :
     score(score), geneBegin(geneBegin), geneEnd(geneEnd), 
@@ -61,6 +65,12 @@ public:
       return data_[i]; 
     }
     return getBaseComplement(data_[data_.size()-1-i]);
+  }
+
+  void toCharArray(char* arr, const bool reverseComplement) {
+    for (size_t i = 0; i < size(); ++i) {
+      arr[i] = get(i, reverseComplement);
+    }
   }
 
   void updateMapping(double score, int geneBegin, int geneEnd,

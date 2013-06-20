@@ -32,6 +32,7 @@ DEFINE_int32(solver_threads, sysconf(_SC_NPROCESSORS_ONLN),
 DEFINE_string(validate_wgsim, "", "report/full");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 DEFINE_double(confidence, 0.5, "Confidence threshold.h");
+DEFINE_bool(calc_edit_distance, false, "Calculate actual edit-distance for read placements?");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
@@ -76,13 +77,16 @@ void inputReads(vector<shared_ptr<Read> >* reads,
 }
 
 int solveRead(vector<shared_ptr<Gene> >& genes, 
-	      shared_ptr<Index> idx, shared_ptr<Read> read) {
-  performMapping(genes, idx, read);
+	      shared_ptr<Index> idx, 
+	      shared_ptr<Read> read,
+	      bool fillEditDistance) {
+  performMapping(genes, idx, read, fillEditDistance);
   return 0;
 }
 
 void solveReads(Database& db, 
-		vector<shared_ptr<Read> >& reads) {
+		vector<shared_ptr<Read> >& reads,
+		bool fillEditDistance) {
   int index_file_count = db.getIndexFilesCount();
 
   clock_t starting_time;
@@ -100,8 +104,8 @@ void solveReads(Database& db,
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
       results.push_back(
-        pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads] {
-            return solveRead(currentGenes, activeIndex, reads[i]);
+     pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads, fillEditDistance] {
+	 return solveRead(currentGenes, activeIndex, reads[i], fillEditDistance);
           }));
     } 
 
@@ -111,6 +115,15 @@ void solveReads(Database& db,
     printf("done (%.2lfs)\n", (clock() - starting_time) / double(CLOCKS_PER_SEC));
   }
 }
+
+void solveReads(Database& db, 
+		vector<shared_ptr<Read> >& reads) {
+  solveReads(db, reads, false);
+  if (FLAGS_calc_edit_distance) {
+    solveReads(db, reads, true);
+  }
+}
+
 
 void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
   map<int, int> stats;
@@ -196,10 +209,11 @@ void printReads(const vector<shared_ptr<Read> >& reads,
 	    (int)read->topMappings().size());
 
     for (auto onemap : read->topMappings()) {
-      fprintf(resultOut, ";%s,%lf,%d,%d,%d", 
+      fprintf(resultOut, ";%s,%lf,%d,%d,%d,%d", 
 	      onemap.geneDescriptor.c_str(),
       	      onemap.score, onemap.geneBegin, 
-      	      onemap.geneEnd, onemap.isRC);
+      	      onemap.geneEnd, onemap.isRC, 
+	      onemap.editDistance);
     }
     fprintf(resultOut, "\n");
   }

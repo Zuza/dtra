@@ -11,6 +11,8 @@
 #include "core/util.h"
 #include "core/Coverage.h"
 #include "ssw/ssw_cpp.h"
+
+#include "core/BoundedStringDistance.h"
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
@@ -308,8 +310,55 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
   
 }
 
+void calcEditDistance(vector<shared_ptr<Gene> >& genes,
+		      shared_ptr<Read> read) {
+  #define MAXD 100
+  BoundedStringDistance<false, MAXD> bsd(1);
+
+  for (auto it = read->topMappings().begin(); it != read->topMappings().end(); ++it) {
+    int geneIdx = it->geneIdx;
+    string description = it->geneDescriptor;
+    int editDistance = -1;
+    
+    if (genes[geneIdx]->description() == description) { 
+      // kandidat je u trenutno procesuiranom bloku!
+
+      const char* text = genes[geneIdx]->data() + it->geneBegin;
+      int patternLen = read->size();
+      char* pattern = new char[patternLen+1];
+      read->toCharArray(pattern, it->isRC);
+
+      int windowSize = it->geneEnd-it->geneBegin+1;
+      double score = it->score;
+      
+      int limit = (int)(fabs(windowSize-score)+fabs(patternLen-score));
+      limit = min(limit, MAXD-1);
+      limit = max(limit, 1);
+      
+      editDistance = bsd.compute(text, pattern, patternLen, limit);
+      delete[] pattern;
+
+      it->editDistance = editDistance;
+    }
+  }
+}
+
+// * ako je fillEditDistance false, pokrece se 'pametni' algoritam procjena
+// regija u kojima se nalazi read
+// * ako je fillEditDistance true, podrazumijeva se da je read vec popunjen
+// procjenama regija i treba samo izracunati i dopuniti informaciju o 
+// edit-distanceu
+// * nekad je dovoljno samo procijeniti regiju, dok je pun rezim rada zamisljen
+// kao poziv ove funkcije s fillEditDistance = false nad svim blokovima fasta
+// baze na ulazu programa. Zatim se ponovno nad svim blokovima baze poziva ova
+// funkcija s fillEditDistance = true
 void performMapping(vector<shared_ptr<Gene> >& genes,
 		    shared_ptr<Index> idx, 
-		    shared_ptr<Read> read) {
-  performMappingLong(genes, idx, read);
+		    shared_ptr<Read> read,
+		    bool fillEditDistance) {
+  if (!fillEditDistance) {
+    performMappingLong(genes, idx, read);
+  } else {
+    calcEditDistance(genes, read);
+  }
 }
