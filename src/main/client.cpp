@@ -112,7 +112,7 @@ void solveReads(Database& db,
     for (int i = 0; i < reads.size(); ++i) {
       results[i].wait();
     }
-    printf("done (%.2lfs)\n", (clock() - starting_time) / double(CLOCKS_PER_SEC));
+    fprintf(stderr, "done (%.2lfs)\n", (clock() - starting_time) / double(CLOCKS_PER_SEC));
   }
 }
 

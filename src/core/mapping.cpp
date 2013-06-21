@@ -315,12 +315,16 @@ void calcEditDistance(vector<shared_ptr<Gene> >& genes,
   #define MAXD 100
   BoundedStringDistance<false, MAXD> bsd(1);
 
+  assert(!genes.empty());
+  //printf("%d\n", genes.size());
+
   for (auto it = read->topMappings().begin(); it != read->topMappings().end(); ++it) {
     int geneIdx = it->geneIdx;
     string description = it->geneDescriptor;
     int editDistance = -1;
     
-    if (genes[geneIdx]->description() == description) { // nuzna provjera jer
+    if (geneIdx < genes.size() &&
+	genes[geneIdx]->description() == description) { // nuzna provjera jer
                                                         // geneIdx je indeks na
                                                         // razini bloka, a ne
                                                         // cijele baze

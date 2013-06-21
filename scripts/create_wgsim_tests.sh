@@ -32,6 +32,6 @@ do
 	OUTPUT_FILE="$OUTPUT_DIR/error${BASE_ERROR_RATE}_len${READ_LEN}.fq"
 	COMMAND="$WGSIM -N 100000 -e $BASE_ERROR_RATE -1 $READ_LEN $DB $OUTPUT_FILE /dev/null >/dev/null 2>/dev/null"
 	echo "Command: $COMMAND"
-	`$COMMAND`
+	$COMMAND
     done
 done
