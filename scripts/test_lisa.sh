@@ -1,5 +1,5 @@
 LISA=~/dtra/bin/client
-LISA_OPTS="--multiple_hits --long_read_algorithm=coverage --calc_edit_distance --validate_wgsim=report"
+LISA_OPTS="--validate_wgsim=report"
 
 if [ $# -ne 3 ]
 then
@@ -45,7 +45,6 @@ for READS in `ls -v $READS_DIR/*.fq`
 do
     echo "Processing reads file: $READS"
     RESULT="$READS.lisa"
-    VALIDATION="$READS.wgsim.lisa"
     COMMAND="/usr/bin/time -p $LISA solve $DB $INDEX $READS $RESULT ${LISA_OPTS}"
     echo "Command: $COMMAND"
     $COMMAND

@@ -18,8 +18,8 @@ using namespace std;
 // ovdje saram s intovima i size_t-ovima, iako je
 // 32 bitni int dovoljan svuda
 
-DEFINE_string(long_read_algorithm, "lis", "Algorithm for long reads (naive|lis|coverage|ssw)");
-DEFINE_bool(multiple_hits, false, "Allow multiple placements on a single gene.");
+DEFINE_string(long_read_algorithm, "coverage", "Algorithm for long reads (naive|lis|coverage|ssw)");
+DEFINE_bool(multiple_hits, true, "Allow multiple placements on a single gene.");
 
 const int kBeginEstimateGroupDist = 15;
 
@@ -310,13 +310,15 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
   
 }
 
+template<int MAXD>
 void calcEditDistance(vector<shared_ptr<Gene> >& genes,
 		      shared_ptr<Read> read) {
-  #define MAXD 100
+  // TODO: trenutno se ovaj objekt kreira za svaki read, idealno bi bilo
+  //       kad bi si ga dretva radilica napravila jednom i samo racunala
+  //       readove koji je dopadnu
   BoundedStringDistance<false, MAXD> bsd(1);
 
   assert(!genes.empty());
-  //printf("%d\n", genes.size());
 
   for (auto it = read->topMappings().begin(); it != read->topMappings().end(); ++it) {
     int geneIdx = it->geneIdx;
@@ -369,6 +371,17 @@ void performMapping(vector<shared_ptr<Gene> >& genes,
   if (!fillEditDistance) {
     performMappingLong(genes, idx, read);
   } else {
-    calcEditDistance(genes, read);
+    // najgori slucaj podrazumijevam 10% greske pa tako podesavam MAXD
+    if (read->size() <= 100) {
+      calcEditDistance<10>(genes, read);
+    } else if (read->size() <= 500) {
+      calcEditDistance<50>(genes, read);
+    } else if (read->size() <= 1000) {
+      calcEditDistance<100>(genes, read);
+    } else if (read->size() <= 2000) {
+      calcEditDistance<200>(genes, read);
+    } else {
+      calcEditDistance<300>(genes, read);
+    }
   }
 }
