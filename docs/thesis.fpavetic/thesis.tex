@@ -313,15 +313,15 @@ Yersinia Pestis\footnote{bacteria which causes the plague} has a genome which is
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{../img/banana.jpg}
+\includegraphics[width=0.65\textwidth]{../img/banana.jpg}
 \caption{A banana}\label{banana}
 \end{figure}
 
-Banana has a genome which consists of 11 chromosomes, with total length around 322M bases.
+Banana (\emph{Musa Acuminata}) has a genome which consists of 11 chromosomes, with total length around 322M bases. Tests are conducted with read lengths 100-2000. With bigger genome, LISA takes more computation time. Accuracy remains satisfiable, as shown in the tables.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{../img/banana-e02-time.pdf}
+\includegraphics[width=0.9\textwidth]{../img/banana-e02-time.pdf}
 \caption{Execution time comparison, base error rate=2\%}\label{banana-e02-time}
 \end{figure}
 
@@ -401,13 +401,16 @@ Banana has a genome which consists of 11 chromosomes, with total length around 3
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{../img/Day_old_chick_black_background.jpg}
+\includegraphics[width=0.75\textwidth]{../img/Day_old_chick_black_background.jpg}
 \caption{A chicken}\label{banana}
 \end{figure}
 
+Total length of all the chromosomes in the genome of a chicken (\emph{Gallus Gallus Domesticus}) is around 892M bases. Tests are conducted with read lengths 100-2000. With bigger genome, LISA takes more computation time. Accuracy remains satisfiable, as shown in the tables.
+
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{../img/chicken-e02-time.pdf}
+\includegraphics[width=0.9\textwidth]{../img/chicken-e02-time.pdf}
 \caption{Execution time comparison, base error rate=2\%}\label{chicken-e02-time}
 \end{figure}
 
@@ -418,13 +421,13 @@ Banana has a genome which consists of 11 chromosomes, with total length around 3
 	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
 \hline
 \hline
-	BWA-MEM & 95.76 & 96.34 & 97.42 & 98.68 & 99.91 & 99.98\\
+	BWA-MEM & 99.24 & 99.47 & 99.51 & 99.56 & 99.58 & 99.60\\
 \hline
-	BWA-SW  & 95.78 & 96.31 & 97.42 & 98.62 & 99.87 & 99.91\\
+	BWA-SW  & 99.20 & 99.47 & 99.53 & 99.53 & 99.58 & 99.56\\
 \hline
-	LISA-LIS   & 95.55 & 96.34 & 97.35 & 98.63 & 99.87 & 99.97\\
+	LISA-LIS   & 99.06 & 99.43 & 99.48 & 99.59 & 99.60 & 99.60\\
 \hline
-	LISA-COV    & 95.42 & 96.16 & 97.13 & 98.36 & 99.53 & 99.59\\
+	LISA-COV & 98.78 & 99.24 & 99.28 & 99.44 & 99.43 & 99.42\\
 \hline
 \end{tabular}
 \caption{Accuracy comparison, base error rate=2\%}\label{chicken-e02-correct}
@@ -443,13 +446,13 @@ Banana has a genome which consists of 11 chromosomes, with total length around 3
 	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
 \hline
 \hline
-	BWA-MEM & 94.55 & 96.27 & 97.33 & 98.60 & 99.91 & 99.98\\
+	BWA-MEM & 97.91 & 99.48 & 99.56 & 99.53 & 99.61 & 99.60\\
 \hline
-	BWA-SW  & 94.18 & 96.26 & 97.31 & 98.56 & 99.85 & 99.95\\
+	BWA-SW  & 88.95 & 98.92 & 99.51 & 99.48 & 99.52 & 99.52\\
 \hline
-	LISA-LIS  & 93.66 & 96.11 & 97.20 & 98.50 & 99.82 & 99.94\\
+	LISA-LIS  & 96.26 & 99.24 & 99.54 & 99.51 & 99.62 & 99.60\\
 \hline
-	LISA-COV & 93.56 & 95.93 & 97.00 & 98.24 & 99.55 & 99.62\\
+	LISA-COV & 96.14 & 99.08 & 99.34 & 99.36 & 99.48 & 99.43\\
 \hline
 \end{tabular}
 \caption{Accuracy comparison, base error rate=5\%}\label{chicken-e05-correct}
@@ -470,18 +473,42 @@ Banana has a genome which consists of 11 chromosomes, with total length around 3
 	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
 \hline
 \hline
-	BWA-MEM & 77.46 & 93.79 & 97.36 & 98.67 & 99.87 & 99.98\\
+	BWA-MEM & 79.76 & 96.68 & 99.50 & 99.55 & 99.59 & 99.59\\
 \hline
-	BWA-SW  & 76.56 & 94.76 & 97.36 & 98.61 & 99.83 & 99.96\\
+	BWA-SW  & 52.58 & 84.24 & 99.010 & 99.48 & 99.48 & 99.51\\
 \hline
-	LISA-LIS   & 73.37 & 91.73 & 96.80 & 98.26 & 99.64 & 99.85\\
+	LISA-LIS   & 73.10 & 92.52 & 99.24 & 99.52 & 99.57 & 99.57\\
 \hline
-	LISA-COV  & 73.30 & 91.63 & 96.64 & 98.05 & 99.39 & 99.55\\
+	LISA-COV  & 73.19 & 92.83 & 99.20 & 99.37 & 99.42 & 99.42\\
 \hline
 \end{tabular}
 \caption{Accuracy comparison, base error rate=10\%}\label{chicken-e10-correct}
 \end{table}
 
+\pagebreak
+
+\section{Additional information}
+
+Here are the command lines for running the mappers:
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+BWA-MEM & bwa mem -t 24 index ocitanja.fq > rezultat.sam\\
+\hline
+BWA-SW & bwa bwasw -t 24 index ocitanja.fq > rezultat.sam\\
+\hline
+SeqAlto & seqalto\_basic align index -n 1 -f -p 24 ocitanja.fq >rezultat.sam\\
+\hline
+ & For read length < 500: snap single index ocitanja.fq -t 24\\
+SNAP & For read length 500: snap single index ocitanja.fq -t 24 -d 20\\
+& For read length 1000: snap single index ocitanja.fq -t 24 -d 40 -h 100 -n 2000\\
+\hline
+LISA & client solve genom.fasta index ocitanja.fq /dev/null\\
+\hline
+\end{tabular}
+\label{komande}
+\end{table}
 
 
 \chapter{Conclusion}
