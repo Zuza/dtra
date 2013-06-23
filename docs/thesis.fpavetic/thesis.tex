@@ -18,7 +18,7 @@
 \usepackage{caption}
 \usepackage{pdfpages}
 \usepackage{float}
-\usepackage[usenames, dvipsnames]{color}
+%\usepackage[usenames, dvipsnames]{color}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{subfig}
@@ -183,18 +183,41 @@ Direct implementation of the above calculation is proportional with lengths of b
 
 \chapter{LISA - Longest Increasing Subsequence Aligner}
 \section{Overview}
+This chapter begins by an overview of the algorithms used by modern mappers. After that, approach developed in this Thesis is described in details and performance is compared with several other existing mappers.\\
+\\
+One of the first algorithms developed for aligning reads is a \emph{local alignment} algorithm called Smith-Waterman (TODO: citirati). Alignments received by that algorithm are considered very accurate. Unfortunately, its time-complexity\footnote{This is briefly discussed in chapter 2.} limits the usage practicality so more advanced algorithms have been developed through the years.\\
+\\
+Many modern mappers (such as SNAP(TODO:citirati) and SeqAlto(TODO:citirati)) are following the \emph{seed-and-extend} approach. First an index is made. Index is a structure which maps every sequence of consecutive $k$ characters (\emph{kmer}) to its positions in the reference genome. The number of different kmers in the genome is $4^k$. That is a practical observation since for $k \le 32$ kmers can be encoded in a 64-bit integer. Building the index is usually one-time procedure. It is saved on the disc and reused when processing the reads. Reads are processed in the following manner: for every kmer of a read positions are fetched from the index. Gathered positions are in fact candidate positions around which read could be placed inside the DNA. Detailed examination is made by using some of the existing alignment algorithms. As an example, SNAP uses edit-distance, whereas SeqAlto uses Needleman-Wunsch. One more thing worth noting is that index can have various implementations - SNAP implements a hash table, SeqAlto uses binary search on a sorted array.\\
+\\
+Existing mappers perform well when the length of the reads and sequencing error rate are small. When we increase any of those things, problems begin. The main reason for low time efficiency on longer and less accurate reads is that algorithms such as edit-distance and Needleman-Wunsch have time complexities proportional both to length of the input and the error inside it. Hence, increasing any of them requires more computing.\\
+\\
+LISA\footnote{Longest Increasing Subsequence Aligner} is a mapper built on the following hypothesis - TODO: hipoteza. Index is built by the SeqAlto model. This results in an time efficient and precise algorithms for read alignment, specially since the lengths of reads are increasing.
+
 \section{Index}
 \section{Alignment algorithm}
+Basic intuition for the developed algorithms comes from the fact that alignments which look 'good' when observed by bare eye should have a big overlaping part, as described by (TODO: slika).\\
+\\
+For longer reads (length greater or equal to 500), this approach practically doesn't miss when determining the region of the genome where a read belongs. If an actual alignment is needed, parts of the reads between 'matching' regions can be aligned with one of previously mentioned alignment algorithms (e.g. edit-distance).
+
 \subsection{Single alignment}
+Ovdje opisati lis i coverge, to ce biti najzeznutiji dio
 \subsection{Multiple alignment}
+In the previous section aligning sequences of similar lengths is described. Since the genome can be much larger than a read, direct application of LIS and COVERAGE algorithms would give poor performance. That is why a trick is used. Entire genome is divided into blocks of length closer to the read length.
 \section{Implementation}
 \section{Installation}
 \section{Usage}
 
 \chapter{Results}
+\section{Overview}
+This section gives time performance and accuracy analysis of LISA. From genomes of several species (precisely: \emph{Yersinia Pestis}, banana and a chicken), sets of single end reads are created using the \emph{wgsim} read simulator. Time needed for solving sets and performance are compared with BWA-SW, BWA-MEM \cite{Li:2010:FAL:1741823.1741825}, SNAP and SeqAlto.\\
+\\
+Every test set consists of 100000 single end reads created using a \emph{wgsim} read simulator. That tool is used as it is widely accepted as a benchmarking tool. All its parameters are set to default, except for the \emph{base error rate} which is set to 0.02, 0.05 and 0.10 in three separate trials.\\
+\\
+Conducted trials were made on a computer with 192Gb of RAM and 12 core Intel(R) Xeon(R) CPU E5645 @ 2.40 GHz.
+
 \section{Yersinia Pestis}
 \section{Banana}
-\section{Sloth}
+\section{Chicken}
 
 \chapter{Conclusion}
 Zaključak.
