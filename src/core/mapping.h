@@ -9,6 +9,8 @@
 #include <memory>
 
 void performMapping(std::vector<std::shared_ptr<Gene> >& genes,
-		    std::shared_ptr<Index> idx, std::shared_ptr<Read> read);
+		    std::shared_ptr<Index> idx, 
+		    std::shared_ptr<Read> read,
+		    bool fillEditDistance);
 
 #endif

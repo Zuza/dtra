@@ -83,8 +83,8 @@ int Read::validateWgsimMapping() {
     }
 
     if (geneMatch &&
-        (abs(mapping->genePos-pos1) < FLAGS_read_pos_max_offset ||
-         abs(mapping->genePos-(pos2-size())) < FLAGS_read_pos_max_offset)) {
+        (abs(mapping->geneBegin-pos1) < FLAGS_read_pos_max_offset ||
+         abs(mapping->geneBegin-(pos2-size())) < FLAGS_read_pos_max_offset)) {
       return i;
     }
   }
@@ -93,10 +93,11 @@ int Read::validateWgsimMapping() {
   return -1;
 }
 
-void Read::updateMapping(double score, int genePos, int isRC, int geneIdx,
+void Read::updateMapping(double score, int geneBegin, int geneEnd,
+			 int isRC, int geneIdx,
 			 string geneDescriptor, 
 			 string geneSegment) {
-  topMappings_.insert(OneMapping(score, genePos, isRC, geneIdx,
+  topMappings_.insert(OneMapping(score, geneBegin, geneEnd, isRC, geneIdx,
 				 geneDescriptor, geneSegment));
   
   while (topMappings_.size() > 1 && 

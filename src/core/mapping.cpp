@@ -12,13 +12,14 @@
 #include "core/Coverage.h"
 #include "ssw/ssw_cpp.h"
 
+#include "core/BoundedStringDistance.h"
 using namespace std;
 
 // ovdje saram s intovima i size_t-ovima, iako je
 // 32 bitni int dovoljan svuda
 
-DEFINE_string(long_read_algorithm, "lis", "Algorithm for long reads (naive|lis|coverage|ssw)");
-DEFINE_bool(multiple_hits, false, "Allow multiple placements on a single gene.");
+DEFINE_string(long_read_algorithm, "coverage", "Algorithm for long reads (naive|lis|coverage|ssw)");
+DEFINE_bool(multiple_hits, true, "Allow multiple placements on a single gene.");
 
 const int kBeginEstimateGroupDist = 15;
 
@@ -72,7 +73,8 @@ void singleLis(shared_ptr<Read> read,
     // gdje procjenjujemo da je pocetna pozicija
     // mapiranja reada na gen?
     int begin = estimateBeginFromLis(positions, lisResult);
-    read->updateMapping(lisResult.size(), begin, rc, geneIdx,
+    read->updateMapping(lisResult.size(), begin, begin+read->size(),
+			rc, geneIdx,
 			genes[geneIdx]->description(), "");
   }
 }
@@ -128,7 +130,8 @@ void singleNaive(shared_ptr<Read> read,
     }
     
     assert(bestHits > 0);
-    read->updateMapping(bestHits, bestPos, rc, geneIdx,
+    read->updateMapping(bestHits, bestPos, bestPos+read->size(),
+			rc, geneIdx,
 			genes[geneIdx]->description(), "");
   }
 }
@@ -217,12 +220,9 @@ void windowedAlignment(shared_ptr<Read> read,
 	// gdje procjenjujemo da je pocetna pozicija
 	// mapiranja reada na gen?
 	int begin = estimateBeginFromLis(lisPrepare, lisResult);
-	read->updateMapping(lisResult.size(), begin, rc, geneIdx,
-			    genes[geneIdx]->description(), "");
+	read->updateMapping(lisResult.size(), begin, begin+read->size(),
+			    rc, geneIdx, genes[geneIdx]->description(), "");
       } else if (FLAGS_long_read_algorithm == "coverage") {
-	printf("not done yet, reconstruction needed!\n");
-	exit(1);
-      
 	int seedLen = idx->getSeedLen();
 	vector<Interval> intervals;
 	for (int i = start; i < end; ++i) {
@@ -231,7 +231,17 @@ void windowedAlignment(shared_ptr<Read> read,
 	  int c = positions[i].second;
 	  intervals.push_back(Interval(a,b,c));
 	}
-	//cover(NULL, &score, intervals);
+
+	int score = 0;
+	vector<Interval> coverage;
+	cover(&coverage, &score, intervals);
+
+	assert(!coverage.empty());
+	int begin = coverage[0].left - coverage[0].value;
+	int end = coverage.back().right+read->size()-coverage.back().value;
+
+	read->updateMapping(score, begin, end, rc, geneIdx,
+			    genes[geneIdx]->description(), "");	
       }
     }
   }
@@ -269,7 +279,8 @@ void singleSsw(shared_ptr<Read> read,
                   filter, &alignment);
 
     read->updateMapping(alignment.sw_score,
-                        alignment.ref_begin, rc, geneIdx,
+                        alignment.ref_begin, alignment.ref_end,
+			rc, geneIdx,
                         genes[geneIdx]->description(), "");
   }
 }
@@ -299,8 +310,78 @@ void performMappingLong(vector<shared_ptr<Gene> >& genes,
   
 }
 
+template<int MAXD>
+void calcEditDistance(vector<shared_ptr<Gene> >& genes,
+		      shared_ptr<Read> read) {
+  // TODO: trenutno se ovaj objekt kreira za svaki read, idealno bi bilo
+  //       kad bi si ga dretva radilica napravila jednom i samo racunala
+  //       readove koji je dopadnu
+  BoundedStringDistance<false, MAXD> bsd(1);
+
+  assert(!genes.empty());
+
+  for (auto it = read->topMappings().begin(); it != read->topMappings().end(); ++it) {
+    int geneIdx = it->geneIdx;
+    string description = it->geneDescriptor;
+    int editDistance = -1;
+    
+    if (geneIdx < genes.size() &&
+	genes[geneIdx]->description() == description) { // nuzna provjera jer
+                                                        // geneIdx je indeks na
+                                                        // razini bloka, a ne
+                                                        // cijele baze
+      // kandidat je u trenutno procesuiranom bloku!
+
+      const char* text = genes[geneIdx]->data() + it->geneBegin;
+      int patternLen = read->size();
+
+      int textWindowSize = it->geneEnd-it->geneBegin+1;
+      double score = it->score; // score je mjera identicnih poklapanja
+      
+      // gornja granica na gresku je kad i u textu i u patternu ostavimo
+      // identicna poklapanja i obrisemo sve ostalo
+      int limit = (int)(fabs(textWindowSize-score)+fabs(patternLen-score));
+      limit = min(limit, MAXD-1);
+      limit = max(limit, 1);
+      
+      char* pattern = new char[patternLen+1];
+      read->toCharArray(pattern, it->isRC);
+
+      editDistance = bsd.compute(text, pattern, patternLen, limit);
+
+      delete[] pattern;
+      it->editDistance = editDistance;
+    }
+  }
+}
+
+// * ako je fillEditDistance false, pokrece se 'pametni' algoritam procjena
+// regija u kojima se nalazi read
+// * ako je fillEditDistance true, podrazumijeva se da je read vec popunjen
+// procjenama regija i treba samo izracunati i dopuniti informaciju o 
+// edit-distanceu
+// * nekad je dovoljno samo procijeniti regiju, dok je pun rezim rada zamisljen
+// kao poziv ove funkcije s fillEditDistance = false nad svim blokovima fasta
+// baze na ulazu programa. Zatim se ponovno nad svim blokovima baze poziva ova
+// funkcija s fillEditDistance = true
 void performMapping(vector<shared_ptr<Gene> >& genes,
 		    shared_ptr<Index> idx, 
-		    shared_ptr<Read> read) {
-  performMappingLong(genes, idx, read);
+		    shared_ptr<Read> read,
+		    bool fillEditDistance) {
+  if (!fillEditDistance) {
+    performMappingLong(genes, idx, read);
+  } else {
+    // najgori slucaj podrazumijevam 10% greske pa tako podesavam MAXD
+    if (read->size() <= 100) {
+      calcEditDistance<10>(genes, read);
+    } else if (read->size() <= 500) {
+      calcEditDistance<50>(genes, read);
+    } else if (read->size() <= 1000) {
+      calcEditDistance<100>(genes, read);
+    } else if (read->size() <= 2000) {
+      calcEditDistance<200>(genes, read);
+    } else {
+      calcEditDistance<300>(genes, read);
+    }
+  }
 }

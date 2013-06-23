@@ -44,14 +44,35 @@ namespace {
     
     struct Result {
       int openedMax;
+      int openedMaxLastId;
+
       int closedMax;
+      int closedMaxLastId;
       
-      Result(int openedMax = 0, int closedMax = 0) :
-	openedMax(openedMax), closedMax(closedMax) {}
+      Result() {}
+      Result(int openedMax, int openedMaxLastId,
+	     int closedMax, int closedMaxLastId) :
+	openedMax(openedMax), openedMaxLastId(openedMaxLastId),
+	closedMax(closedMax), closedMaxLastId(closedMaxLastId) {}
     };
+
+    Result mergeResults(const Result& l, const Result& r) {
+      Result combined;
+      
+      combined.openedMax = 
+	(l.openedMax > r.openedMax ? l.openedMax : r.openedMax);
+      combined.openedMaxLastId =
+	(l.openedMax > r.openedMax ? l.openedMaxLastId : r.openedMaxLastId);
+
+      combined.closedMax =
+	(l.closedMax > r.closedMax ? l.closedMax : r.closedMax);
+      combined.closedMaxLastId = 
+	(l.closedMax > r.closedMax ? l.closedMaxLastId : r.closedMaxLastId);
+      return combined;
+    }
     
     void insertOpened(int value, int id, int x, int best) {
-      NodeItem ni(best-x, x, value);
+      NodeItem ni(best-x, x, value, id);
       insertOpened(0, 0, offset_-1, ni);
       idToNodeItem_[id] = ni;
     }
@@ -65,6 +86,9 @@ namespace {
       NodeItem toInsert = toRemove;
       toInsert.best += closingX+1;
       toInsert.x = closingX;
+      // printf("CONVERTING id=%d, best: %d -> %d, value: %d->%d\n", 
+      // 	     id, toRemove.best, toInsert.best,
+      // 	     toRemove.value, toInsert.value);
       convertOpenedToClosed(0, 0, offset_-1, toRemove, toInsert);
     }
     
@@ -74,14 +98,16 @@ namespace {
       int best;
       int x;
       int value;
+      int id;
 
-      NodeItem(int best = 0, int x = 0, int value = 0) : 
-	best(best), x(x), value(value) {}
+      NodeItem(int best = 0, int x = 0, int value = 0, int id = 0) : 
+	best(best), x(x), value(value), id(id) {}
       
       bool operator < (const NodeItem& a) const {
 	if (best != a.best) { return best < a.best; }
 	if (x != a.x) { return x < a.x; }
-	return value < a.value;
+	if (value != a.value) { return value < a.value; }
+	return id < a.id;
       }
     };
     
@@ -90,27 +116,60 @@ namespace {
       multiset<NodeItem> closed; // best = najbolje do sad
       
       int openedMax;
+      int openedMaxLastId;
+
       int closedMax;
+      int closedMaxLastId;
 
       Node() {
 	openedMax = -kInfinity;
+	openedMaxLastId = -1;
 	closedMax = 0;
+	closedMaxLastId = -1;
       }
 
       Result getResult() {
-	return Result(openedMax, closedMax);
+	return Result(openedMax, openedMaxLastId,
+		      closedMax, closedMaxLastId);
       }
     };
 
     Result get(int node, int lo, int hi, int value) {
       if (value >= hi) return ivec_[node].getResult();
-      if (lo > value) return Result(-kInfinity, 0);
+      if (lo > value) return Result(-kInfinity, -1, 0, -1);
       
       int mid = (lo+hi)/2;
       Result l = get(node*2+1, lo, mid, value);
       Result r = get(node*2+2, mid+1, hi, value);
-      return Result(max(l.openedMax, r.openedMax),
-		    max(l.closedMax, r.closedMax));
+      return mergeResults(l, r);
+    }
+
+    void updateNode(int node) { // non-leaf node
+	// update opened
+	if (ivec_[node*2+1].openedMax > ivec_[node*2+2].openedMax) {
+	  ivec_[node].openedMax = ivec_[node*2+1].openedMax;
+	  ivec_[node].openedMaxLastId = ivec_[node*2+1].openedMaxLastId;
+	} else {
+	  ivec_[node].openedMax = ivec_[node*2+2].openedMax;
+	  ivec_[node].openedMaxLastId = ivec_[node*2+2].openedMaxLastId;
+	}
+
+	// update closed
+	// printf("node=%d, lcm: %d, rcm: %d\n",
+	//        node,
+	//        ivec_[node*2+1].closedMax,
+	//        ivec_[node*2+2].closedMax);
+	if (ivec_[node*2+1].closedMax > ivec_[node*2+2].closedMax) {
+	  ivec_[node].closedMax = ivec_[node*2+1].closedMax;
+	  ivec_[node].closedMaxLastId = ivec_[node*2+1].closedMaxLastId;
+	  // printf("1: %d %d\n", 
+	  // 	 ivec_[node].closedMax, ivec_[node].closedMaxLastId);
+	} else {
+	  ivec_[node].closedMax = ivec_[node*2+2].closedMax;
+	  ivec_[node].closedMaxLastId = ivec_[node*2+2].closedMaxLastId;
+	  // printf("2: %d %d\n", 
+	  // 	 ivec_[node].closedMax, ivec_[node].closedMaxLastId);
+	}
     }
 
     void insertOpened(int node, int lo, int hi, const NodeItem& ni) {
@@ -120,21 +179,20 @@ namespace {
       if (lo == hi) {
 	ivec_[node].opened.insert(ni);
 	ivec_[node].openedMax = ivec_[node].opened.rbegin()->best;
+	ivec_[node].openedMaxLastId = ivec_[node].opened.rbegin()->id;
 
 	if (!ivec_[node].closed.empty()) {
 	  ivec_[node].closedMax = ivec_[node].closed.rbegin()->best;
+	  ivec_[node].closedMaxLastId = ivec_[node].closed.rbegin()->id;
 	} else {
 	  ivec_[node].closedMax = 0;
+	  ivec_[node].closedMaxLastId = -1;
 	}
       } else {
 	int mid = (lo+hi)/2;
 	insertOpened(node*2+1, lo, mid, ni);
 	insertOpened(node*2+2, mid+1, hi, ni);
-
-	ivec_[node].openedMax = max(ivec_[node*2+1].openedMax,
-				    ivec_[node*2+2].openedMax);
-	ivec_[node].closedMax = max(ivec_[node*2+1].closedMax,
-				    ivec_[node*2+2].closedMax);
+	updateNode(node);
       }
     }
 
@@ -155,19 +213,26 @@ namespace {
 
 	if (!ivec_[node].opened.empty()) {
 	  ivec_[node].openedMax = ivec_[node].opened.rbegin()->best;
+	  ivec_[node].openedMaxLastId = ivec_[node].opened.rbegin()->id;
 	} else {
 	  ivec_[node].openedMax = -kInfinity;
+	  ivec_[node].openedMaxLastId = -1;
 	}
 	ivec_[node].closedMax = ivec_[node].closed.rbegin()->best;
+	ivec_[node].closedMaxLastId = ivec_[node].closed.rbegin()->id;
+	// printf("updateao [%d, %d] na opened=%d,%d closed=%d,%d\n", 
+	//        lo, hi,
+	//        ivec_[node].openedMax, ivec_[node].openedMaxLastId,
+	//        ivec_[node].closedMax, ivec_[node].closedMaxLastId);
       } else {
 	int mid = (lo+hi)/2;
 	convertOpenedToClosed(node*2+1, lo, mid, toRemove, toInsert);
 	convertOpenedToClosed(node*2+2, mid+1, hi, toRemove, toInsert);
-
-	ivec_[node].openedMax = max(ivec_[node*2+1].openedMax,
-				    ivec_[node*2+2].openedMax);
-	ivec_[node].closedMax = max(ivec_[node*2+1].closedMax,
-				    ivec_[node*2+2].closedMax);
+	updateNode(node);
+	// printf("updateao [%d, %d] na opened=%d,%d closed=%d,%d\n", 
+	//        lo, hi,
+	//        ivec_[node].openedMax, ivec_[node].openedMaxLastId,
+	//        ivec_[node].closedMax, ivec_[node].closedMaxLastId);
       }
     }
 
@@ -179,21 +244,72 @@ namespace {
 
 };
 
-void cover(vector<Interval>* resultCoverage,
-	   int* result,
-	   const vector<Interval>& intervals) {
+struct CoverSlowCmp {
+  bool operator () (const Interval& a, const Interval& b) const {
+    return a.left < b.left;
+  }
+};
+
+void reconstruct(vector<Interval>* resultCoverage,
+		 const vector<int>& dpRecon,
+		 const int endIndex,
+		 const vector<Interval>& intervals) {
+  int leftBorder = -1;
+  int rightBorder = -1;
+  int minVal = -1;
+    
+  for (int curr = endIndex; curr != -1; ) {
+    //printf("%d %d\n", curr, dpRecon[curr]);
+
+    bool pushback = false;
+    if (leftBorder == -1) {
+      minVal = intervals[curr].value;
+      leftBorder = intervals[curr].left;
+      rightBorder = intervals[curr].right;
+      curr = dpRecon[curr];
+    } else if (intervals[curr].right >= leftBorder) {
+      minVal = intervals[curr].value;
+      leftBorder = intervals[curr].left;
+      curr = dpRecon[curr];
+    } else {
+      pushback = true;
+    }
+    //printf("%d %d %d %d %d\n", curr, leftBorder, rightBorder, minVal, pushback);
+
+    if (curr == -1 || pushback) {
+      resultCoverage->push_back(Interval(leftBorder,rightBorder,minVal));
+      leftBorder = -1;
+      rightBorder = -1;
+      minVal = -1;
+    }
+  }
+
+  sort(resultCoverage->begin(), resultCoverage->end(), CoverSlowCmp());
+}
+
+void coverFast(vector<Interval>* resultCoverage,
+	       int* result,
+	       const vector<Interval>& intervals) {
   vector<Event> events;
   int maxValue = 0;
+  int n = intervals.size();
 
-  for (size_t i = 0; i < intervals.size(); ++i) {
+  for (size_t i = 0; i < n; ++i) {
     events.push_back(Event(intervals[i].left, intervals[i].value, LEFT, i));
     events.push_back(Event(intervals[i].right, intervals[i].value, RIGHT, i));
     maxValue = max(maxValue, intervals[i].value);
   }
 
   sort(events.begin(), events.end());
+
+  // OPASKA: ukoliko ce biti potrebno, ova se funkcija
+  // moze dodatno ubrzati tako da se 'value' u intervalima
+  // na ulazu sazme -> tad je potrebno i sazeti prije sweepanja
+  // i vratiti prave vrijednosti kod rekonstrukcije
   IntervalTree itree(maxValue+1);
   *result = 0;
+  vector<int> dpRecon(n, -1);
+  int endIndex = -1;
 
   for (size_t i = 0; i < events.size(); ++i) {
     int value = events[i].value;
@@ -202,42 +318,52 @@ void cover(vector<Interval>* resultCoverage,
 
     if (events[i].type == LEFT) {
       IntervalTree::Result r = itree.get(value-1);
-      //printf("LEFT: r.openedMax=%d, r.closedMax=%d\n",
+      // printf("LEFT: r.openedMax=%d, r.closedMax=%d\n",
       //     r.openedMax, r.closedMax);
-      int best = r.openedMax + x;
-      best = max(best, r.closedMax);
+
+      int best = r.openedMax + x;      
+      if (best > r.closedMax) {
+	dpRecon[id] = r.openedMaxLastId;
+      } else {
+	best = r.closedMax;
+	dpRecon[id] = r.closedMaxLastId;
+      }
       itree.insertOpened(value, id, x, best);
     } else { // events[i].type == RIGHT
       itree.convertOpenedToClosed(id, x);
-      int bestClosed = itree.get(value).closedMax;
-      //printf("RIGHT: bestClosed=%d\n", bestClosed);
-      *result = max(*result, bestClosed);
+      IntervalTree::Result r = itree.get(value);
+      //printf("RIGHT: bestClosed=%d\n", r.closedMax);
+      
+      if (r.closedMax > *result) {
+	*result = r.closedMax;
+	endIndex = r.closedMaxLastId;
+      }
     }
+  }
+
+  if (resultCoverage != NULL) {
+    reconstruct(resultCoverage, dpRecon, endIndex, intervals);
   }
 }
 
-struct CoverSlowCmp {
-  bool operator () (const Interval& a, const Interval& b) const {
-    return a.left < b.left;
-  }
-};
-
 void coverSlow(vector<Interval>* resultCoverage,
 	       int* result,
-	       const vector<Interval>& intervals) {
-  vector<Interval> sortedIntervals = intervals;
-  sort(sortedIntervals.begin(), sortedIntervals.end(), CoverSlowCmp());
+	       vector<Interval> intervals) {
+  sort(intervals.begin(), intervals.end(), CoverSlowCmp());
 
-  int n = sortedIntervals.size();
+  int n = intervals.size();
   vector<int> dp(n);
+  vector<int> dpRecon(n, -1);
+
   *result = 0;
+  int endIndex = -1;
 
   for (int i = 0; i < n; ++i) {
-    const Interval& curr = sortedIntervals[i];
+    const Interval& curr = intervals[i];
     dp[i] = curr.right - curr.left + 1;
 
     for (int j = i-1; j >= 0; --j) {
-      const Interval& prev = sortedIntervals[j];
+      const Interval& prev = intervals[j];
 
       if (prev.value < curr.value) {
 	int extend = 0;
@@ -246,9 +372,36 @@ void coverSlow(vector<Interval>* resultCoverage,
 	} else if (curr.right >= prev.right) {
 	  extend = dp[j] + curr.right - prev.right;
 	}
-	dp[i] = max(dp[i], extend);
+	if (extend > dp[i]) {
+	  dp[i] = extend;
+	  dpRecon[i] = j;
+	}
       }
     }
-    *result = max(*result, dp[i]);
+
+    if (dp[i] > *result) {
+      *result = dp[i];
+      endIndex = i;
+    }
+  }
+
+  // slijedi rekonstrukcija
+  // (*result sadrzi u ovom trenutku najbolje rjesenje)
+  if (resultCoverage != NULL) {
+    reconstruct(resultCoverage, dpRecon, endIndex, intervals);
+  }
+}
+
+void cover(vector<Interval>* resultCoverage,
+	   int* result,
+	   const vector<Interval>& intervals) {
+  // za razlicite brojeve intervala n razliciti algoritmi rade bolje:
+  // coverSlow radi u O(n^2)
+  // coverFast radi u O(n lg n), ali ima veliku konstantu koja blijedi
+  //           tek kada n dovoljno naraste
+  if (intervals.size() < 550) {
+    coverSlow(resultCoverage, result, intervals);
+  } else {
+    coverFast(resultCoverage, result, intervals);
   }
 }
