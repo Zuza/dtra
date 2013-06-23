@@ -215,9 +215,274 @@ Every test set consists of 100000 single end reads created using a \emph{wgsim} 
 \\
 Conducted trials were made on a computer with 192Gb of RAM and 12 core Intel(R) Xeon(R) CPU E5645 @ 2.40 GHz.
 
+%\pagebreak
+
 \section{Yersinia Pestis}
+
+Yersinia Pestis\footnote{bacteria which causes the plague} has a genome which is ~5M bases long. Tests were conducted for read lengths 100-3000. SNAP had troubles processing reads with length greater than 1000 so those results are ommited. SeqAlto is very slow on read lengths greater than 1000. For better graph visibility, those times of execution are ommited. On long reads, LISA-LIS shows very good performance, giving 2-30x speedup when compared with other mappers. LISA-COV is comparable with BWA-SW. The accuracies are shown in the tables below. The numbers in the tables denote what percentage of the generated reads has been aligned to the correct place in the genome. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/yersinia-e02-time.pdf}
+\caption{Execution time comparison, base error rate=2\%}\label{yersinia-e02-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 2000 & 3000\\
+\hline
+\hline
+	BWA-MEM & 95.76 & 96.34 & 97.42 & 98.68 & 99.91 & 99.98\\
+\hline
+	BWA-SW  & 95.78 & 96.31 & 97.42 & 98.62 & 99.87 & 99.91\\
+\hline
+	SeqAlto & 95.75 & 96.37 & 97.43 & 98.69 & 99.90 & -\\
+\hline
+	SNAP    & 94.94 & 95.57 & 96.94 & 97.82 & 96.27 & -\\
+\hline
+	LISA-LIS   & 95.55 & 96.34 & 97.35 & 98.63 & 99.87 & 99.97\\
+\hline
+	LISA-COV    & 95.42 & 96.16 & 97.13 & 98.36 & 99.53 & 99.59\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=2\%}\label{yersinia-e02-correct}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/yersinia-e05-time.pdf}
+\caption{Execution time comparison, base error rate=5\%}\label{yersinia-e05-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 2000 & 3000\\
+\hline
+\hline
+	BWA-MEM & 94.55 & 96.27 & 97.33 & 98.60 & 99.91 & 99.98\\
+\hline
+	BWA-SW  & 94.18 & 96.26 & 97.31 & 98.56 & 99.85 & 99.95\\
+\hline
+	SeqAlto & 78.97 & 82.47 & 66.66 & 49.83 & 28.60 & -\\
+\hline
+	SNAP    & 93.06 & 95.57 & 82.91 & - & - & -\\
+\hline
+	LISA-LIS  & 93.66 & 96.11 & 97.20 & 98.50 & 99.82 & 99.94\\
+\hline
+	LISA-COV & 93.56 & 95.93 & 97.00 & 98.24 & 99.55 & 99.62\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=5\%}\label{yersinia-e05-correct}
+\end{table}
+
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/yersinia-e10-time.pdf}
+\caption{Execution time comparison, base error rate=10\%}\label{yersinia-e10-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 2000 & 3000\\
+\hline
+\hline
+	BWA-MEM & 77.46 & 93.79 & 97.36 & 98.67 & 99.87 & 99.98\\
+\hline
+	BWA-SW  & 76.56 & 94.76 & 97.36 & 98.61 & 99.83 & 99.96\\
+\hline
+	SeqAlto & 17.36 & 5.10 & 0 & 0 & 0 & -\\
+\hline
+	LISA-LIS   & 73.37 & 91.73 & 96.80 & 98.26 & 99.64 & 99.85\\
+\hline
+	LISA-COV  & 73.30 & 91.63 & 96.64 & 98.05 & 99.39 & 99.55\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=10\%}\label{yersinia-e10-correct}
+\end{table}
+
+
 \section{Banana}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{../img/banana.jpg}
+\caption{A banana}\label{banana}
+\end{figure}
+
+Banana has a genome which consists of 11 chromosomes, with total length around 322M bases.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/banana-e02-time.pdf}
+\caption{Execution time comparison, base error rate=2\%}\label{banana-e02-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
+\hline
+\hline
+	BWA-MEM & 99.30 & 99.97 & 100.00 & 100.00 & 100.00 & 100.00\\
+\hline
+	BWA-SW  & 99.14 & 99.93 & 99.97 & 99.95 & 99.92 & 99.93\\
+\hline
+	LISA-LIS   & 98.69 & 99.92 & 100.00 & 100.00 & 100.00 & 100.00\\
+\hline
+	LISA-COV & 97.49 & 98.87 & 99.20 & 99.22 & 99.23 & 99.14\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=2\%}\label{banana-e02-correct}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/banana-e05-time.pdf}
+\caption{Execution time comparison, base error rate=5\%}\label{banana-e05-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
+\hline
+\hline
+	BWA-MEM & 98.92 & 99.95 & 100.00 & 100.00 & 100.00 & 100.00\\
+\hline
+	BWA-SW  & 98.13 & 99.64 & 99.91 & 99.89 & 99.81 & 99.82\\
+\hline
+	LISA-LIS  & 94.04 & 99.32 & 99.99 & 100.00 & 100.00 & 100.00\\
+\hline
+	LISA-COV & 93.28 & 98.36 & 99.15 & 99.35 & 99.27 & 99.25\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=5\%}\label{banana-e05-correct}
+\end{table}
+
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/banana-e10-time.pdf}
+\caption{Execution time comparison, base error rate=10\%}\label{banana-e10-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
+\hline
+\hline
+	BWA-MEM & 79.160 & 97.80 & 99.99 & 100.00 & 100.00 & 100.00\\
+\hline
+	BWA-SW  & 56.13 & 86.67 & 99.21 & 99.97 & 99.99 & 100.00\\
+\hline
+	LISA-LIS   & 69.54 & 90.31 & 99.33 & 99.99 & 100.00 & 100.00\\
+\hline
+	LISA-COV  & 69.25 & 90.12 & 98.74 & 99.34 & 99.40 & 99.38\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=10\%}\label{banana-e10-correct}
+\end{table}
+
+
 \section{Chicken}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{../img/Day_old_chick_black_background.jpg}
+\caption{A chicken}\label{banana}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/chicken-e02-time.pdf}
+\caption{Execution time comparison, base error rate=2\%}\label{chicken-e02-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
+\hline
+\hline
+	BWA-MEM & 95.76 & 96.34 & 97.42 & 98.68 & 99.91 & 99.98\\
+\hline
+	BWA-SW  & 95.78 & 96.31 & 97.42 & 98.62 & 99.87 & 99.91\\
+\hline
+	LISA-LIS   & 95.55 & 96.34 & 97.35 & 98.63 & 99.87 & 99.97\\
+\hline
+	LISA-COV    & 95.42 & 96.16 & 97.13 & 98.36 & 99.53 & 99.59\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=2\%}\label{chicken-e02-correct}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/chicken-e05-time.pdf}
+\caption{Execution time comparison, base error rate=5\%}\label{chicken-e05-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
+\hline
+\hline
+	BWA-MEM & 94.55 & 96.27 & 97.33 & 98.60 & 99.91 & 99.98\\
+\hline
+	BWA-SW  & 94.18 & 96.26 & 97.31 & 98.56 & 99.85 & 99.95\\
+\hline
+	LISA-LIS  & 93.66 & 96.11 & 97.20 & 98.50 & 99.82 & 99.94\\
+\hline
+	LISA-COV & 93.56 & 95.93 & 97.00 & 98.24 & 99.55 & 99.62\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=5\%}\label{chicken-e05-correct}
+\end{table}
+
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/chicken-e10-time.pdf}
+\caption{Execution time comparison, base error rate=10\%}\label{chicken-e10-time}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Duljine & 100 & 200 & 500 & 1000 & 1500 & 2000\\
+\hline
+\hline
+	BWA-MEM & 77.46 & 93.79 & 97.36 & 98.67 & 99.87 & 99.98\\
+\hline
+	BWA-SW  & 76.56 & 94.76 & 97.36 & 98.61 & 99.83 & 99.96\\
+\hline
+	LISA-LIS   & 73.37 & 91.73 & 96.80 & 98.26 & 99.64 & 99.85\\
+\hline
+	LISA-COV  & 73.30 & 91.63 & 96.64 & 98.05 & 99.39 & 99.55\\
+\hline
+\end{tabular}
+\caption{Accuracy comparison, base error rate=10\%}\label{chicken-e10-correct}
+\end{table}
+
+
 
 \chapter{Conclusion}
 Zaključak.
