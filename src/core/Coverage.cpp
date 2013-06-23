@@ -399,7 +399,7 @@ void cover(vector<Interval>* resultCoverage,
   // coverSlow radi u O(n^2)
   // coverFast radi u O(n lg n), ali ima veliku konstantu koja blijedi
   //           tek kada n dovoljno naraste
-  if (intervals.size() < 550) {
+  if (intervals.size() < 700) { // empirijski
     coverSlow(resultCoverage, result, intervals);
   } else {
     coverFast(resultCoverage, result, intervals);

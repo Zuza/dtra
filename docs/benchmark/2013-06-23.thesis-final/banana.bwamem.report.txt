@@ -1,0 +1,54 @@
+error0.02_len100.fq.bwamem.sam
+99296/99996(99996) = 99.30
+
+error0.02_len200.fq.bwamem.sam
+99970/100002(100002) = 99.97
+
+error0.02_len500.fq.bwamem.sam
+100000/100002(100002) = 100.00
+
+error0.02_len1000.fq.bwamem.sam
+100001/100002(100002) = 100.00
+
+error0.02_len1500.fq.bwamem.sam
+100002/100003(100003) = 100.00
+
+error0.02_len2000.fq.bwamem.sam
+100012/100014(100014) = 100.00
+
+error0.05_len100.fq.bwamem.sam
+97779/98846(98846) = 98.92
+
+error0.05_len200.fq.bwamem.sam
+99946/99995(99995) = 99.95
+
+error0.05_len500.fq.bwamem.sam
+100001/100002(100002) = 100.00
+
+error0.05_len1000.fq.bwamem.sam
+100002/100003(100003) = 100.00
+
+error0.05_len1500.fq.bwamem.sam
+100003/100004(100004) = 100.00
+
+error0.05_len2000.fq.bwamem.sam
+100024/100025(100025) = 100.00
+
+error0.10_len100.fq.bwamem.sam
+79160/81246(81246) = 97.43
+
+error0.10_len200.fq.bwamem.sam
+96944/97559(97559) = 99.37
+
+error0.10_len500.fq.bwamem.sam
+99998/100008(100008) = 99.99
+
+error0.10_len1000.fq.bwamem.sam
+100008/100009(100009) = 100.00
+
+error0.10_len1500.fq.bwamem.sam
+100007/100010(100010) = 100.00
+
+error0.10_len2000.fq.bwamem.sam
+100031/100040(100040) = 99.99
+

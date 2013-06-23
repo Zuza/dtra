@@ -1,0 +1,54 @@
+error0.02_len100.fq.bwasw.sam
+98463/99313(99313) = 99.14
+
+error0.02_len200.fq.bwasw.sam
+99939/100013(100013) = 99.93
+
+error0.02_len500.fq.bwasw.sam
+100008/100041(100041) = 99.97
+
+error0.02_len1000.fq.bwasw.sam
+100006/100058(100058) = 99.95
+
+error0.02_len1500.fq.bwasw.sam
+100013/100089(100089) = 99.92
+
+error0.02_len2000.fq.bwasw.sam
+100035/100108(100108) = 99.93
+
+error0.05_len100.fq.bwasw.sam
+89934/91646(91646) = 98.13
+
+error0.05_len200.fq.bwasw.sam
+99326/99689(99689) = 99.64
+
+error0.05_len500.fq.bwasw.sam
+99990/100080(100080) = 99.91
+
+error0.05_len1000.fq.bwasw.sam
+100007/100117(100117) = 99.89
+
+error0.05_len1500.fq.bwasw.sam
+100018/100209(100209) = 99.81
+
+error0.05_len2000.fq.bwasw.sam
+100041/100218(100218) = 99.82
+
+error0.10_len100.fq.bwasw.sam
+56128/58210(58210) = 96.42
+
+error0.10_len200.fq.bwasw.sam
+86660/88590(88590) = 97.82
+
+error0.10_len500.fq.bwasw.sam
+99211/99811(99811) = 99.40
+
+error0.10_len1000.fq.bwasw.sam
+99972/100273(100273) = 99.70
+
+error0.10_len1500.fq.bwasw.sam
+99999/100353(100353) = 99.65
+
+error0.10_len2000.fq.bwasw.sam
+100049/100446(100446) = 99.60
+

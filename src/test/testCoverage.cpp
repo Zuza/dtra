@@ -9,8 +9,8 @@
 #include "core/Coverage.h"
 using namespace std;
 
-const int kNoTests = 1000;
-const int kN = 10000;
+const int kNoTests = 10;
+const int kN = 2000;
 const int randMod = 30000;
 
 void createIntervals(vector<Interval>* intervals, const int n) {

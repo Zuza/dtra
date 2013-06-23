@@ -21,5 +21,5 @@ for line in lines:
     total_c1 += c1
     last_cc0 = cc0
 
-
+# postotak tocno poravnatih readova
 print "%d/%d(%d) = %0.2lf\n" % (total_c0-total_c1, total_c0, last_cc0, 100.0*(total_c0-total_c1)/total_c0)

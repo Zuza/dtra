@@ -134,7 +134,8 @@ void Index::discardFrequentSeeds() {
     }
 
     // if (run <= FLAGS_avg_multiplier * run_avg)
-    if (run_cnt * run <= FLAGS_avg_multiplier * run_sum) {
+    //if (run_cnt * run <= FLAGS_avg_multiplier * run_sum) {
+    if (run <= 100) {
       ++runs_left;
       kmers_left += run;
 
