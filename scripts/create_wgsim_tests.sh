@@ -26,12 +26,12 @@ echo "$OUTPUT_DIR found or created!"
 
 for BASE_ERROR_RATE in 0.02 0.05 0.10
 do
-    for READ_LEN in 100 200 500 1000 1500 2000
+    for READ_LEN in 100 200 500 1000 1500 2000 3000 5000
     do 
 	echo "Creating test case with error=$BASE_ERROR_RATE and len=$READ_LEN"
 	OUTPUT_FILE="$OUTPUT_DIR/error${BASE_ERROR_RATE}_len${READ_LEN}.fq"
 	COMMAND="$WGSIM -N 100000 -e $BASE_ERROR_RATE -1 $READ_LEN $DB $OUTPUT_FILE /dev/null >/dev/null 2>/dev/null"
 	echo "Command: $COMMAND"
-	$COMMAND
+	bash -c "$COMMAND"
     done
 done

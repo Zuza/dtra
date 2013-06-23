@@ -69,9 +69,23 @@ void calcLongestIncreasingSubsequence(
   vector<int> dpTable(n, 0);
   vector<int> reconstructionTable(n, -1);
 
+  // iz nekog razloga ova kompresija je samo usporila sve
+
+  // vector<int> compressedSecond;
+  // for (int i = 0; i < elements.size(); ++i) {
+  //   compressedSecond.push_back(elements[i].second);
+  // }
+  // sort(compressedSecond.begin(), compressedSecond.end());
+  // compressedSecond.erase(unique(compressedSecond.begin(), compressedSecond.end()),
+  // 			 compressedSecond.end());
+
   int maxSecond = -1;
   for (int i = 0; i < elements.size(); ++i) {
     //assert(elements[i].second >= 0);
+    // elements[i].second = lower_bound(compressedSecond.begin(),
+    // 				     compressedSecond.end(),
+    // 				     elements[i].second) - compressedSecond.begin()
+    //  ;
     maxSecond = max(maxSecond, elements[i].second);
   }
 

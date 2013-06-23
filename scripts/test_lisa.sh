@@ -1,5 +1,5 @@
 LISA=~/dtra/bin/client
-LISA_OPTS="--validate_wgsim=report"
+LISA_OPTS="--validate_wgsim=report --long_read_algorithm=lis"
 
 if [ $# -ne 3 ]
 then
