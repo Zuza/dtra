@@ -17,7 +17,7 @@ legend([p1,p2,p3,p4],
        ['BWA-MEM', 'BWA-SW', 'Lisa-LIS', 'Lisa-COV'], loc=2)
 xlabel('Read length')
 ylabel('Time [s]')
-ylim(-100, 3000)
+ylim(-50, 500)
 show()
 
 chicken05_time_bwamem   = [2.74, 5.41, 16.04, 34.13, 51.90, 70.02]
