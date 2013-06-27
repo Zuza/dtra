@@ -1,0 +1,63 @@
+error0.02_len100.fq.bowtie2.sam
+94985/99296(99296) = 95.66
+
+error0.02_len200.fq.bowtie2.sam
+96323/99971(99971) = 96.35
+
+error0.02_len500.fq.bowtie2.sam
+97361/99984(99984) = 97.38
+
+error0.02_len1000.fq.bowtie2.sam
+98589/99979(99979) = 98.61
+
+error0.02_len1500.fq.bowtie2.sam
+99298/99994(99994) = 99.30
+
+error0.02_len2000.fq.bowtie2.sam
+99852/99998(99998) = 99.85
+
+error0.02_len3000.fq.bowtie2.sam
+99983/100000(100000) = 99.98
+
+error0.05_len100.fq.bowtie2.sam
+83517/87290(87290) = 95.68
+
+error0.05_len200.fq.bowtie2.sam
+93813/97494(97494) = 96.22
+
+error0.05_len500.fq.bowtie2.sam
+97049/99871(99871) = 97.17
+
+error0.05_len1000.fq.bowtie2.sam
+98449/99937(99937) = 98.51
+
+error0.05_len1500.fq.bowtie2.sam
+99209/99969(99969) = 99.24
+
+error0.05_len2000.fq.bowtie2.sam
+99801/99982(99982) = 99.82
+
+error0.05_len3000.fq.bowtie2.sam
+99973/99989(99989) = 99.98
+
+error0.10_len100.fq.bowtie2.sam
+43184/45182(45182) = 95.58
+
+error0.10_len200.fq.bowtie2.sam
+62301/64802(64802) = 96.14
+
+error0.10_len500.fq.bowtie2.sam
+82770/85167(85167) = 97.19
+
+error0.10_len1000.fq.bowtie2.sam
+91637/93076(93076) = 98.45
+
+error0.10_len1500.fq.bowtie2.sam
+95195/96008(96008) = 99.15
+
+error0.10_len2000.fq.bowtie2.sam
+97337/97666(97666) = 99.66
+
+error0.10_len3000.fq.bowtie2.sam
+98910/98939(98939) = 99.97
+
