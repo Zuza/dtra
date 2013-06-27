@@ -270,25 +270,25 @@
 		\end{center}
 		\vfill
 		\begin{center}%
-%	    	\if@radzavrsni%
-%			  {\large\sffamily ZAVR\v{S}NI RAD br.~\@thesisnumber \par}%
-%			\else \if@raddiplomski%
-%			  {\large\sffamily DIPLOMSKI RAD br.~\@thesisnumber \par}%
-%			\else {\large\sffamily\bfseries SEMINAR \par}%
-%			\fi\fi
-%			\if@radseminar \vskip 3em%
-%			\else \vskip 1em%
-%			\fi
+	    	\if@radzavrsni%
+			  {\large\sffamily ZAVR\v{S}NI RAD br.~\@thesisnumber \par}%
+			\else \if@raddiplomski%
+			  {\large\sffamily MASTER THESIS no.~\@thesisnumber \par}%
+			\else {\large\sffamily\bfseries SEMINAR \par}%
+			\fi\fi
+			\if@radseminar \vskip 3em%
+			\else \vskip 1em%
+			\fi
 			{\huge \bfseries\sffamily \@title \par}%
 			\vskip 1em%
 			{\large\sffamily\lineskip .75em%
 			\begin{tabular}[t]{c}%
-%	        	\if@radseminar%
-%	        	  {\itshape \@author} \\
-%	        	  Voditelj: {\itshape \@voditelj}
-%	        	\else
+	        	\if@radseminar%
+	        	  {\itshape \@author} \\
+	        	  Voditelj: {\itshape \@voditelj}
+	        	\else
 				    \@author
-%				\fi
+				\fi
 			\end{tabular}\par}%
 		\end{center}\par
 		\vfill
