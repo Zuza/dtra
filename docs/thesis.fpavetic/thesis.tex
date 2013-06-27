@@ -47,12 +47,22 @@
 \izvornik
 
 % Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
-\zahvala{}
+\zahvala{\\
+Zahvaljujem Miletu Šikiću na zadatku, strpljenju i diskusijama.\\
+\\
+Hvala roditeljima za sve. Bez vas mnogo toga bi bilo mnogo teže.}
 
 \tableofcontents
 
 \chapter{Introduction}
-Uvod rada. Nakon uvoda dolaze poglavlja u kojima se obrađuje tema.
+
+Through the past few years, DNA sequencing methods have advanced significantly. Massively parallel sequencing methods have become very common in biological research, resulting in very broad applications, for example in infectious disease or cancer research. Due to decreasing cost and increasing usage large ammounts of data are gathered through various experiments.\\
+\\
+Resequencing a human genome cost several billion dollars at the turn of the millennium, reduced to \$10,000 at the start of 2011. By year's end, the equivalent genome is projected to cost only \$2,000\cite{SNAP}. This is a consequence of intensive labor and research done by scientists all over the world. All the parts in the genome analyzing pipeline are advancing fast. Popular analysis of the human genome consists of reading the DNA pieces - \emph{reads} - of a person with a sequencing machine and comparing the reads with the reference human genome which has been previously reliably assembled. This is a computationally very intensive task. Currently, most popular sequencing machines produce reads of length up to several thousands and many algorithms have been developed to handle this kind of data. However, sequencing methods are improving their speed, read length and accuracy. With the increasing length of the read on the output of the sequencing machines there is a need for new algorithms which could manage the new data. This Thesis addresses that need and gives some ideas on what to do. Alignment tool named LISA is developed which implements the novel concepts discussed throughout the Thesis.\\
+\\
+Chapter 2 gives an introductory tutorial to genetics and bioinformatics algorithms.\\
+Chapter 3 gives descriptions of the concepts used in LISA and implementation details.\\
+Chapter 4 contains results of the simulations and comparison with some of the existing aligners.
 
 \chapter{Preliminaries}
 
