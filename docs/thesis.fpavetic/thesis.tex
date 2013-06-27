@@ -48,7 +48,7 @@
 
 % Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
 \zahvala{\\
-Zahvaljujem Miletu Šikiću na zadatku, strpljenju i diskusijama.\\
+Zahvaljujem Mili Šikiću na zadatku, strpljenju i diskusijama.\\
 \\
 Hvala roditeljima za sve. Bez vas mnogo toga bi bilo mnogo teže.}
 
@@ -126,6 +126,7 @@ Shotgun sequencing is a method of determining the order of nucleotides in a DNA 
 One of the fundamental problems of finding good overlap between reads or aligning them to a reference genome is that the matchings we are looking for need not to be perfect. This is a consequence of errors which are introduced to the reads, either by the sequencing process or by mutations. In order to deal with that, algorithms such as Smith-Waterman\cite{Smith1981195}, Needleman-Wunsch\cite{nw}  and Levenshtein distance\cite{edit.distance.tutorial} have been developed. In the succeeding section algorithm for calculating the Levenshtein distance is described. The section will introduce the basic concept on top of the other mentioned algorithms are built as well.
 
 \subsection{Edit (Levenshtein) distance}
+\label{edit.distance.algo}
 
 Levenshtein or edit distance is a metric measuring the difference between two sequences. Simply stated, it is a minimum number of single character edits (insertions, deletions and substitutions) required to change one word into the other.
 \\
@@ -193,15 +194,15 @@ Direct implementation of the above calculation is proportional with lengths of b
 
 \chapter{LISA - Longest Increasing Subsequence Aligner}
 \section{Overview}
-This chapter begins by an overview of the algorithms used by modern mappers. After that, approach developed in this Thesis is described in details and performance is compared with several other existing mappers.\\
+This chapter begins by an overview of the algorithms used by modern mappers. After that, approach developed in this Thesis is described in details.\\
 \\
-One of the first algorithms developed for aligning reads is a \emph{local alignment} algorithm called Smith-Waterman (TODO: citirati). Alignments received by that algorithm are considered very accurate. Unfortunately, its time-complexity\footnote{This is briefly discussed in chapter 2.} limits the usage practicality so more advanced algorithms have been developed through the years.\\
+One of the first algorithms developed for aligning reads is a \emph{local alignment} algorithm called Smith-Waterman\cite{Smith1981195}. Alignments received by that algorithm are considered very accurate. Unfortunately, its time-complexity\footnote{This is briefly discussed in chapter 2.} limits the usage practicality so more advanced algorithms have been developed through the years.\\
 \\
-Many modern mappers (such as SNAP(TODO:citirati) and SeqAlto(TODO:citirati)) are following the \emph{seed-and-extend} approach. First an index is made. Index is a structure which maps every sequence of consecutive $k$ characters (\emph{kmer}) to its positions in the reference genome. The number of different kmers in the genome is $4^k$. That is a practical observation since for $k \le 32$ kmers can be encoded in a 64-bit integer. Building the index is usually one-time procedure. It is saved on the disk and reused when processing the reads. Reads are processed in the following manner: for every kmer of a read positions are fetched from the index. Gathered positions are in fact candidate positions around which read could be placed inside the DNA. Detailed examination is made by using some of the existing alignment algorithms. As an example, SNAP uses edit-distance, whereas SeqAlto uses Needleman-Wunsch. One more thing worth noting is that index can have various implementations - SNAP implements a hash table, SeqAlto uses binary search on a sorted array.\\
+Many modern mappers (such as SNAP\cite{SNAP} and SeqAlto\cite{seqalto}) are following the \emph{seed-and-extend} approach. First an index is made. Index is a structure which maps every sequence of consecutive $k$ characters (\emph{kmer}) to its positions in the reference genome. The number of different kmers in the genome is $4^k$. That is a practical observation since for $k \le 32$ kmers can be encoded in a 64-bit integer. Building the index is usually one-time procedure. It is saved on the disk and reused when processing the reads. Reads are processed in the following manner: for every kmer of a read positions are fetched from the index. Gathered positions are in fact candidate positions around which read could be placed inside the DNA. Detailed examination is made by using some of the existing alignment algorithms. As an example, SNAP uses edit-distance, whereas SeqAlto uses Needleman-Wunsch. One more thing worth noting is that index can have various implementations - SNAP implements a hash table, SeqAlto uses binary search on a sorted array.\\
 \\
-Existing mappers perform well when the length of the reads and sequencing error rate are small. When we increase any of those things, troubles arise. The main reason for low time efficiency on longer and less accurate reads is that algorithms such as edit-distance and Needleman-Wunsch have time complexities proportional both to length of the input and the error inside it. Hence, increasing any of them requires more computing.\\
+Existing mappers perform well when the length of the reads and sequencing error rate are small. When we increase any of those values, troubles arise. The main reason for low time efficiency on longer and less accurate reads is that algorithms such as edit-distance and Needleman-Wunsch have time complexities proportional both to length of the input and the error inside it. Hence, increasing any of them requires more computing.\\
 \\
-LISA\footnote{Longest Increasing Subsequence Aligner} is a mapper built on the following assumption: for long reads, the exact matches are the dominant characteristic. More precisely, if only exact matches are rewarded, ignoring substitutions and gaps, the correct alignment should come up in the alignments within $X\%$\footnote{In LISA, default value of $X$ is 20.} of the best alignment score. When the candidates have been reduced to such list, a classic alignment algorithm can be used to evaluate them. This results in an time efficient and precise algorithms for read alignment, which is great since the lengths of reads are increasing through time.
+LISA\footnote{Longest Increasing Subsequence Aligner} is a mapper built on the following assumption: for long reads, the exact matches are the dominant characteristic of the alignment. More precisely, if only exact matches are rewarded, ignoring substitutions and gaps, the correct alignment should come up in the alignments within $X\%$\footnote{In LISA, default value of $X$ is 20.} of the best alignment score. When the candidates have been reduced to such list, a classic alignment algorithm can be used to evaluate them and find the real best alignment. This results in a time efficient and precise algorithms for aligning the reads, which is great since the lengths of reads are increasing through time.
 
 \section{Index}
 
@@ -255,15 +256,21 @@ TAGAT&10\\
 
 
 \section{Alignment algorithm}
-Basic intuition for the developed algorithms comes from the fact that alignments which 'look good' when observed by bare eye should have a long common subsequence, as demonstrated by (TODO: slika). When such overlaping part is found, intermediate parts can be aligned with the one of the classic alignment algorithms (e.g. edit-distance).\\
-\\
-This section starts with classic algorithm for calculating the longest common subsequence of the two sequences. From there we gradually transform the basic algorithm into a form suitable for measuring similarity on large scale strings such as genomes.
+Basic intuition for the developed algorithms comes from the fact that alignments which 'look good' when observed by bare eye should have a long common subsequence, as demonstrated by \ref{lcs.intuition}. When such overlaping part is found, intermediate parts can be aligned with the one of the classic alignment algorithms (e.g. edit-distance).
 
-\subsection{Longest common subsequence}
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/lcs-intuition.png}
+\caption{Example for building intuition}\label{lcs.intuition}
+\end{figure}
+
+This section starts with classic algorithm for calculating the longest common subsequence of the two sequences. From there the algorithm is gradually transformed into a form suitable for measuring similarity of large scale strings such as genomes.
+
+\subsection{LCS - Longest common subsequence}
 
 \subsubsection{Basic dynamic programming algorithm}
 
-Following an idea similar to the algorithm for calculating edit-distance described in (TODO:referenca na poglavlje), we state a recursive relation for calculating the longest common subsequence of the two strings $a$ and $b$, denoted by $lcs_{a,b}(|a|,|b|)$:
+Following an idea similar to the algorithm for calculating edit-distance described in \ref{edit.distance.algo}, this is a recursive relation for calculating the longest common subsequence of the two strings $a$ and $b$ denoted by $lcs_{a,b}(|a|,|b|)$:
 
 \begin{eqnarray}
 	\label{levenshtein}
@@ -282,11 +289,11 @@ Following an idea similar to the algorithm for calculating edit-distance describ
 							\right.
 \end{eqnarray}
 
-Time complexity of this algorithm there are $O(|a||b|)$, which is not acceptable on a genome scale, where lengths of the strings are often up to $10^6$-$10^9$.
+Time complexity of this algorithm there are $O(|a||b|)$, which is not acceptable on a genome scale, where lengths of the strings are often around $10^6$-$10^9$.
 
 \subsubsection{Reduction to longest increasing subsequence}
 
-The easy way to describe how longest commong subsequence problem can be reduced to calculating the longest increasing subsequence is through an example. Consider two strings given by the table (TODO: referencirati)
+The easy way to describe how longest common subsequence problem can be reduced to calculating the longest increasing subsequence is through an example. Consider two strings given by the table \ref{lcs.example}:
 
 \begin{table}[H]
   \centering
@@ -312,10 +319,10 @@ The easy way to describe how longest commong subsequence problem can be reduced 
     \end{tabular}
   }
 
-  \caption{Example strings}\label{indeks}
+  \caption{Example strings}\label{lcs.example}
 \end{table}
 
-For every pair of letters $(x,y)$ where $x$ is from $a$ and $y$ is from $b$ and $x=y$ pair of their indices $(i_{a,x}, i_{b,x})$ is recorded. For the example above the sequence of such pairs looks as in TODO: referenca na tablicu
+For every pair of letters $(x,y)$ where $x$ is from $a$ and $y$ is from $b$ and $x=y$ pair of their indices $(i_{a,x}, i_{b,x})$ is recorded. For the example above the sequence of such pairs looks as in \ref{lcs.indices}.
 
 \begin{table}[H]
   \centering
@@ -372,11 +379,10 @@ For every pair of letters $(x,y)$ where $x$ is from $a$ and $y$ is from $b$ and 
 \hline
 \end{tabular}}
   }
-  \caption{Longest increasing subsequence (LCS) setup}\label{indeks}
+  \caption{Longest increasing subsequence (LCS) setup}\label{lcs.indices}
 \end{table}
 
-After sorting the pairs in increasing order by the first member (breaking ties by the decreasing second member) the length of the longest increasing subsequence (LIS) of the second member is the length of the longest common subsequence of original strings $a$ and $b$. Let $n$ denote the number of elements in the indice index. It is possible to find the LIS in complexity of $O(n lg n)$. There is a remaining question on how large $n$ could be? Let $\alpha$ denote the alphabet size, $f_{a,i}$ the 
-frequency of $i$-th letter in the string $a$ and $f_{b,i}$ frequency of $i$-th letter in the string $b$. With $\sum\limits_{i=1}^{\alpha}f_{a,i}=|a|$ and $\sum\limits_{i=1}^{\alpha}f_{b,i}=|b|$ it holds	:
+After sorting the pairs in increasing order by the first member (breaking ties by the decreasing second member) the length of the longest increasing subsequence (LIS) of the second member is the length of the longest common subsequence of original strings $a$ and $b$. Let $n$ denote the number of elements in the indice index. It is possible to find the LIS in complexity of $O(n\ lg\ n)$\footnote{For the details of the algorithm consult the Appendix.}. There is a remaining question on how large $n$ could be? Let $\alpha$ denote the alphabet size, $f_{a,i}$ the frequency of $i$-th letter in the string $a$ and $f_{b,i}$ frequency of $i$-th letter in the string $b$. With $\sum\limits_{i=1}^{\alpha}f_{a,i}=|a|$ and $\sum\limits_{i=1}^{\alpha}f_{b,i}=|b|$ it holds:
 
 \begin{equation}
 	n = \sum\limits_{i=1}^{\alpha}f_{a,i}f_{b,i}
@@ -388,13 +394,33 @@ In the case of DNA alignment $\alpha=4$ which is small and direct application of
 
 \subsection{LISA-LIS}
 
-The approach for calculating LCS described in the previous section doesn't perform well with small alphabet size. Here it is described how to make a transformation of $a$ and $b$ so the described LCS algorithm can be used to get a good similarity metric. Let $a'$ denote the sequence in which $i$-th element equals to the hash of the kmer of length $k$ starting on position $i$ in string $a$. Similar sequence $b'$ is obtained from string $b$. If $k=20$ in the DNA alignment application, $\alpha=4^{20}$. That is a huge alphabet! Now it makes sense to use the previously described LCS algorithm on $a'$ and $b'$. Note that the algorithm doesn't compute the exact LCS between $a$ and $b$. It just gives a metric of similarity which turns out to perform well in determining the best candidate positions on the reference genome for placins the reads. The situation where this approach fails to reflect LCS of $a$ and $b$ is given by TODO: slika.
+The approach for calculating LCS described in the previous section doesn't perform well with small alphabet size. Here it is described how to make a transformation of $a$ and $b$ so the described LCS algorithm can be used to get a good similarity metric. Let $a'$ denote the sequence in which $i$-th element equals to the hash of the kmer of length $k$ starting on position $i$ in string $a$. Similar sequence $b'$ is obtained from string $b$. If $k=20$ in the DNA alignment application, $\alpha=4^{20}$. That is a huge alphabet! Now it makes sense to use the previously described LCS algorithm on $a'$ and $b'$. Note that the algorithm doesn't compute the exact LCS between $a$ and $b$. It just gives a metric of similarity which turns out to perform well in determining the best candidate positions on the reference genome for placing the reads. The situation where this approach fails to reflect LCS of $a$ and $b$ is given by \ref{lisalis.fail}.
 
-This might be patched by considering nonoverlaping kmers in $a$ and/or in $b$, instead the next section gives slightly generalized solution which reflects LCS of the two strings very well.
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+	a & ACGTCGA\\
+\hline
+	a' & ACG;CGT;GTC;TCG;CGA\\
+\hline
+	b & ACGGCGA\\
+\hline
+	b' & ACG;CGG;GGC;GCG;CGA\\
+\hline
+	c & ACGA\\
+\hline
+	c' & ACG;CGA\\
+\hline
+\end{tabular}
+\caption{Example of LISA-LIS failure (with $k=3$)}\label{lisalis.fail}
+\end{table}
+
+It can be noticed that $b$ is more similar to $a$ than $c$ is. The fact that $LCS(a,b)=6$ and $LCS(a,c)=4$ confirms it. However, when the strings are transformed it results in $LCS(a',b')=2$ and $LCS(a',c')=2$ which would imply that $b$ and $c$ are equally similar to $a$ which is obviously not the case. This might be patched by considering nonoverlaping kmers in $a$ and/or in $b$, instead the next section gives slightly generalized solution which reflects LCS of the two strings very well.
 
 \subsection{LISA-COV}
 
-This section presents an algorithm which solves the issue of scoring overlaping kmers in LISA-LIS. In the beginning of the section seemingly unrelated problem and its solution are presented. Afterwards, it is shown how to solve lcs by reducing it to the presented algorithm.
+This section presents an algorithm which solves the issue of scoring overlaping kmers in LISA-LIS. In the beginning of the section seemingly unrelated problem and its solution are presented. Afterwards, it is shown how to approximate LCS by reducing it to the presented algorithm.
 
 \subsubsection{Maximum increasing interval coverage (COV)}
 
@@ -409,26 +435,38 @@ Developed algorithms for solving COV are presented in the Appendix.
 
 In order to use the developed COV algorithms for solving LCS of the two strings $a$ and $b$, intervals for COV input have to be created. That is done as follows. For every kmer of $b$ starting at position $i$ all the positions where that kmer occurs in $a$ are listed. Let $\beta$ denote the number of such positions and $p_1,p_2,...,p_\beta$ denote the actual positions. Intervals $(p_1,p_1+k-1,i),(p_2,p_2+k-1,i)...(p_\beta, p_\beta+k-1,i)$ are added to the input set of intervals.\\
 \\
-Finding the LCS now comes down to applying COV algorithm on the created interval set. This won't find the exact value of LCS, but for long strings it approximates it well. Problematic situation happens when there is a kmer in $b$ which differs by at least 2 characters from every kmer in $a$.
+Finding the approximate LCS now comes down to applying COV algorithm on the created interval set. This won't find the exact value of LCS, but for long strings it approximates it well. Problematic situation happens when there is a kmer in $b$ which differs by at least 2 characters from every kmer in $a$.
 
 \subsection{Single alignment}
 
-When two DNA sequences are of similar lengths any of LISA-LIS or LISA-COV can be applied directly to measure the similarity of the two sequences. This is not convenient for the application of mapping the reads to the reference DNA as reads are much shorter than the reference. In the next section solution to this problem is described.
+When two DNA sequences are of similar lengths any of LISA-LIS or LISA-COV can be applied directly to measure the similarity of the two sequences. This is not convenient for the application of mapping the reads to the reference DNA as reads are much shorter than the reference.
 
 \subsection{Multiple alignment}
-In the previous section aligning sequences of similar lengths is described. Since the genome can be much larger than a read, direct application of LISA-LIS and LISA-COV algorithms would give poor performance. That is why a trick is used. Entire genome is divided into blocks of length closer to the read length. Width of the window is twice the read length. Distance between left borders of neighbouring windows is equal to the read length. This is demonstrated on TODO: referenca na sliku.\\
-\\
-When windows are set up in this way, either LISA-LIS or LISA-COV is run on every window for a read which is being solved. Since both algorithms have complexity of $O(n lg n)$ where $n$ is the number of relevant kmers for the strings and every kmer can be in at most two windows, the complexity stays the same. Furthemore, in this way multiple alignment in different genome regions is supported.
+In the previous section aligning sequences of similar lengths is described. Since the genome can be much larger than a read, direct application of LISA-LIS and LISA-COV algorithms would give poor performance. That is why a trick is used. Entire genome is divided into blocks of length closer to the read length. Width of the window is twice the read length. Distance between left borders of neighbouring windows is equal to the read length. This is demonstrated on \ref{windowed.alignment}	.\\
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/windowed-alignment.pdf}
+\caption{Windowed alignment}\label{windowed.alignment}
+\end{figure}
+
+When windows are set up in this way, either LISA-LIS or LISA-COV is run on every window for a read which is being solved. Since both algorithms have complexity of $O(n\ lg\ n)$ where $n$ is the number of relevant kmers for the strings and every kmer can be in at most two windows, the complexity stays the same. Furthemore, in this way multiple alignment in different genome regions is supported.
 
 \section{Implementation}
 
-LISA is developed in C++ (due to efficiency requirements and large inputs\footnote{For example, an online competition proposed on \emph{https://www.innocentive.com/ar/challenge/9933138}) had a requirement to support input database which is 45 Gb in size.}. Entire implementation is documented well in the code, but a brief overview is given here. The codebase consists of two main parts:
+LISA is developed in C++ (due to efficiency requirements and large inputs\footnote{For example, an online competition proposed on \emph{https://www.innocentive.com/ar/challenge/9933138}) had a requirement to support input database which is 45 Gb in size.}. Entire implementation is documented in the code, but a brief overview is given here. The codebase consists of two main parts:
 \begin{itemize}
 \item Creation if the index
 \item Aligning the reads to the reference genome
 \end{itemize}
 This architecture is used as creating the index might be a time consuming operation so it is good to create it once. Afterward it can be used multiple times for doing the alignment - it is simply read from the disk.\\
-TODO: slika arhitekture\\
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{../img/components.png}
+\caption{LISA architecture}\label{components}
+\end{figure}
+
 Succeeding sections give a detailed overview of the main components.
 
 \subsection{Creating the index}
@@ -448,13 +486,13 @@ Sorting is the bottleneck of creating the index. In order to efficiently create 
 
 \subsection{Mapping the reads}
 
-Index is read from disk block by block and reads are aligned to every block, keeping track of the best alignments for every read. In the current version, it is assumed that all the reads fit into memory. If it is show neccessary, reads can be processed block by block. For the utilization of multicore processors, mapping the reads is parallelized with one core processing one read. Parallelization mechanism is done using simple \emph{ThreadPool}, taken over from TODO: referenca\\
+Index is read from disk block by block and reads are aligned to every block, keeping track of the best alignments for every read. In the current version, it is assumed that all the reads fit into memory. If it is show neccessary, reads can be processed block by block. For the utilization of multicore processors, mapping the reads is parallelized with one core processing one read. Parallelization mechanism is done using simple \emph{ThreadPool}, taken over from \cite{thread.pool}.\\
 \\
-When multiple computers are available, it is possible to utilize them since a mechanism for distributing the computation on multiple computers is implemented using the OpenMPI (TODO: referenca) library. In this scenario, it is assumed that all the input and output file share the path to the same NFS\footnote{network file system} location. Index is read by all the machines, while reads are divided fairly between different computers. On every machine, reads are still parallelized on different cores.
+When multiple computers are available, it is possible to utilize them since a mechanism for distributing the computation on multiple computers is implemented using the OpenMPI \cite{gabriel04:_open_mpi} library. In this scenario, it is assumed that all the input and output file share the path to the same NFS\footnote{network file system} location. Index is read by all the machines, while reads are divided fairly between different computers. On every machine, reads are still parallelized on different cores.
 
 \section{Installation}
 
-LISA is made for Linux operating system. In order to build LISA there are several dependancies which have to be resolved. C++ compiler supporting the recent C++0x/C++11 standard is needed (during the creation of this Thesis g++ 4.7 has been used). Additionally, gflags >=2.0 and OpenMPI >=1.4.5 library are needed.
+LISA is made for Linux operating system. In order to build LISA there are several dependancies which have to be resolved. C++ compiler supporting the recent C++0x/C++11 standard is needed (during the creation of this Thesis g++ 4.7 has been used). Additionally, gflags >=2.0\cite{gflags} and OpenMPI >=1.4.5 library are needed.
 
 \subsubsection{Installing gflags, with root privilegies}
 
@@ -524,7 +562,7 @@ It is assumed that <database>, <index>, <reads> and <result> are stored on the N
 
 \chapter{Results}
 \section{Overview}
-This section gives time performance and accuracy analysis of LISA. From genomes of several species (precisely: \emph{Yersinia Pestis}, banana and a chicken), sets of single end reads are created using the \emph{wgsim} read simulator. Time needed for solving sets and performance are compared with BWA-SW, BWA-MEM \cite{Li:2010:FAL:1741823.1741825}, SNAP and SeqAlto.\\
+This section gives time performance and accuracy analysis of LISA. From genomes of several species (precisely: \emph{Yersinia Pestis}, banana and a chicken), sets of single end reads are created using the \emph{wgsim}\cite{wgsim} read simulator. Time needed for solving sets and performance are compared with BWA-SW, BWA-MEM \cite{Li:2010:FAL:1741823.1741825}, SNAP and SeqAlto.\\
 \\
 Every test set consists of 100000 single end reads created using a \emph{wgsim} read simulator. That tool is used as it is widely accepted as a benchmarking tool. All its parameters are set to default, except for the \emph{base error rate} which is set to 0.02, 0.05 and 0.10 in three separate trials.\\
 \\
@@ -629,7 +667,7 @@ Yersinia Pestis\footnote{bacteria which causes the plague} has a genome which is
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.65\textwidth]{../img/banana.jpg}
-\caption{A banana}\label{banana}
+\caption{A banana\cite{banana.img}}\label{banana}
 \end{figure}
 
 Banana (\emph{Musa Acuminata}) has a genome which consists of 11 chromosomes, with total length around 322M bases. Tests are conducted with read lengths 100-2000. With bigger genome, LISA takes more computation time. Accuracy remains satisfiable, as shown in the tables.
@@ -717,7 +755,7 @@ Banana (\emph{Musa Acuminata}) has a genome which consists of 11 chromosomes, wi
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{../img/Day_old_chick_black_background.jpg}
-\caption{A chicken}\label{banana}
+\caption{A chicken\cite{chicken.img}}\label{banana}
 \end{figure}
 
 Total length of all the chromosomes in the genome of a chicken (\emph{Gallus Gallus Domesticus}) is around 892M bases. Tests are conducted with read lengths 100-2000. With bigger genome, LISA takes more computation time. Accuracy remains satisfiable, as shown in the tables.
@@ -827,7 +865,11 @@ LISA & client solve genom.fasta index ocitanja.fq /dev/null\\
 
 
 \chapter{Conclusion}
-Zaključak.
+\section {Discussion}
+This work started off with the goal of finding an algorithm for placing the long reads on the reference genom. A hypothesis has been made that for long reads exact matches carry the main information. Two algorithms for finding the candidate positions, LISA-LIS and LISA-COV have been developed. Through simulations they have shown satisfying accuracy for various error rates, confirming that the real read placement is amoung the top few with the best exact match score. Through experiments very good performance is noticed for shorter genomes, where LISA performs very good, beating majority of other mappers which were tested. As the length of the genome increases, LISA starts losing the race. It is suspected that this happens due to nonoptimal implementation of the described algorithms, which is in a way good news because there is room for improvement.
+
+\section {Future work}
+There is a lot of potential work on LISA. For start, the current implementation should be revised and optimized, both the index and the mapping part. Another thing that could be investigated is removing some kmers from the reference. Since edit-distance is used on surviving candidates, that might be justified thing to do which could save both CPU and memory.
 
 \chapter{Appendix}
 
@@ -890,26 +932,105 @@ void calcLongestIncreasingSubsequence(
 \end{lstlisting}
 \end{algorithm}
 
+\pagebreak
+
 \section{COV - Maximum increasing interval coverage}
+
+\emph{Problem description: } Given a list of $n$ intervals described by their left border $l_i$, right border $r_i$ and a \emph{magic} number associated with every interval $m_i$ it is neccessary to find maximum \emph{coverage} of the x-axis, as defined in the succeeding text.\\
+\\
+\emph{Definition: } Interval $j$ is continuation of the interval $i$ iff $m_i<m_j$ and $l_i <= l_j$.\\
+\\
+\emph{Definition: } Increasing interval coverage is the sequence of intervals where for $i<j$, interval $j$ is a continuation of the interval $i$.\\
+\\
+\emph{Definition: } Maximum increasing interval coverage (COV) is the increasing interval coverage for which the union of intervals is maximum possible.\\
+\\
+The attached codes are self describing and provide an insight into an $O(n^2)$ algorithm for solving COV. It is worth noting that a sweepline algorithm with $O(n\ lg\ n)$ complexity can be designed to solve COV. For brevity the details are ommited from the Thesis text, but its implementation is attached with the attached materials.\\
+
+\begin{algorithm}[H]
+\begin{lstlisting}
+struct Interval {
+  int left, right, value;
+  Interval(int left, int right, int value) :
+    left(left), right(right), value(value) {}
+};
+
+struct CovCmp {
+  bool operator () (const Interval& a, const Interval& b) const {
+    return a.left < b.left;
+  }
+};
+\end{lstlisting}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\begin{lstlisting}
+void cov(vector<Interval>* resultCoverage,
+               int* result,
+               vector<Interval> intervals) {
+  sort(intervals.begin(), intervals.end(), CovCmp());
+
+  int n = intervals.size();
+  vector<int> dp(n);
+  vector<int> dpRecon(n, -1);
+
+  *result = 0;
+  int endIndex = -1;
+
+  for (int i = 0; i < n; ++i) {
+    const Interval& curr = intervals[i];
+    dp[i] = curr.right - curr.left + 1;
+
+    for (int j = i-1; j >= 0; --j) {
+      const Interval& prev = intervals[j];
+
+      if (prev.value < curr.value) {
+        int extend = 0;
+        if (prev.right < curr.left) {
+          extend = dp[j] + curr.right - curr.left + 1;
+        } else if (curr.right >= prev.right) {
+          extend = dp[j] + curr.right - prev.right;
+        }
+        if (extend > dp[i]) {
+          dp[i] = extend;
+          dpRecon[i] = j;
+        }
+      }
+    }
+
+    if (dp[i] > *result) {
+      *result = dp[i];
+      endIndex = i;
+    }
+  }
+
+  if (resultCoverage != NULL) {
+    reconstruct(resultCoverage, dpRecon, endIndex, intervals);
+  }
+}
+
+
+\end{lstlisting}
+\end{algorithm}
 
 \nocite{Pabinger21012013}
 \nocite{Johnson:2008:BAU:1593105.1593117}
+\nocite{matplotlib}
 
 \bibliography{literatura}
 \bibliographystyle{plain}
 
 \begin{sazetak}
-Sažetak na hrvatskom jeziku.
+DNA is a structure which encodes all of the living world. Better understanding of it's particular section could lead to detection and curing of many diseases. DNA sequencing machines are getting better every day and producing
+big amounts of ever longer reads. Locating these reads inside a reference genome is a fundemental open problem in bioinformatics. This Thesis presents two algorithms for finding candidate positions for placing the reads on the reference genome. Both algorithms are inspired by an efficient algorithm for finding longest increasing subsequence of sequence of numbers. Detailed analysis and comparison with state-of-the-art tools is given.
 
-\kljucnerijeci{Ključne riječi, odvojene zarezima.}
+\kljucnerijeci{DNA alignment, bioinformatics, algorithms, hash, LISA, longest increasing subsequence, maximum increasing interval coverage}
 \end{sazetak}
 
-% TODO: Navedite naslov na engleskom jeziku.
-\engtitle{Title}
+\engtitle{Alat za poravnanje duga\v{c}kih o\v{c}itanja}
 \begin{abstract}
-Abstract.
+DNA je struktura koja kodira živi svijet. Bolje razumijevanje funkcija pojedinih dijelova može dovesti do pravovremene detekcije i liječenja mnogih bolesti. Strojevi za očitanje DNA iz dana u dan napreduju i proizvode velike količine sve duljih očitanja. Lociranje očitanja unutar referentnog genoma jedan je od temeljnih otvorenih problema u bioinformatici. U ovom radu razvijena su dva algoritma za tra\v{z}enje kandidatnih pozicija smje\v{s}tanja o\v{c}itanja na referentni genom. Oba algoritma su motivirana efikasnim algoritmom tra\v{z}enja najduljeg rastu\'{c}eg podniza niza brojeva. Napravljena je usporedba točnosti i brzine s trenutno najefikasnijim i najpopularnijim alatima.
 
-\keywords{Keywords.}
+\keywords{poravnavanje DNA, bioinformatika, algoritmi, hash, LISA, najdulji rastući podniz, najve\'{c}a pokrivenost uzlaznim intervalima}
 \end{abstract}
 
 \end{document}

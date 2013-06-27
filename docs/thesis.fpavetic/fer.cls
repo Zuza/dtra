@@ -341,7 +341,7 @@
 \begin{center}
   {\bf \@title}
 \end{center}
-\hspace*{\fill} {\bf Sa\v{z}etak} \hspace*{\fill} \par
+\hspace*{\fill} {\bf Abstract} \hspace*{\fill} \par
 \vspace*{25pt}
 }
 {
@@ -352,14 +352,14 @@
 \newcommand{\kljucnerijeci}[1]
 {
 \vspace{15pt}
-\noindent \textbf{Klju\v{c}ne rije\v{c}i:} #1
+\noindent \textbf{Keywords:} #1
 }
 
 % Ključne riječi na engleskom
 \newcommand{\keywords}[1]
 {
 \vspace{15pt}
-\noindent \textbf{Keywords:} #1
+\noindent \textbf{Klju\v{c}ne rije\v{c}i:} #1
 }
 
 % Sažetak na engleskom
@@ -373,7 +373,7 @@ Koristi \noexpand\engtitle za definiranje}}
 \begin{center}
   {\bf \@engtitle}
 \end{center}
-\hspace*{\fill} {\bf Abstract} \hspace*{\fill} \par
+\hspace*{\fill} {\bf Sa\v{z}etak} \hspace*{\fill} \par
 \vspace*{25pt}
 }
 {
