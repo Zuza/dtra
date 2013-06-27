@@ -77,24 +77,24 @@ This chapter is intended to give a short introduction to genetics. There exist m
 \emph{Genetics} is a field of science which studies \emph{genes}. Genes are the carrier of biological information in the living organisms. They are responsible for inheritance of features from organisms to their offsprings. Aside from carrying that hereditary information, the role of genes inside a cell of an organism is to dictate production of molecules called \emph{proteins}. If we think of a gene as a part of the cell which commands what to do, protein is the part which does the job. Each type of protein is specialized for a particular job, such as catalyzing metabolic reactions, replicating  DNA or transporting molecules from one place to another.
 \\
 \\
-Protein is structured as a chain of twenty different kinds of molecules called \emph{amino-acids}. Interaction between those molecules causes the protein to fold into a compact shape (Figure \ref{myoglobin}). Shape and sequence of amino-acids determine what a protein does. For example, protein can match the shape of another molecule, which would allow the protein to bind around that molecule and transport it.
+Protein is structured as a chain of twenty different kinds of molecules called \emph{amino-acids}. Interaction between those molecules causes the protein to fold into a compact shape (Figure \ref{myoglobin}). Shape and sequence of amino-acids\footnote{Amino-acids in the chain are called residues.} determine what a protein does. For example, protein can match the shape of another molecule, which would allow the protein to bind around that molecule and transport it.
 
 \begin{figure}[!ht]
 \begin{center}
 	\includegraphics[width=0.7\textwidth]{../img/Myoglobin.png}
-	\caption{3D structure of Myoglobin protein (http://en.wikipedia.org/wiki/Myoglobin, June 11th 2013)}\label{myoglobin}
+	\caption{3D structure of Myoglobin protein\protect\cite{myoglobin.img}}\label{myoglobin}
 \end{center}
 \end{figure}
 
 \subsection{From genes to proteins}
 
-\emph{DNA (deoxyribonucleid acid)} is a long molecule which encodes genetic instructions in living organisms. That molecule consists of two interconnected chains (\emph{strands}) which are consisted of alternating sugar and phosphate groups with one of four kind of \emph{nucleobases} attached to the sugars. Nucleobases found in the DNA are: guanine, adenine, thymine and cytosine encoded using letters G, A, T and C respectively. Bases on the two strands are always paired: next to adenine on one strand there is always thymine on the other. Next to guanine there is always cytosine. Due to their chemical composition, strands have directionality. Ends of strands are denoted by 5' and 3'. Those numbers refer to the orientation of fifth and third carbon atom sugar molecules are facing. Many processes involving DNA are directed (for example, replication occurs only in 5'-3' direction). Total DNA of an organism is packed inside of one or more structures called \emph{chromosomes}. Genes are only special segments of DNA which encode instruction for protein production. Set of all genes in an organism is called the \emph{genome}.
+\emph{DNA (deoxyribonucleid acid)} is a long molecule which encodes genetic instructions in living organisms. That molecule consists of two interconnected chains (\emph{strands}) which are consisted of alternating sugar and phosphate groups with one of four kind of \emph{nucleobases} attached to the sugars. Nucleobases found in the DNA are: guanine, adenine, thymine and cytosine encoded using letters G, A, T and C respectively. Bases on the two strands are always paired: next to adenine on one strand there is always thymine on the other. Opposite to guanine there is always cytosine. Due to their chemical composition, strands have directionality. Ends of strands are denoted by 5' and 3'. Those numbers refer to the orientation of fifth and third carbon atom sugar molecules are facing. Many processes involving DNA are directed (for example, replication occurs only in 5'-3' direction). Total DNA of an organism is packed inside of one or more structures called \emph{chromosomes}. Genes are only special segments of DNA which encode instruction for protein production. Set of all genes in an organism is called the \emph{genome}.
 \\
 
 \begin{figure}[!ht]
 \begin{center}
 	\includegraphics[width=0.5\textwidth]{../img/DNA_chemical_structure.pdf}
-	\caption{DNA chemical structure (http://en.wikipedia.org/wiki/Genes, June 11th 2013), Madeleine Price Ball}\label{dna.chemical.structure}
+	\caption{DNA chemical structure\protect\cite{dna.chemical.structure.img}}\label{dna.chemical.structure}
 \end{center}
 \end{figure}
 
@@ -104,7 +104,7 @@ Process of protein production contains several steps. First, cell reads a gene a
 \begin{figure}[!ht]
 \begin{center}
 	\includegraphics[width=0.7\textwidth]{../img/Genetic_code.pdf}
-	\caption{DNA chemical structure (http://en.wikipedia.org/wiki/Introduction\_to\_genetics, June 11th 2013), Madeleine Price Ball}\label{genetic.code}
+	\caption{DNA transcription and translation\cite{dna.transcription.translation.img}}\label{genetic.code}
 \end{center}
 \end{figure}
 
@@ -112,18 +112,18 @@ Transcription step is conceptually straight forward - one of the strands of DNA 
 
 \section{Shotgun DNA sequencing}
 
-Shotgun sequencing is a method of determining the order of nucleotides in long DNA strands. Current technologies allow efficients sequencing of fairly short strands (100 to 1000 basepairs). That is why a long strand is copied several times and each clone broken at random places into \emph{fragments}. This process inspired the name of the method since it imitates random firing pattern of an actual shotgun. Due to loss of precision not entire fragments are actually read. In the case of \emph{single} end sequencing some number of bases from one end of the fragment is read whereas in the case of \emph{paired} end sequencing both ends are read simultaneously, keeping track of distance between them and their orientation. After DNA reads of an organism have been accumulated\footnote{One accepted way is to produce one or two files in the FASTQ format, depending on whether it is a single or paired end sequencing involved.}, DNA is then assembled with the help of computers. 
+Shotgun sequencing is a method of determining the order of nucleotides in a DNA strand. Current technologies allow efficients sequencing of fairly short strands (100 to 1000 basepairs). That is why a long strand is copied several times and each clone broken at random places into \emph{fragments}. This process inspired the name of the method since it imitates random firing pattern of an actual shotgun. Due to loss of precision not entire fragments are actually read. In the case of \emph{single} end sequencing some number of bases from one end of the fragment is read whereas in the case of \emph{paired} end sequencing both ends are read simultaneously, keeping track of distance between them and their orientation. After DNA reads of an organism have been accumulated\footnote{One accepted way is to produce one or two files in the FASTQ format, depending on whether it is a single or paired end sequencing involved.}, DNA is then assembled with the help of computers. 
 
 \begin{figure}[!ht]
 \begin{center}
 	\includegraphics[width=0.85\textwidth]{../img/Whole_genome_shotgun_sequencing.png}
-	\caption{Whole genome shotgun sequencing}\label{shotgun.sequencing}
+	\caption{Whole genome shotgun sequencing\cite{shotgun.sequencing.img}}\label{shotgun.sequencing}
 \end{center}
 \end{figure}
 
 \section{Alignment algorithms}
 
-One of the fundamental problems of finding good overlap between reads or aligning them to a reference genome is that the matchings we are looking for need not to be perfect. This is a consequence of errors which are introduced to the reads, either by the sequencing process or by mutations. In order to deal with that, algorithms such as Smith-Waterman, Needleman-Wunsch and Levenshtein distance have been developed (TODO: referencirati). In the succeeding section algorithm for calculating the Levenshtein distance is described. The section will introduce the basic concept on top of the other mentioned algorithms are built as well.
+One of the fundamental problems of finding good overlap between reads or aligning them to a reference genome is that the matchings we are looking for need not to be perfect. This is a consequence of errors which are introduced to the reads, either by the sequencing process or by mutations. In order to deal with that, algorithms such as Smith-Waterman\cite{Smith1981195}, Needleman-Wunsch\cite{nw}  and Levenshtein distance\cite{edit.distance.tutorial} have been developed. In the succeeding section algorithm for calculating the Levenshtein distance is described. The section will introduce the basic concept on top of the other mentioned algorithms are built as well.
 
 \subsection{Edit (Levenshtein) distance}
 
@@ -188,7 +188,7 @@ The simplest way to do the calculation is to fill out a table like this:
 \end{table}
 
 \subsubsection{Complexity}
-Direct implementation of the above calculation is proportional with lengths of both input string. More precisely, there are $O(|a||b|)$ operations needed (and the same ammount of memory). If assumption that a distance between $a$ and $b$ does not exceed $k$ is fullfilled, it is enough only to fill diagonal stripe of width $2k+1$ in the matrix. Using that observation complexity is reduced to $O(k*min(|a|,|b|))$. In practice, this implementation is shown to be very usefull (for example, SNAP (TODO: citiraj)
+Direct implementation of the above calculation is proportional with lengths of both input string. More precisely, there are $O(|a||b|)$ operations needed (and the same ammount of memory). If assumption that a distance between $a$ and $b$ does not exceed $k$ is fullfilled, it is enough only to fill diagonal stripe of width $2k+1$ in the matrix. Using that observation complexity is reduced to $O(k*min(|a|,|b|))$. In practice, this implementation is shown to be very usefull (for example, SNAP\cite{SNAP})
 
 
 \chapter{LISA - Longest Increasing Subsequence Aligner}
