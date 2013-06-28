@@ -58,7 +58,7 @@ Hvala roditeljima za sve. Bez vas mnogo toga bi bilo mnogo teže.}
 
 Through the past few years, DNA sequencing methods have advanced significantly. Massively parallel sequencing methods have become very common in biological research, resulting in very broad applications, for example in infectious disease or cancer research. Due to decreasing cost and increasing usage large ammounts of data are gathered through various experiments.\\
 \\
-Resequencing a human genome cost several billion dollars at the turn of the millennium, reduced to \$10,000 at the start of 2011. By year's end, the equivalent genome is projected to cost only \$2,000\cite{SNAP}. This is a consequence of intensive labor and research done by scientists all over the world. All the parts in the genome analyzing pipeline are advancing fast. Popular analysis of the human genome consists of reading the DNA pieces - \emph{reads} - of a person with a sequencing machine and comparing the reads with the reference human genome which has been previously reliably assembled. This is a computationally very intensive task. Currently, most popular sequencing machines produce reads of length up to several thousands and many algorithms have been developed to handle this kind of data. However, sequencing methods are improving their speed, read length and accuracy. With the increasing length of the read on the output of the sequencing machines there is a need for new algorithms which could manage the new data. This Thesis addresses that need and gives some ideas on what to do. Alignment tool named LISA is developed which implements the novel concepts discussed throughout the Thesis.\\
+Resequencing a human genome cost several billion dollars at the turn of the millennium, reduced to \$10,000 at the start of 2011. By year's end, the equivalent genome is projected to cost only \$2,000\cite{SNAP}. This is a consequence of intensive labor and research done by scientists all over the world. All the parts in the genome analysis pipeline are advancing fast. Popular analysis of the human genome consists of reading the DNA pieces - \emph{reads} - of a person with a sequencing machine and comparing the reads with the reference human genome which has been previously reliably assembled. This is a computationally very intensive task. Currently, most popular sequencing machines produce reads of length up to several thousands and many algorithms have been developed to handle this kind of data. However, sequencing methods are improving their speed, read length and accuracy. With the increasing length of the read on the output of the sequencing machines there is a need for innovative algorithms which could manage the new data. This Thesis addresses that need. Alignment tool named LISA is developed which implements the novel concepts described by this work.\\
 \\
 Chapter 2 gives an introductory tutorial to genetics and bioinformatics algorithms.\\
 Chapter 3 gives descriptions of the concepts used in LISA and implementation details.\\
@@ -69,12 +69,12 @@ Chapter 4 contains results of the simulations and comparison with some of the ex
 From algorithmic point of view, aligning reads to a reference genome comes down to string pattern matching. When looked that way, one does not have to know a lot of biology background in order to understand how the existing alignment systems work. However, to understand a wider picture it is useful to know some basic genetics. 
 \\
 \\
-This chapter is intended to give a short introduction to genetics. There exist many resources which cover this topic in far more depth\cite{griffiths}\cite{brown}. Additionaly, terminology used through rest of the Thesis is introduced. In the end of the chapter, basic alignment algorithms are discussed in details.
+This chapter is intended to give a short introduction to genetics. There exist many resources which cover this topic in far more depth\cite{griffiths,brown}. Additionaly, terminology used through rest of the Thesis is introduced. In the end of the chapter, basic alignment algorithms are discussed in details.
 
 \section{Genetics}
 \subsection{Overview}
 
-\emph{Genetics} is a field of science which studies \emph{genes}. Genes are the carrier of biological information in the living organisms. They are responsible for inheritance of features from organisms to their offsprings. Aside from carrying that hereditary information, the role of genes inside a cell of an organism is to dictate production of molecules called \emph{proteins}. If we think of a gene as a part of the cell which commands what to do, protein is the part which does the job. Each type of protein is specialized for a particular job, such as catalyzing metabolic reactions, replicating  DNA or transporting molecules from one place to another.
+\emph{Genetics} is a field of science which studies \emph{genes} and inheritance. Genes are the carrier of biological information in the living organisms. They are responsible for inheritance of features from organisms to their offsprings. Aside from carrying that hereditary information, the role of genes inside a cell of an organism is to dictate production of molecules called \emph{proteins}. If we think of a gene as a part of the cell which commands what to do, protein is the part which does the job. Each type of protein is specialized for a particular job, such as catalyzing metabolic reactions, replicating  DNA or transporting molecules from one place to another.
 \\
 \\
 Protein is structured as a chain of twenty different kinds of molecules called \emph{amino-acids}. Interaction between those molecules causes the protein to fold into a compact shape (Figure \ref{myoglobin}). Shape and sequence of amino-acids\footnote{Amino-acids in the chain are called residues.} determine what a protein does. For example, protein can match the shape of another molecule, which would allow the protein to bind around that molecule and transport it.
@@ -123,7 +123,7 @@ Shotgun sequencing is a method of determining the order of nucleotides in a DNA 
 
 \section{Alignment algorithms}
 
-One of the fundamental problems of finding good overlap between reads or aligning them to a reference genome is that the matchings we are looking for need not to be perfect. This is a consequence of errors which are introduced to the reads, either by the sequencing process or by mutations. In order to deal with that, algorithms such as Smith-Waterman\cite{Smith1981195}, Needleman-Wunsch\cite{nw}  and Levenshtein distance\cite{edit.distance.tutorial} have been developed. In the succeeding section algorithm for calculating the Levenshtein distance is described. The section will introduce the basic concept on top of the other mentioned algorithms are built as well.
+One of the fundamental problems of finding good overlap between reads or aligning them to a reference genome is that the matchings we are looking for need not to be perfect. This is a consequence of errors which are introduced to the reads, either by the sequencing process or by mutations. In order to deal with that, concepts such as Smith-Waterman\cite{Smith1981195}, Needleman-Wunsch\cite{nw}  and Levenshtein distance\cite{edit.distance.tutorial} have been developed. In the succeeding section algorithm for calculating the Levenshtein distance is described. The section will introduce the basic concept on top of the other mentioned algorithms are built as well.
 
 \subsection{Edit (Levenshtein) distance}
 \label{edit.distance.algo}
@@ -202,7 +202,7 @@ Many modern mappers (such as SNAP\cite{SNAP} and SeqAlto\cite{seqalto}) are foll
 \\
 Existing mappers perform well when the length of the reads and sequencing error rate are small. When we increase any of those values, troubles arise. The main reason for low time efficiency on longer and less accurate reads is that algorithms such as edit-distance and Needleman-Wunsch have time complexities proportional both to length of the input and the error inside it. Hence, increasing any of them requires more computing.\\
 \\
-LISA\footnote{Longest Increasing Subsequence Aligner} is a mapper built on the following assumption: for long reads, the exact matches are the dominant characteristic of the alignment. More precisely, if only exact matches are rewarded, ignoring substitutions and gaps, the correct alignment should come up in the alignments within $X\%$\footnote{In LISA, default value of $X$ is 20.} of the best alignment score. When the candidates have been reduced to such list, a classic alignment algorithm can be used to evaluate them and find the real best alignment. This results in a time efficient and precise algorithms for aligning the reads, which is great since the lengths of reads are increasing through time.
+LISA\footnote{Longest Increasing Subsequence Aligner} is a mapper built on the following assumption: for long reads, the exact matches are the dominant characteristic of the alignment. More precisely, if only exact matches are rewarded, ignoring substitutions and gaps, the correct alignment should come up in the alignments within $X$ percent of the best alignment score value\footnote{In LISA, default value of $X$ is 20.}. When the candidates have been reduced to such list, a classic alignment algorithm can be used to evaluate them and find the real best alignment. This results in a time efficient and precise algorithms for aligning the reads, which is great since the lengths of reads are increasing through time.
 
 \section{Index}
 
@@ -425,9 +425,9 @@ This section presents an algorithm which solves the issue of scoring overlaping 
 \subsubsection{Maximum increasing interval coverage (COV)}
 
 \emph{Problem description: } Given a list of $n$ intervals described by their left border $l_i$, right border $r_i$ and a \emph{magic} number associated with every interval $m_i$ it is neccessary to find maximum \emph{coverage}\footnote{abbreviated by COV} of the x-axis, as defined in the succeeding text.\\
-\emph{Definition: } Interval $j$ is continuation of the interval $i$ iff $m_i<m_j$ and $l_i <= l_j$.\\
-\emph{Definition: } Increasing interval coverage is the sequence of intervals where for $i<j$, interval $j$ is a continuation of the interval $i$.\\
-\emph{Definition: } Maximum increasing interval coverage (COV) is the increasing interval coverage for which the union of intervals is maximum possible.\\
+\emph{Definition 1: } Interval $j$ is continuation of the interval $i$ iff $m_i<m_j$ and $l_i <= l_j$.\\
+\emph{Definition 2: } Increasing interval coverage is the sequence of intervals where for $i<j$, interval $j$ is a continuation of the interval $i$.\\
+\emph{Definition 3: } Maximum increasing interval coverage (COV) is the increasing interval coverage for which the union of intervals is maximum possible.\\
 \\
 Developed algorithms for solving COV are presented in the Appendix.
 
@@ -447,7 +447,7 @@ In the previous section aligning sequences of similar lengths is described. Sinc
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{../img/windowed-alignment.pdf}
-\caption{Windowed alignment}\label{windowed.alignment}
+\caption{Lines of different colors represent the borders of whe windows on which reads are aligned using LISA-LIS or LISA-COV.}\label{windowed.alignment}
 \end{figure}
 
 When windows are set up in this way, either LISA-LIS or LISA-COV is run on every window for a read which is being solved. Since both algorithms have complexity of $O(n\ lg\ n)$ where $n$ is the number of relevant kmers for the strings and every kmer can be in at most two windows, the complexity stays the same. Furthemore, in this way multiple alignment in different genome regions is supported.
@@ -456,7 +456,7 @@ When windows are set up in this way, either LISA-LIS or LISA-COV is run on every
 
 LISA is developed in C++ (due to efficiency requirements and large inputs\footnote{For example, an online competition proposed on \emph{https://www.innocentive.com/ar/challenge/9933138}) had a requirement to support input database which is 45 Gb in size.}. Entire implementation is documented in the code, but a brief overview is given here. The codebase consists of two main parts:
 \begin{itemize}
-\item Creation if the index
+\item Creation of the index
 \item Aligning the reads to the reference genome
 \end{itemize}
 This architecture is used as creating the index might be a time consuming operation so it is good to create it once. Afterward it can be used multiple times for doing the alignment - it is simply read from the disk.\\
@@ -482,7 +482,7 @@ Since the volume of the input database can be very large, the input is divided i
   };
 \end{lstlisting}
 
-Sorting is the bottleneck of creating the index. In order to efficiently create the sorted array, parallel stable sort implemented in OpenMP library (version 1.3) is used. 
+Sorting is the bottleneck of creating the index. In order to efficiently create the sorted array, parallel stable sort is used. 
 
 \subsection{Mapping the reads}
 
@@ -562,11 +562,11 @@ It is assumed that <database>, <index>, <reads> and <result> are stored on the N
 
 \chapter{Results}
 \section{Overview}
-This section gives time performance and accuracy analysis of LISA. From genomes of several species (precisely: \emph{Yersinia Pestis}, banana and a chicken), sets of single end reads are created using the \emph{wgsim}\cite{wgsim} read simulator. Time needed for solving sets and performance are compared with BWA-SW, BWA-MEM \cite{Li:2010:FAL:1741823.1741825}, SNAP and SeqAlto.\\
+This section gives time performance and accuracy analysis of LISA. From genomes of several species (precisely: \emph{Yersinia Pestis}, banana and a chicken), sets of single end reads are created using the \emph{wgsim}\cite{wgsim} read simulator. Time needed for solving sets and performance are compared with BWA-SW, BWA-MEM \cite{Li:2010:FAL:1741823.1741825}, SNAP, Bowtie2\cite{langmeadfast2012} and SeqAlto.\\
 \\
 Every test set consists of 100000 single end reads created using a \emph{wgsim} read simulator. That tool is used as it is widely accepted as a benchmarking tool. All its parameters are set to default, except for the \emph{base error rate} which is set to 0.02, 0.05 and 0.10 in three separate trials.\\
 \\
-Conducted trials were made on a computer with 192Gb of RAM and 12 core Intel(R) Xeon(R) CPU E5645 @ 2.40 GHz.
+Conducted trials were made on a computer with 192Gb of RAM and 2x6 core Intel(R) Xeon(R) CPU E5645 @ 2.40 GHz.
 
 %\pagebreak
 
@@ -878,7 +878,7 @@ LISA & client solve genom.fasta index ocitanja.fq /dev/null\\
 
 \chapter{Conclusion}
 \section {Discussion}
-This work started off with the goal of finding an algorithm for placing the long reads on the reference genom. A hypothesis has been made that for long reads exact matches carry the main information. Two algorithms for finding the candidate positions, LISA-LIS and LISA-COV have been developed. Through simulations they have shown satisfying accuracy for various error rates, confirming that the real read placement is amoung the top few with the best exact match score. Through experiments very good performance is noticed for shorter genomes, where LISA performs very good, beating majority of other mappers which were tested. As the length of the genome increases, LISA starts losing the race. It is suspected that this happens due to nonoptimal implementation of the described algorithms, which is in a way good news because there is room for improvement.
+This work started off with the goal of finding an algorithm for placing the long reads on the reference genome. A hypothesis has been made that for long reads exact matches carry the main information. Two algorithms for finding the candidate positions, LISA-LIS and LISA-COV have been developed. Through simulations they have shown satisfying accuracy for various error rates, confirming that the real read placement is amoung the top few with the best exact match score. Through experiments very good performance is noticed for shorter genomes, where LISA performs very good, beating majority of other mappers which were tested. As the length of the genome increases, LISA starts losing the race. It is suspected that this happens due to nonoptimal implementation of the described algorithms, which is in a way good news because there is room for improvement.
 
 \section {Future work}
 There is a lot of potential work on LISA. For start, the current implementation should be revised and optimized, both the index and the mapping part. Another thing that could be investigated is removing some kmers from the reference. Since edit-distance is used on surviving candidates, that might be justified thing to do which could save both CPU and memory.
@@ -886,7 +886,7 @@ There is a lot of potential work on LISA. For start, the current implementation 
 \chapter{Appendix}
 
 \section{LIS - Longest Increasing Subsequence\cite{Fredman197529}}
-\emph{Definition:} Given a sequence of $n$ numbers $a_i$ longest increasing subsequence is the biggest set od indices such that for every $i < j$ it holds $a_i < a_j$.\\
+\emph{Definition 1:} Given a sequence of $n$ numbers $a_i$ longest increasing subsequence is the biggest set od indices such that for every $i < j$ it holds $a_i < a_j$.\\
 \\
 This chapter presents simple and clear C++ implementation which solves the LIS problem. For the sake of brevity, Fenwick tree implementation is ommited. It can be obtained by the material attached to the Thesis. $Fenwick.get(x)$ acquires the largest element in the interval $[1,x]$ and $Fenwick.update(x, v)$ sets value of index $x$ to $v$.
 
@@ -950,11 +950,11 @@ void calcLongestIncreasingSubsequence(
 
 \emph{Problem description: } Given a list of $n$ intervals described by their left border $l_i$, right border $r_i$ and a \emph{magic} number associated with every interval $m_i$ it is neccessary to find maximum \emph{coverage} of the x-axis, as defined in the succeeding text.\\
 \\
-\emph{Definition: } Interval $j$ is continuation of the interval $i$ iff $m_i<m_j$ and $l_i <= l_j$.\\
+\emph{Definition 1: } Interval $j$ is continuation of the interval $i$ iff $m_i<m_j$ and $l_i <= l_j$.\\
 \\
-\emph{Definition: } Increasing interval coverage is the sequence of intervals where for $i<j$, interval $j$ is a continuation of the interval $i$.\\
+\emph{Definition 2: } Increasing interval coverage is the sequence of intervals where for $i<j$, interval $j$ is a continuation of the interval $i$.\\
 \\
-\emph{Definition: } Maximum increasing interval coverage (COV) is the increasing interval coverage for which the union of intervals is maximum possible.\\
+\emph{Definition 3: } Maximum increasing interval coverage (COV) is the increasing interval coverage for which the union of intervals is maximum possible.\\
 \\
 The attached codes are self describing and provide an insight into an $O(n^2)$ algorithm for solving COV. It is worth noting that a sweepline algorithm with $O(n\ lg\ n)$ complexity can be designed to solve COV. For brevity the details are ommited from the Thesis text, but its implementation is attached with the attached materials.\\
 
@@ -1027,6 +1027,7 @@ void cov(vector<Interval>* resultCoverage,
 \nocite{Pabinger21012013}
 \nocite{Johnson:2008:BAU:1593105.1593117}
 \nocite{matplotlib}
+\nocite{ukkonen}
 
 \bibliography{literatura}
 \bibliographystyle{plain}
