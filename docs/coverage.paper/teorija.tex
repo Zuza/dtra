@@ -1,0 +1,172 @@
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+%\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{pdfpages}
+\usepackage{float}
+%\usepackage[usenames, dvipsnames]{color}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{subfig}
+\usepackage{algpseudocode}
+\usepackage[Algoritam]{algorithm}
+\usepackage{amssymb}
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+% \geometry{margin=2in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{Teorija}
+\author{Filip Paveti\'{c}}
+%\date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+
+\begin{document}
+\maketitle
+
+\section{LCS kao nositelj informacija za alignment}
+
+\v{Z}elim pokazati da za referentni genom i read koji ima fiksan iznos gre\v{s}ke LCS  daje dovoljno informacije za pronalazak optimalnog smje\v{s}tanja reada na referentni genom obzirom na Needleman-Wunsch score (sa proizvoljnom matricom sli\v{c}nosti koju zovemo $similarity$\footnote{Ne bas bilo kakvom, jednom od onih spomenutih u literaturi. Literatura je trenutno kod mene na mailu.}). Pokazuje se da je dovoljno \v{c}uvati odreden broj najboljih poravnanja obzirom na LCS score kako bi taj popis sadr\v{z}avao najbolje smje\v{s}tanje obzirom na NW.\\
+\\
+Neka je poznato da je tijekom ocitavanja reada vjerojatnost pogreske $p_{err}$. Za sada pogresku ogranicujemo na supstitucije, ali napominjem da se slican racun moze napraviti i ako podrzimo brisanja/umetanja. Trenutno nisam znao kojim vrijednostima da ih scoream pa sam uzeo samo supstitucije. Duljinu reada oznacujemo s $N$. Tablica 1 daje vjerojatnosti pojavljivanja pojedine baze u ljudskom genomu.\\
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	Baza & Vjerojatnost\\
+\hline
+\hline
+	A & 0.30\\
+\hline
+	C & 0.20\\
+\hline
+	G & 0.20\\
+\hline
+	T & 0.30\\
+\hline
+\end{tabular}
+\caption{Vjerojatnosti pojavljivanja pojedine baze - $p_{baza}$}
+\end{table}
+
+Buduci da pretpostavljamo poznat $p_{err}$, promatrajmo dvije vrste NW scorea. Prvi cemo zvati $NW_{idealni}$. U njemu supstitucije nece biti kaznjene (cijena supstitucije je 0). Drugi ce biti normalan NW score. Pogledajmo prosjecnu vrijednost za $NW_{idealni}$:
+
+\begin{equation}
+	NW_{idealni} = N * (1-p_{err}) * \sum\limits_{b=A,C,G,T} p_{baza}(b) * similarity(b,b)
+\end{equation}
+
+Gornjom jednadzbom odredjujemo da ce se tocno odredjena frakcija baza tocno poklapati i pridjeljujemo im prosjecan score za preklapanje. Definirajmo sada $NW_{normalni}$:
+
+\begin{equation}
+	NW_{normalni} = NW_{idealni} + N * p_{err} * prosjecna\ supstitucijska\ greska
+\end{equation}
+
+gdje je
+
+\begin{equation}
+	prosjecna\ supstitucijska\ greska = \frac{1}{c}\sum\limits_{i,j\in{A,C,T,G}, i\neq j} p_{baza}(i)*p_{baza}(j)*similarity(i,j)
+\end{equation}
+
+$c$ je normalizacijska konstanta za vjerojatnosti i iznosi:
+\begin{equation}
+	c = \sum\limits_{i,j\in{A,C,T,G}, i\neq j} p_{baza}(i)*p_{baza}(j)
+\end{equation}
+
+Primijetimo da je $NW_{normalni} \le NW_{idealni}$ (jer ce prosjecna supstitucijska greska biti negativna, vidi kako izgledaju matrice slicnosti u sljedecoj sekciji). Sada ce stvari postati malo trikaste i mozda sljedecih par recenica treba procitati 2-3 puta :).\\
+\\
+$NW_{idealni}$ je zapravo jednak LCS-u dvije sekvence pomnozenim sa prosjecnim scoreom tocnih matcheva (brojeva na dijagonali $similarity$-a. To je gornja granica na $NW_{normalni}$. Ono sto zelimo je naci i donju granicu, ali je zelimo moci izraziti preko LCS-a dvije sekvence, jer LISA racuna LCS. Znači trazimo donju granicu koja ima slican oblik kao $NW{idealni}$. Izrazimo to ovako:
+$NW_{donja} = N *minimalni\ udio\ LCSa * \sum\limits_{b=A,C,G,T} p_{baza}(b) * similarity(b,b) $. Nadalje, mora vrijediti $NW_{donja} \le NW_{normalni}$. Buduci da je $minimalni\ udio\ LCSa$ nepoznanica koju trazimo, mozemo je izracunati tako da isforsiramo jednakost $NW_{donja}= NW_{normalni}$. Iz toga ispada:
+
+\begin{equation}
+	minimalni\ udio\ LCSa = \frac{NW_{normalni}}{NW_{idealni}}
+\end{equation}
+
+Sada smo dosli konacno do dijela kojeg smo htjeli pokazati, a to je koliko $NW_{donja}$ odstupa od $NW{idealni}$. To ce nam reci njihova relativna greska:
+
+$relativna = \frac{NW_{idealni}-NW_{donja}}{NW_{idealni}}$
+
+Primijetimo da relativnu gresku mozemo izracunati preko LCS-ova jer su ove velicine u takvom obliku.
+
+\subsection{Supstitucijske matrice}
+
+Necu ih tu prepisivati, ali imam clanak  koji sadrzi nekoliko razlicitih primjeraka na mailu. Isto tako, detalji se pronaci u kodu u $src/scripts/score\_diff.py$.
+
+\subsection{Ra\v{c}unanje}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+	sups. matrica / $p_{err}$ & 0.02 & 0.05 & 0.10 & 0.20\\
+\hline
+\hline
+	CFTR & 0.02 & 0.05 & 0.10 & 0.23 \\
+\hline
+	HOXD & 0.02 & 0.05 & 0.11 & 0.24\\
+\hline
+	hum16pter & 0.02 & 0.05 & 0.10 & 0.24\\
+\hline
+\end{tabular}
+\caption{$relativna$ za razlicite vrijednosti $p_{err}$ i razlicite supstitucijske matrice}
+\end{table}
+\end{document}
