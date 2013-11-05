@@ -84,11 +84,9 @@
 \begin{document}
 \maketitle
 
-\section{LCS kao nositelj informacija za alignment}
+\section{LCS kao nositelj informacija za alignment kod duga\v{c}kih readova}
 
-\v{Z}elim pokazati da za referentni genom i read koji ima fiksan iznos gre\v{s}ke LCS  daje dovoljno informacije za pronalazak optimalnog smje\v{s}tanja reada na referentni genom obzirom na Needleman-Wunsch score (sa proizvoljnom matricom sli\v{c}nosti koju zovemo $similarity$\footnote{Ne bas bilo kakvom, jednom od onih spomenutih u literaturi. Literatura je trenutno kod mene na mailu.}). Pokazuje se da je dovoljno \v{c}uvati odreden broj najboljih poravnanja obzirom na LCS score kako bi taj popis sadr\v{z}avao najbolje smje\v{s}tanje obzirom na NW.\\
-\\
-Neka je poznato da je tijekom ocitavanja reada vjerojatnost pogreske $p_{err}$. Za sada pogresku ogranicujemo na supstitucije, ali napominjem da se slican racun moze napraviti i ako podrzimo brisanja/umetanja. Trenutno nisam znao kojim vrijednostima da ih scoream pa sam uzeo samo supstitucije. Duljinu reada oznacujemo s $N$. Tablica 1 daje vjerojatnosti pojavljivanja pojedine baze u ljudskom genomu.\\
+\v{Z}elim pokazati da je za duga\v{c}ke readove LCS dobra metrika za smje\v{s}tanje readova na referentni genom. Preciznije, pokazat \'{c}e se da je za duge readove mala vjerojatnost da se postigne veliki LCS na random mjestu u genomu. Dugi read modeliramo kao slu\v{c}ajan string u kojem se svaka od baza pojavljuje s vjerojatnostima danima u tablici 1.
 
 \begin{table}[H]
 \centering
@@ -109,64 +107,35 @@ Neka je poznato da je tijekom ocitavanja reada vjerojatnost pogreske $p_{err}$. 
 \caption{Vjerojatnosti pojavljivanja pojedine baze - $p_{baza}$}
 \end{table}
 
-Buduci da pretpostavljamo poznat $p_{err}$, promatrajmo dvije vrste NW scorea. Prvi cemo zvati $NW_{idealni}$. U njemu supstitucije nece biti kaznjene (cijena supstitucije je 0). Drugi ce biti normalan NW score. Pogledajmo prosjecnu vrijednost za $NW_{idealni}$:
+\subsection{Smje\v{s}tanje reada na genom, uz $k=1$ (seedovi su nam duljine 1)}
 
-\begin{equation}
-	NW_{idealni} = N * (1-p_{err}) * \sum\limits_{b=A,C,G,T} p_{baza}(b) * similarity(b,b)
-\end{equation}
+Trenutno promatram slu\v{c}aj idealnog ra\v{c}unanja LCS-a, u sljede\'{c}oj sekciji \'{c}u gledati koliko gubimo kada duljinu seeda po\v{c}nemo pove\'{c}avati. Ono \v{s}to znamo je da ve\'{c}ina reada i njegove to\v{c}ne pozicije na genomu dolazi uslijed gre\v{s}aka kod ocitanja. Ta je gre\v{s}ka unaprijed poznata. Ona je konstantna na svakoj poziciji reada. Ozna\v{c}ujemo je sa $p_{error}$. U ovim analizama sada gledam samo supstitucijsku gre\v{s}ku, mogu kasnije pro\v{s}iriti i na indele, ne bi se trebalo ni\v{s}ta zna\v{c}ajno promijeniti.
 
-Gornjom jednadzbom odredjujemo da ce se tocno odredjena frakcija baza tocno poklapati i pridjeljujemo im prosjecan score za preklapanje. Definirajmo sada $NW_{normalni}$:
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1\textwidth]{lcs_k1.png}
+  \caption{Random na random linija prikazuje distribuciju LCS-ova dva random fragmenta genoma. Ostale linije prikazuju distribucije LCS-a izmedju random fragmenta genoma i njegove kopije u koju je uneseno $p_{err}$ supstitucijske gre\v{s}ke.}
+\end{figure}
 
-\begin{equation}
-	NW_{normalni} = NW_{idealni} + N * p_{err} * prosjecna\ supstitucijska\ greska
-\end{equation}
+Iz grafova se vidi da kada ra\v{c}unamo savr\v{s}en LCS ($k=1$), vjerojatnost da random string postigne dobar LCS score je zanemariva.
 
-gdje je
+\subsection{\v{S}to kada pove\'{c}amo duljinu seeda?}
 
-\begin{equation}
-	prosjecna\ supstitucijska\ greska = \frac{1}{c}\sum\limits_{i,j\in{A,C,T,G}, i\neq j} p_{baza}(i)*p_{baza}(j)*similarity(i,j)
-\end{equation}
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1\textwidth]{lcs_k10.png}
+  \caption{Ovdje je duljina seeda 10. Random na random linija prikazuje distribuciju LCS-ova dva random fragmenta genoma. Ostale linije prikazuju distribucije LCS-a izmedju random fragmenta genoma i njegove kopije u koju je uneseno $p_{err}$ supstitucijske gre\v{s}ke.}
+\end{figure}
 
-$c$ je normalizacijska konstanta za vjerojatnosti i iznosi:
-\begin{equation}
-	c = \sum\limits_{i,j\in{A,C,T,G}, i\neq j} p_{baza}(i)*p_{baza}(j)
-\end{equation}
+Pove\'{c}avanjem seeda na 10 vi\v{s}e nemamo jako veliku marginu izmedju scorova random stringova i onih koji su sli\v{c}ni. Slu\v{c}aj kad je $p_{err}=0.15$ izgleda kao grani\v{c}ni.
 
-Primijetimo da je $NW_{normalni} \le NW_{idealni}$ (jer ce prosjecna supstitucijska greska biti negativna, vidi kako izgledaju matrice slicnosti u sljedecoj sekciji). Sada ce stvari postati malo trikaste i mozda sljedecih par recenica treba procitati 2-3 puta :).\\
-\\
-$NW_{idealni}$ je zapravo jednak LCS-u dvije sekvence pomnozenim sa prosjecnim scoreom tocnih matcheva (brojeva na dijagonali $similarity$-a. To je gornja granica na $NW_{normalni}$. Ono sto zelimo je naci i donju granicu, ali je zelimo moci izraziti preko LCS-a dvije sekvence, jer LISA racuna LCS. Znači trazimo donju granicu koja ima slican oblik kao $NW{idealni}$. Izrazimo to ovako:
-$NW_{donja} = N *minimalni\ udio\ LCSa * \sum\limits_{b=A,C,G,T} p_{baza}(b) * similarity(b,b) $. Nadalje, mora vrijediti $NW_{donja} \le NW_{normalni}$. Buduci da je $minimalni\ udio\ LCSa$ nepoznanica koju trazimo, mozemo je izracunati tako da isforsiramo jednakost $NW_{donja}= NW_{normalni}$. Iz toga ispada:
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1\textwidth]{lcs_k20.png}
+  \caption{Ovdje je duljina seeda 20. Random na random linija prikazuje distribuciju LCS-ova dva random fragmenta genoma. Ostale linije prikazuju distribucije LCS-a izmedju random fragmenta genoma i njegove kopije u koju je uneseno $p_{err}$ supstitucijske gre\v{s}ke.}
+\end{figure}
 
-\begin{equation}
-	minimalni\ udio\ LCSa = \frac{NW_{normalni}}{NW_{idealni}}
-\end{equation}
+Kod duljine seeda 20 izgleda da teoretski ne pali ovo, osim za mali postotak gre\v{s}ke ($p_{err}=0.05$). To nam je i vidljivo na preciznosti koju dobivamo za veliku gre\v{s}ku u LISA-i (a ona je usporediva s ostalim alignerima).
 
-Sada smo dosli konacno do dijela kojeg smo htjeli pokazati, a to je koliko $NW_{donja}$ odstupa od $NW{idealni}$. To ce nam reci njihova relativna greska:
 
-$relativna = \frac{NW_{idealni}-NW_{donja}}{NW_{idealni}}$
-
-Primijetimo da relativnu gresku mozemo izracunati preko LCS-ova jer su ove velicine u takvom obliku.
-
-\subsection{Supstitucijske matrice}
-
-Necu ih tu prepisivati, ali imam clanak  koji sadrzi nekoliko razlicitih primjeraka na mailu. Isto tako, detalji se pronaci u kodu u $src/scripts/score\_diff.py$.
-
-\subsection{Ra\v{c}unanje}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|c||c|c|c|c|c|c|}
-\hline
-	sups. matrica / $p_{err}$ & 0.02 & 0.05 & 0.10 & 0.20\\
-\hline
-\hline
-	CFTR & 0.02 & 0.05 & 0.10 & 0.23 \\
-\hline
-	HOXD & 0.02 & 0.05 & 0.11 & 0.24\\
-\hline
-	hum16pter & 0.02 & 0.05 & 0.10 & 0.24\\
-\hline
-\end{tabular}
-\caption{$relativna$ za razlicite vrijednosti $p_{err}$ i razlicite supstitucijske matrice}
-\end{table}
 \end{document}
