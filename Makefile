@@ -17,12 +17,11 @@ TEST_H_FILES := $(wildcard $(TEST_DIR)/*.h)
 TEST_CPP_FILES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJ_FILES := $(addprefix obj/test/,$(notdir $(TEST_CPP_FILES:.cpp=.o)))
 
-
 CC := mpiCC.openmpi
 LD_FLAGS := -pthread -lgflags
 CC_FLAGS := -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
 
-all: client reducer
+all: client reducer lisa simulator test
 
 forceall: clean all
 
@@ -34,6 +33,9 @@ reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
 
 lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/lisa.o $(LD_FLAGS)
+
+simulator: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/rand_lcs_distr.o $(LD_FLAGS)
 
 test: test_coverage
 
