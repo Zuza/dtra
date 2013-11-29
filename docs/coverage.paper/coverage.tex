@@ -61,18 +61,28 @@
 \begin{document}
 \maketitle
 
-\section{Introductory}
+\section{Introduction}
 
-Uvod s opisom problema rastucih intervala. Opis mogucih primjena, ukljucujuci LISA-u i Mummera 1,2,3 koji nigdje ne daje detalje svog algoritma.
+DNA sequencing has got very big attention in the research community recently. The main reason is the advance in the DNA reading machines which made huge ammounts of data publicly available for scientists to analyze. With SNAP [TODO: referenca], SeqAlto[TODO: referenca] it seems that, to this date, problem of aligning short reads to a genome has been practically solved. Many of the existing tools fail processing long reads, mainly because calculating alignment using Needleman Wunsch [TODO: referenca] or Levenstein distance [TODO:referenca] is computationaly demanding.\\
+\\
+In this paper we analyze LCS\footnote{Longest common subsequence} as a metric for aligning long reads. We show that it is good metric for separating similar pair of DNA sequences from random pairs. Since LCS is not feasible for computing due to big complexity, we design a modification of the metric, called k-LCS, and we demonstrate its good performance on long read lengths. Aside from theoretical analysis, we apply the metric on real data and confirm its practical value.\\
+\\
+Before this work, LCS has been analysed by [TODO: reference]. TODO: napisati malo sto se sve zna o LCS-u. Mummer 1,2,3 [TODO: referenca] shares a similar intuition, although their use case is sligthly different and they do not provide theoretic justification of their approach (TODO: provjeriti da nemaju teorije, iako koliko se sjecam iz clanaka kazu da im je to uvjerenje).
 
-\section{Problem description}
+\section{LCS}
 
-\section{Algorithm}
+\subsection{Analysis}
 
-\subsection{Spora dinamika}
+\section{k-LCS}
 
-\subsection{Prijelaz na brzu dinamiku}
+\subsection{Analysis}
+
+\subsection{Computing k-LCS}
 
 \section{Experiments}
+
+\section{Future work}
+
+There is ongoing work on an aligner using k-LCS as a basis. Experimental results demonstrated here were obtained using that aligner. TODO: ispricati kako je bazran na seed-and-extendu, ali s uzasno jednostavnim i neefikasnim indeksom.
 
 \end{document}
