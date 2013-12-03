@@ -1,44 +1,14 @@
+#include "fenwick.h"
 #include "core/lis.h"
 #include <cassert>
 #include <cstdio>
 #include <algorithm>
-#include <mutex>
 #include <utility>
 #include <vector>
 using namespace std;
 
 namespace {
 
-class FenwickMax {
-public:
-  FenwickMax(int n) {
-    elements_ = vector<pair<int, int> > (n+1);
-  }
-  
-  void update(int pos, const pair<int, int>& val) {
-    ++pos;
-
-    for ( ; pos < elements_.size(); pos += lobit(pos)) {
-      elements_[pos] = max(elements_[pos], val);
-    }
-  }
-  
-  pair<int, int> get(int pos) {
-    ++pos;
-
-    pair<int, int> ret;
-    for ( ; pos > 0; pos -= lobit(pos)) {
-      ret = max(ret, elements_[pos]);
-    }
-    return ret;
-  }
-  
-private:
-  int lobit(const int& a) { return a&-a; }
-  
-private:
-  std::vector<std::pair<int, int> > elements_;
-};
   
 void reconstructLIS(vector<int>* result,
 		    int last,
@@ -93,7 +63,7 @@ void calcLongestIncreasingSubsequence(
   // tako da se u 'elements' na ulazi second clan sazme->
   // u tom slucaju potrebno ga je kod rekonstrukcije vratiti
   // na originalnu vrijednost
-  FenwickMax fm(maxSecond);
+  FenwickMax<pair<int, int> > fm(maxSecond);
 
   for (size_t i = 0; i < n; ++i) {
     std::pair<int, int> best = fm.get(elements[i].second-1);

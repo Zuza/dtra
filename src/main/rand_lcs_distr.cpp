@@ -17,15 +17,17 @@
 #include <string>
 #include <vector>
 
-#include "../core/ThreadPool.h"
+#include "core/klcs.h"
+#include "core/ThreadPool.h"
 using namespace std;
 
 DEFINE_int32(simulation_threads, sysconf(_SC_NPROCESSORS_ONLN),
 	     "Threads used for simulation, defaulting to the number of cores.");
-DEFINE_int32(read_len, 100, "Length of the reads");
-DEFINE_int32(simulation_runs, 100, "Number of performed simulations.");
+DEFINE_int32(read_len, 1000, "Length of the reads");
+DEFINE_int32(simulation_runs, 1000, "Number of performed simulations.");
 DEFINE_int32(seed_len, 1, "Seed length");
 DEFINE_double(p_err, -1.0, "If set to -1 then rand-to-rand strings are aligned, otherwise rand-to-modified-copy simulations are performed.");
+DEFINE_bool(test_all_implementations, false, "");
 
 int min3(int a, int b, int c) { return min(min(a,b),c); }
 int max3(int a, int b, int c) { return max(max(a,b),c); }
@@ -35,7 +37,6 @@ string create_var_suffix() {
   suffix << "_readlen" << FLAGS_read_len 
 	 << "_seedlen" << FLAGS_seed_len;
   
-  cerr << FLAGS_p_err << endl;
   if (FLAGS_p_err < 0) {
     suffix << "_randrand";
   } else {
@@ -89,37 +90,26 @@ string generate_similar(const string& a, const double& p_err) {
 }
 
 int seeded_lcs(const string& a, const string& b, const int K) {
-  // Svaka dretva ce ponovno alocirati ovo polje. 
-  // Tako je napravljeno zbog jednostavnosti. Ovaj proces 
-  // cemo ionako pokretati samo malen broj puta,
-  // tek toliko da generiramo simulacijske rezultate.
-  vector<vector<int> > dp(FLAGS_read_len+1, 
-			  vector<int>(FLAGS_read_len+1));
+  int klcs_length = 0;
+  if (FLAGS_test_all_implementations) {
+    int klcs_length_slow = 0;
+    klcs_slow(a, b, K, &klcs_length_slow);
+    int klcs_length_cov = 0;
+    klcs_coverage(a, b, K, &klcs_length_cov);
+    assert(klcs_length_slow == klcs_length_cov);
 
-  for (int i = 0; i <= FLAGS_read_len; ++i) dp[i][0] = 0;
-  for (int j = 0; j <= FLAGS_read_len; ++j) dp[0][j] = 0;
-
-  for (int i = 1; i <= FLAGS_read_len; ++i) {
-    for (int j = 1; j <= FLAGS_read_len; ++j) {
-      dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
-
-      // 2*K je mislim dovoljna granica jer ce sve iznad toga
-      // biti pokriveno nekim prethodnim seedom
-      for (int k = 1; k <= min3(i, j, 2*K); ++k) {
-	char aa = a[i-k];
-	char bb = b[j-k];
-	if (aa != bb) {
-	  break;
-	}
-
-	if (k >= K) {
-	  dp[i][j] = max(dp[i][j], dp[i-k][j-k]+k);
-	}
-      }
-    }
+    // printf("%s\n%s\n", a.c_str(), b.c_str());
+    // klcs(a, b, K, &klcs_length);
+    // //klcs_length = klcs_length_slow;
+    printf("klcs=%d slow=%d cov=%d\n", klcs_length, klcs_length_slow,
+    	   klcs_length_cov);
+    // assert(klcs_length == klcs_length_slow);
+  } else {
+    //klcs_slow(a, b, K, &klcs_length);
+    klcs_coverage(a, b, K, &klcs_length);
   }
-
-  return dp[FLAGS_read_len][FLAGS_read_len];
+  
+  return klcs_length;
 }
 
 int run_one_simulation() {
@@ -135,23 +125,42 @@ int run_one_simulation() {
   return seeded_lcs(a, b, FLAGS_seed_len);
 }
 
-void output_matlab_vector(const string& name, 
+void output_python_import() {
+  puts("from pylab import *"); 
+  puts("");
+}
+
+void output_python_vector(const string& name, 
 			  const vector<double>& vec) {
   printf("%s = [", name.c_str());
   for (int i = 0; i < vec.size(); ++i) {
+    if (i) printf(",");
     printf(" %lf", vec[i]);
   }
-  puts(" ];");
+  puts(" ]");
+  puts("");
 }
 
-void output_plot_command(const string& x, const string& y) {
-  printf("plot(%s,%s);\n", x.c_str(), y.c_str());
+void output_python_plot(const string& plot_name,
+			const string& x, const string& y) {
+  puts("figure()");
+  
+  printf("%s,=plot(%s,%s)\n", 
+	 plot_name.c_str(), x.c_str(), y.c_str());
+  puts("xlabel('LCS Length')");
+  puts("ylabel('Probability')");
+  //  puts("ylim(-0.1, 1.1)");
+  printf("legend([%s], ['%s'], loc=2)\n",
+	 plot_name.c_str(), plot_name.c_str());
+  puts("show()");
+  puts("");
 }
 
 
 int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
-  srand(time(NULL));
+  //  srand(time(NULL));
+  srand(1603);
   
   ThreadPool pool(FLAGS_simulation_threads);
   vector<future<int> > results;
@@ -182,10 +191,12 @@ int main(int argc, char* argv[]) {
   assert(0.99999 <= sum_prob <= 1.00001);
 
   string var_suffix = create_var_suffix();
+  string plot_name = "plot"+var_suffix;
   string x_var_name = "x"+var_suffix;
   string y_var_name = "y"+var_suffix;
-  output_matlab_vector(x_var_name, x);
-  output_matlab_vector(y_var_name, y);
-  output_plot_command(x_var_name, y_var_name);
+  output_python_import();
+  output_python_vector(x_var_name, x);
+  output_python_vector(y_var_name, y);
+  output_python_plot(plot_name, x_var_name, y_var_name);
   return 0;
 }

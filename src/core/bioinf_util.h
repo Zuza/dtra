@@ -2,8 +2,11 @@
 #define BIOINF_UTIL
 
 #include <cassert>
+#include <cctype>
 #include <ctime>
+#include <cstdio>
 #include <cstdlib>
+#include <string>
 
 inline bool isBase(char isit) {
   isit = toupper(isit);
@@ -95,8 +98,8 @@ inline char getBaseComplement(char base) {
   if (base == 'G') return 'C';
 
   if (base != 'N') {
-    return base;
     fprintf(stderr, "BASE: %c\n", base);
+    return base;
   }
   assert(base == 'N');
   return 'N';
