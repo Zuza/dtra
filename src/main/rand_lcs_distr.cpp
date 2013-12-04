@@ -93,18 +93,13 @@ int seeded_lcs(const string& a, const string& b, const int K) {
   int klcs_length = 0;
   if (FLAGS_test_all_implementations) {
     int klcs_length_slow = 0;
-    int klcs_length_cov = 0;;
     klcs_slow(a, b, K, &klcs_length_slow);
-    klcs_coverage(a, b, K, &klcs_length_cov);
     klcs(a, b, K, &klcs_length);
-    printf("klcs=%d slow=%d cov=%d\n",
-	   klcs_length, klcs_length_slow, klcs_length_cov);
-    assert(klcs_length_slow == klcs_length_cov);
+    // printf("a=%s b=%s\n", a.c_str(), b.c_str());
+    // printf("klcs=%d slow=%d\n",
+    // 	   klcs_length, klcs_length_slow);
     assert(klcs_length == klcs_length_slow);
   } else {
-    // klcs_coverage radi s velikom vjerojatnosti,
-    // nisu mi se jos nikad dogodile razlike.
-    //klcs_coverage(a, b, K, &klcs_length);
     klcs(a, b, K, &klcs_length);
   }
   
