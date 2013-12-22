@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "core/gene.h"
 #include "core/klcs.h"
 #include "core/ThreadPool.h"
 using namespace std;
@@ -28,22 +29,7 @@ DEFINE_int32(simulation_runs, 1000, "Number of performed simulations.");
 DEFINE_int32(seed_len, 1, "Seed length");
 DEFINE_double(p_err, -1.0, "If set to -1 then rand-to-rand strings are aligned, otherwise rand-to-modified-copy simulations are performed.");
 DEFINE_bool(test_all_implementations, false, "");
-
-int min3(int a, int b, int c) { return min(min(a,b),c); }
-int max3(int a, int b, int c) { return max(max(a,b),c); }
-
-string create_var_suffix() {
-  ostringstream suffix;
-  suffix << "_readlen" << FLAGS_read_len 
-	 << "_seedlen" << FLAGS_seed_len;
-  
-  if (FLAGS_p_err < 0) {
-    suffix << "_randrand";
-  } else {
-    suffix << "_perr" << static_cast<int>(FLAGS_p_err*100);
-  }
-  return suffix.str();
-}
+DEFINE_string(dna_input_file, "", "Input file from which DNA segments are sampled. If this is not set, DNA segments will be randomly generated.");
 
 const string kNuc = "ACTG";
 
@@ -70,12 +56,12 @@ char get_random_base() {
   assert(0);
 }
 
-string generate_string() {
+string generate_string(const int& len) {
   string ret;
-  for (int i = 0; i < FLAGS_read_len; ++i) {
+  for (int i = 0; i < len; ++i) {
     ret += get_random_base();
   }
-  assert(ret.size() == FLAGS_read_len);
+  assert(ret.size() == len);
   return ret;
 }
 
@@ -87,6 +73,99 @@ string generate_similar(const string& a, const double& p_err) {
     }
   }
   return b;
+}
+
+struct DnaSampler {
+  DnaSampler() {
+  }
+
+  void init_from_file(const string& path) {
+    FILE* fd = fopen(path.c_str(), "rt");
+    assert(fd);
+
+    while (true) {
+      shared_ptr<Gene> gene(new Gene());
+      if (!readGene(gene.get(), fd)) { break; }
+      genes.push_back(gene);
+    }
+    fclose(fd);
+  }
+
+  string remove_ns(const string& a) {
+    string ret = "";
+    for (int i = 0; i < (int)a.size(); ++i) {
+      if (a[i] != 'N') ret += a[i];
+      else ret += get_random_base();
+    }
+    return ret;
+  }
+
+  string sample_from_genome(const int& len) {
+    long long total_size = 0;
+    for (int i = 0; i < genes.size(); ++i) {
+      assert(genes[i]->dataSize() >= len);
+      total_size += genes[i]->dataSize();
+    }
+    
+    double coin = 1.0*rand()/RAND_MAX; // biramo kromosom prop. s duljinom
+    long long running_size = 0;
+
+    for (int i = 0; i < genes.size(); ++i) {
+      running_size += genes[i]->dataSize();
+      if (1.0*running_size/total_size >= coin) {
+	// znam iz kojeg entry-a ulaznog filea uzimam
+	int start = rand()%(genes[i]->dataSize()-len+1);
+	assert(0 <= start);
+	return remove_ns(string(genes[i]->data()+start,
+				genes[i]->data()+start+len));
+      }
+    }
+
+    assert(0);
+  }
+
+  pair<string,string> get_random_dna_pair(const double& p_err) {
+    pair<string, string> random_pair;
+
+    if (!genes.empty()) { // sampliranje iz genoma
+      assert(FLAGS_dna_input_file != "");
+      random_pair.first = sample_from_genome(FLAGS_read_len);
+      if (p_err < 0) {
+	random_pair.second = sample_from_genome(FLAGS_read_len);
+      } else {
+	random_pair.second = generate_similar(random_pair.first, p_err);
+      }
+    } else {
+      assert(FLAGS_dna_input_file == "");
+      random_pair.first = generate_string(FLAGS_read_len);
+      if (p_err < 0) {
+	random_pair.second = generate_string(FLAGS_read_len);
+      } else {
+	random_pair.second = generate_similar(random_pair.first, p_err);
+      }
+    }
+    return random_pair;
+  }
+
+  vector<shared_ptr<Gene>> genes;
+};
+
+DnaSampler global_dna_sampler;
+
+int min3(int a, int b, int c) { return min(min(a,b),c); }
+int max3(int a, int b, int c) { return max(max(a,b),c); }
+
+string create_var_suffix() {
+  ostringstream suffix;
+  suffix << "_readlen" << FLAGS_read_len 
+	 << "_seedlen" << FLAGS_seed_len;
+  
+  if (FLAGS_p_err < 0) {
+    suffix << "_randrand";
+  } else {
+    suffix << "_perr" << static_cast<int>(FLAGS_p_err*100);
+  }
+  return suffix.str();
 }
 
 int seeded_lcs(const string& a, const string& b, const int K) {
@@ -107,15 +186,10 @@ int seeded_lcs(const string& a, const string& b, const int K) {
 }
 
 int run_one_simulation() {
-  string a = generate_string();
-  string b = "";
-  
-  if (FLAGS_p_err < 0) {
-    b = generate_string();
-  } else {
-    b = generate_similar(a, FLAGS_p_err);
-  }
-
+  pair<string, string> ab = 
+    global_dna_sampler.get_random_dna_pair(FLAGS_p_err);
+  const string& a = ab.first;
+  const string& b = ab.second;
   return seeded_lcs(a, b, FLAGS_seed_len);
 }
 
@@ -150,12 +224,7 @@ void output_python_plot(const string& plot_name,
   puts("");
 }
 
-
-int main(int argc, char* argv[]) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
-  //  srand(time(NULL));
-  srand(1603);
-  
+void calculate_distribution(map<int, double>& distr) {
   ThreadPool pool(FLAGS_simulation_threads);
   vector<future<int> > results;
   
@@ -165,24 +234,47 @@ int main(int argc, char* argv[]) {
 	}));
   }
   
-  map<int, double> distr;
+  distr.clear();
   for (int i = 0; i < FLAGS_simulation_runs; ++i) {
     distr[results[i].get()] += 1.0/FLAGS_simulation_runs;
   }
-  
-  vector<double> x;
-  vector<double> y;
+}
+
+void fill_xy(map<int, double>& distr, 
+	     vector<double>& x, 
+	     vector<double>& y) {
   double sum_prob = 0;
-  
+  double e_lcs = 0;
+
   for (int i = 0; i <= FLAGS_read_len; ++i) {
     double p = distr[i];
     sum_prob += p;
+    e_lcs += p*i;
     
-    x.push_back(1.0*i/FLAGS_read_len);
+    x.push_back(1.0*i);
     y.push_back(p);
   }
 
   assert(0.99999 <= sum_prob <= 1.00001);
+  printf("Expected k-LCS=%0.3lf\n", e_lcs);
+}
+	     
+
+int main(int argc, char* argv[]) {
+  google::ParseCommandLineFlags(&argc, &argv, true);
+  srand(1603);
+
+  if (FLAGS_dna_input_file != "") {
+    global_dna_sampler.init_from_file(FLAGS_dna_input_file);
+    printf("Initialized dna sampler from file (%s).\n",
+	   FLAGS_dna_input_file.c_str());
+  }
+
+  map<int, double> distr;
+  calculate_distribution(distr);
+    
+  vector<double> x, y;
+  fill_xy(distr, x, y);
 
   string var_suffix = create_var_suffix();
   string plot_name = "plot"+var_suffix;

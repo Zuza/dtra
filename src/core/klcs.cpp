@@ -60,30 +60,9 @@ static void get_matches(const string& a, const string& b,
 }
 
 
-
 static void klcs_base(const int k, const vector<pair<int, int> >& matches,
 		      int* klcs_length) {
-  struct PointOfInterest {
-    int i, j;
-    enum Type {BEGIN = 0, END = 1};
-    Type type;
-
-    PointOfInterest(int i, int j, Type type) : 
-      i(i), j(j), type(type) {}
-    
-    bool operator < (const PointOfInterest& other) const {
-      if (i != other.i) { return i < other.i; }
-      if (j != other.j) { return j < other.j; }
-      return type < other.type;
-    }
-
-    bool operator == (const PointOfInterest& other) const {
-      return 
-	i == other.i && 
-	j == other.j && 
-	type == other.type;
-    }
-  };
+  typedef pair<int, int> PointOfInterest;
 
   struct DiagonalDpVal {
     int secondary_diagonal;
@@ -105,116 +84,217 @@ static void klcs_base(const int k, const vector<pair<int, int> >& matches,
     }
   };
 
-
   vector<PointOfInterest> poi;
   for (int i = 0; i < matches.size(); ++i) {
-    poi.push_back(PointOfInterest(matches[i].first,
-				  matches[i].second,
-				  PointOfInterest::Type::BEGIN));
     poi.push_back(PointOfInterest(matches[i].first+k-1,
-				  matches[i].second+k-1,
-				  PointOfInterest::Type::END));
+				  matches[i].second+k-1));
   }
 
   sort(poi.begin(), poi.end());
-  // ovaj unique mozda nije potreban?
-  poi.erase(unique(poi.begin(), poi.end()), poi.end());
 
   int n = 0;
   for (auto it = poi.begin(); it != poi.end(); ++it) {
-    n = max(n, it->i+1);
-    n = max(n, it->j+1);
+    n = max(n, it->first+1);
+    n = max(n, it->second+1);
   }
 
   *klcs_length = 0;
   // Indexed by column:
   FenwickMax<int> first_columns_max(n);
-
-  vector<pair<int, int> > curr_row_vals;
-  int curr_row = -1;
-  int curr_row_max_val = 0;
-
+  queue<std::tuple<int, int, int> > update_queue;
   vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_k(2*n);
-  vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_2k(2*n);
 
   for (auto it = poi.begin(); it != poi.end(); ++it) {
-    int i = it->i;
-    int j = it->j;
-    PointOfInterest::Type type = it->type;
+    int i = it->first;
+    int j = it->second;
 
-    if (i != curr_row) {
-      while (!curr_row_vals.empty()) {
-  	int col = curr_row_vals.back().first;
-  	int val = curr_row_vals.back().second;
-  	curr_row_vals.pop_back();
-  	first_columns_max.update(col, val);
-      }
-      curr_row = i;
-      curr_row_max_val = 0;
+    while (!update_queue.empty() &&
+	   get<0>(update_queue.front())+k <= i) {
+      auto t = update_queue.front();
+      update_queue.pop();
+      int col = get<1>(t);
+      int val = get<2>(t);
+      first_columns_max.update(col, val);
     }
 
     int primary_diagonal = n-1+i-j;
     int secondary_diagonal = i+j;
-    
     MonotonicQueue<DiagonalDpVal>& lcs_k =
       diag_lcs_k[primary_diagonal];
-    MonotonicQueue<DiagonalDpVal>& lcs_2k =
-      diag_lcs_2k[primary_diagonal];
 
     while (!lcs_k.empty() && 
-	   (secondary_diagonal-lcs_k.front().secondary_diagonal)/2 >= 
-	   k - (PointOfInterest::Type::END == type)) {
-      lcs_2k.push(lcs_k.front());
+	   (secondary_diagonal-lcs_k.front().secondary_diagonal)/2 >= k) {
       lcs_k.pop();
     }
-    while (!lcs_2k.empty() && 
-	   (secondary_diagonal-lcs_2k.front().secondary_diagonal)/2 >= 2*k) {
-      lcs_2k.pop();
-    }
     
-    if (type == PointOfInterest::Type::BEGIN) {
-      // 1) nastavak na neki zatvoreni
-      int lcs_ij = (j>0?first_columns_max.get(j-1):0);
-    
-      //printf("IZ LOGARITAMSKE=%d\n", lcs_ij);
-      if (!lcs_k.empty()) {
-	int prev_val = lcs_k.max().value;
-	//printf("BEGIN prev_val=%d\n", prev_val);
-	lcs_ij = max(lcs_ij, i - 1 + prev_val);
-	//printf("UPDATED lcs_ij=%d\n", lcs_ij);
-      }
-
-      // printf("PUSHAM u lcs_k na diag=%d vrijednost=%d\n", 
-      // 	     primary_diagonal, lcs_ij - (i-1));
-      lcs_k.push(DiagonalDpVal(secondary_diagonal, lcs_ij - (i - 1)));
-      // printf("%s: %d %d = %d\n", 
-      // 	     type == PointOfInterest::Type::BEGIN ? "BEGIN": "END",
-      // 	     i, j, lcs_ij - (i-1));
-      // fflush(stdout);
-    } else {
-      int lcs_ij = 0;
-      // printf("Nalazim se na %d-toj glavnoj dijagonali.\n",
-      // 	     primary_diagonal);
-      // printf("lcs_k.size()=%d, lcs_2k.size()=%d\n",
-      // 	     lcs_k.size(), lcs_2k.size());
-
-      if (!lcs_2k.empty()) {
-	int prev_val = lcs_2k.max().value;
-	// printf("END prev_val=%d\n", prev_val);
-	lcs_ij = max(lcs_ij, i + prev_val);
-      }
-      
-      curr_row_vals.push_back(make_pair(j, lcs_ij));
-      curr_row_max_val = max(curr_row_max_val, lcs_ij);
-      *klcs_length = max(*klcs_length, lcs_ij);
-
-      // printf("%s: %d %d = %d\n", 
-      // 	     type == PointOfInterest::Type::BEGIN ? "BEGIN": "END",
-      // 	     i, j, lcs_ij);
-      // fflush(stdout);
+    int lcs_ij = (j>=k?first_columns_max.get(j-k):0)+k;
+    if (!lcs_k.empty()) {
+      int prev_val = lcs_k.max().value;
+      lcs_ij = max(lcs_ij, i + prev_val);     
     }
+
+    lcs_k.push(DiagonalDpVal(secondary_diagonal, lcs_ij - i));
+    update_queue.push(make_tuple(i,j,lcs_ij));
+    *klcs_length = max(*klcs_length, lcs_ij);
   }
 }
+
+// Tocna, ali slozenija implementacija.
+// 
+// static void klcs_base(const int k, const vector<pair<int, int> >& matches,
+// 		      int* klcs_length) {
+//   struct PointOfInterest {
+//     int i, j;
+//     enum Type {BEGIN = 0, END = 1};
+//     Type type;
+
+//     PointOfInterest(int i, int j, Type type) : 
+//       i(i), j(j), type(type) {}
+    
+//     bool operator < (const PointOfInterest& other) const {
+//       if (i != other.i) { return i < other.i; }
+//       if (j != other.j) { return j < other.j; }
+//       return type < other.type;
+//     }
+
+//     bool operator == (const PointOfInterest& other) const {
+//       return 
+// 	i == other.i && 
+// 	j == other.j && 
+// 	type == other.type;
+//     }
+//   };
+
+//   struct DiagonalDpVal {
+//     int secondary_diagonal;
+//     int value;
+
+//     DiagonalDpVal() {}
+
+//     DiagonalDpVal(int secondary_diagonal, int value):
+//       secondary_diagonal(secondary_diagonal), value(value) {}
+
+//     bool operator < (const DiagonalDpVal& other) const {
+//       return value < other.value;
+//     }
+
+//     bool operator == (const DiagonalDpVal& other) const {
+//       return 
+// 	secondary_diagonal == other.secondary_diagonal &&
+// 	value == other.value;
+//     }
+//   };
+
+
+//   vector<PointOfInterest> poi;
+//   for (int i = 0; i < matches.size(); ++i) {
+//     poi.push_back(PointOfInterest(matches[i].first,
+// 				  matches[i].second,
+// 				  PointOfInterest::Type::BEGIN));
+//     poi.push_back(PointOfInterest(matches[i].first+k-1,
+// 				  matches[i].second+k-1,
+// 				  PointOfInterest::Type::END));
+//   }
+
+//   sort(poi.begin(), poi.end());
+//   // ovaj unique mozda nije potreban?
+//   poi.erase(unique(poi.begin(), poi.end()), poi.end());
+
+//   int n = 0;
+//   for (auto it = poi.begin(); it != poi.end(); ++it) {
+//     n = max(n, it->i+1);
+//     n = max(n, it->j+1);
+//   }
+
+//   *klcs_length = 0;
+//   // Indexed by column:
+//   FenwickMax<int> first_columns_max(n);
+
+//   vector<pair<int, int> > curr_row_vals;
+//   int curr_row = -1;
+//   int curr_row_max_val = 0;
+
+//   vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_k(2*n);
+//   vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_2k(2*n);
+
+//   for (auto it = poi.begin(); it != poi.end(); ++it) {
+//     int i = it->i;
+//     int j = it->j;
+//     PointOfInterest::Type type = it->type;
+
+//     if (i != curr_row) {
+//       while (!curr_row_vals.empty()) {
+//   	int col = curr_row_vals.back().first;
+//   	int val = curr_row_vals.back().second;
+//   	curr_row_vals.pop_back();
+//   	first_columns_max.update(col, val);
+//       }
+//       curr_row = i;
+//       curr_row_max_val = 0;
+//     }
+
+//     int primary_diagonal = n-1+i-j;
+//     int secondary_diagonal = i+j;
+    
+//     MonotonicQueue<DiagonalDpVal>& lcs_k =
+//       diag_lcs_k[primary_diagonal];
+//     MonotonicQueue<DiagonalDpVal>& lcs_2k =
+//       diag_lcs_2k[primary_diagonal];
+
+//     while (!lcs_k.empty() && 
+// 	   (secondary_diagonal-lcs_k.front().secondary_diagonal)/2 >= 
+// 	   k - (PointOfInterest::Type::END == type)) {
+//       lcs_2k.push(lcs_k.front());
+//       lcs_k.pop();
+//     }
+//     while (!lcs_2k.empty() && 
+// 	   (secondary_diagonal-lcs_2k.front().secondary_diagonal)/2 >= 2*k) {
+//       lcs_2k.pop();
+//     }
+    
+//     if (type == PointOfInterest::Type::BEGIN) {
+//       // 1) nastavak na neki zatvoreni
+//       int lcs_ij = (j>0?first_columns_max.get(j-1):0);
+    
+//       //printf("IZ LOGARITAMSKE=%d\n", lcs_ij);
+//       if (!lcs_k.empty()) {
+// 	int prev_val = lcs_k.max().value;
+// 	//printf("BEGIN prev_val=%d\n", prev_val);
+// 	lcs_ij = max(lcs_ij, i - 1 + prev_val);
+// 	//printf("UPDATED lcs_ij=%d\n", lcs_ij);
+//       }
+
+//       // printf("PUSHAM u lcs_k na diag=%d vrijednost=%d\n", 
+//       // 	     primary_diagonal, lcs_ij - (i-1));
+//       lcs_k.push(DiagonalDpVal(secondary_diagonal, lcs_ij - (i - 1)));
+//       // printf("%s: %d %d = %d\n", 
+//       // 	     type == PointOfInterest::Type::BEGIN ? "BEGIN": "END",
+//       // 	     i, j, lcs_ij - (i-1));
+//       // fflush(stdout);
+//     } else {
+//       int lcs_ij = 0;
+//       // printf("Nalazim se na %d-toj glavnoj dijagonali.\n",
+//       // 	     primary_diagonal);
+//       // printf("lcs_k.size()=%d, lcs_2k.size()=%d\n",
+//       // 	     lcs_k.size(), lcs_2k.size());
+
+//       if (!lcs_2k.empty()) {
+// 	int prev_val = lcs_2k.max().value;
+// 	// printf("END prev_val=%d\n", prev_val);
+// 	lcs_ij = max(lcs_ij, i + prev_val);
+//       }
+      
+//       curr_row_vals.push_back(make_pair(j, lcs_ij));
+//       curr_row_max_val = max(curr_row_max_val, lcs_ij);
+//       *klcs_length = max(*klcs_length, lcs_ij);
+
+//       // printf("%s: %d %d = %d\n", 
+//       // 	     type == PointOfInterest::Type::BEGIN ? "BEGIN": "END",
+//       // 	     i, j, lcs_ij);
+//       // fflush(stdout);
+//     }
+//   }
+// }
 
 void klcs(const string& a, const string& b,
 	  const int k, int* klcs_length) {
