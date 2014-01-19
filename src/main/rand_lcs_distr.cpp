@@ -178,17 +178,19 @@ int seeded_lcs(const string& a, const string& b, const int K) {
     vector<pair<int, int> > klcs_sparse_slow_recon;
     klcs_sparse_slow(a, b, K, &klcs_sparse_slow_len, &klcs_sparse_slow_recon);
 
-    // int klcs_sparse_fast_len = 0;
-    // vector<pair<int, int> > klcs_sparse_fast_recon;
-    // klcs_sparse_fast(a, b, k, &klcs_sparse_fast_len, &klcs_sparse_fast_recon);
+    int klcs_sparse_fast_len = 0;
+    vector<pair<int, int> > klcs_sparse_fast_recon;
+    klcs_sparse_fast(a, b, K, &klcs_sparse_fast_len, &klcs_sparse_fast_recon);
 
-    printf("%d %d\n", klcs_length, klcs_sparse_slow_len);
+    printf("%d %d %d\n", klcs_length, klcs_sparse_slow_len,
+	   klcs_sparse_fast_len);
+
     assert(klcs_length == klcs_sparse_slow_len);
-    // assert(klcs_length == klcs_sparse_fast_len);
+    assert(klcs_length == klcs_sparse_fast_len);
     assert(valid_klcs(a, b, K, klcs_sparse_slow_len, 
 		      klcs_sparse_slow_recon));
-    // assert(valid_klcs(a, b, K, klcs_sparse_fast_len,
-    // 		      klcs_sparse_fast_recon));
+    assert(valid_klcs(a, b, K, klcs_sparse_fast_len,
+    		      klcs_sparse_fast_recon));
   } else {
     klcs(a, b, K, &klcs_length, NULL);
   }

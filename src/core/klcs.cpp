@@ -95,19 +95,18 @@ static void fill_klcs_reconstruction(const vector<pair<int, int> >& matches,
   reverse(klcs_recon->begin(), klcs_recon->end());
 }
 
-static void klcs_sparse_fast(const vector<pair<int, int> >& matches,
+static void klcs_sparse_fast(vector<pair<int, int> > matches,
 			     const int k, int* klcs_length,
 			     vector<pair<int, int> >* klcs_reconstruction) {
-  typedef pair<int, int> PointOfInterest;
-
   struct DiagonalDpVal {
     int secondary_diagonal;
     int value;
+    int idx;
     
     DiagonalDpVal() {}
     
-    DiagonalDpVal(int secondary_diagonal, int value):
-      secondary_diagonal(secondary_diagonal), value(value) {}
+    DiagonalDpVal(int secondary_diagonal, int value, int idx):
+      secondary_diagonal(secondary_diagonal), value(value), idx(idx) {}
 
     bool operator < (const DiagonalDpVal& other) const {
       return value < other.value;
@@ -115,67 +114,90 @@ static void klcs_sparse_fast(const vector<pair<int, int> >& matches,
 
     bool operator == (const DiagonalDpVal& other) const {
       return 
-	secondary_diagonal == other.secondary_diagonal &&
-	value == other.value;
+    	secondary_diagonal == other.secondary_diagonal &&
+    	value == other.value &&
+	idx == other.idx;
     }
   };
 
-  vector<PointOfInterest> poi;
-  for (int i = 0; i < matches.size(); ++i) {
-    poi.push_back(PointOfInterest(matches[i].first+k-1,
-				  matches[i].second+k-1));
-  }
-
-  sort(poi.begin(), poi.end());
+  sort(matches.begin(), matches.end());
 
   int n = 0;
-  for (auto it = poi.begin(); it != poi.end(); ++it) {
-    n = max(n, it->first+1);
-    n = max(n, it->second+1);
+  for (auto it = matches.begin(); it != matches.end(); ++it) {
+    n = max(n, it->first+k);
+    n = max(n, it->second+k);
   }
 
   *klcs_length = 0;
-  // Indexed by column:
-  FenwickMax<int> first_columns_max(n);
-  queue<std::tuple<int, int, int> > update_queue;
-  vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_k(2*n);
 
-  for (auto it = poi.begin(); it != poi.end(); ++it) {
-    int i = it->first;
-    int j = it->second;
+  // Indexed by column:
+  // first:dp value, second:index in matches
+  FenwickMax<pair<int, int> > first_columns_max(n);
+
+  // get<0>:row, get<1>:col, get<2>:dp value, get<3>: index in matches
+  queue<std::tuple<int, int, int, int> > update_queue;
+  vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_k(2*n);
+  vector<int> recon(matches.size());
+  int best_idx = 0;
+
+  for (auto it = matches.begin(); it != matches.end(); ++it) {
+    int idx = it - matches.begin();
+    int i = it->first+k-1; // +k-1 jer se dp racuna u 'end' tockama
+    int j = it->second+k-1;
 
     while (!update_queue.empty() &&
 	   get<0>(update_queue.front())+k <= i) {
       auto t = update_queue.front();
       update_queue.pop();
-      int col = get<1>(t);
-      int val = get<2>(t);
-      first_columns_max.update(col, val);
+      int update_col = get<1>(t);
+      int update_val = get<2>(t);
+      int update_idx = get<3>(t);
+      first_columns_max.update(update_col, 
+			       make_pair(update_val, update_idx));
     }
 
     int primary_diagonal = n-1+i-j;
     int secondary_diagonal = i+j;
-    MonotonicQueue<DiagonalDpVal>& lcs_k =
-      diag_lcs_k[primary_diagonal];
+    MonotonicQueue<DiagonalDpVal>& lcs_k = diag_lcs_k[primary_diagonal];
 
     while (!lcs_k.empty() && 
 	   (secondary_diagonal-lcs_k.front().secondary_diagonal)/2 >= k) {
       lcs_k.pop();
     }
     
-    int lcs_ij = (j>=k?first_columns_max.get(j-k):0)+k;
-    if (!lcs_k.empty()) {
-      int prev_val = lcs_k.max().value;
-      lcs_ij = max(lcs_ij, i + prev_val);     
+    int lcs_ij = k;
+    recon[idx] = -1;
+    
+    if (j >= k) {
+      pair<int, int> prev_dp = first_columns_max.get(j-k);
+      if (prev_dp.first + k > lcs_ij) {
+	lcs_ij = prev_dp.first + k;
+	recon[idx] = prev_dp.second;
+      }
     }
 
-    lcs_k.push(DiagonalDpVal(secondary_diagonal, lcs_ij - i));
-    update_queue.push(make_tuple(i,j,lcs_ij));
-    *klcs_length = max(*klcs_length, lcs_ij);
+    if (!lcs_k.empty()) {
+      int prev_val = lcs_k.max().value;
+      int prev_idx = lcs_k.max().idx;
+      if (i + prev_val > lcs_ij) {
+	lcs_ij = i + prev_val;
+	recon[idx] = prev_idx;
+      }
+    }
+
+    lcs_k.push(DiagonalDpVal(secondary_diagonal, lcs_ij - i, idx));
+    update_queue.push(make_tuple(i, j, lcs_ij, idx));
+
+
+    if (lcs_ij > *klcs_length) {
+      *klcs_length = lcs_ij;
+      best_idx = idx;
+    }
   }
 
   if (klcs_reconstruction) {
-    // TODO: rekonstrukcija
+    fill_klcs_reconstruction(matches, k, recon, best_idx, 
+			     klcs_reconstruction);
   }
 }
 
@@ -238,7 +260,7 @@ static void klcs_sparse_slow(vector<pair<int, int> > matches,
 
     if (klcs_reconstruction) {
       fill_klcs_reconstruction(matches, k, recon, best_idx, 
-			       klcs_reconstruction);
+ 			       klcs_reconstruction);
     }
   }
 }
