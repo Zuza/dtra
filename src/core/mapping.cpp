@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include "core/mapping.h"
+#include "core/klcs.h"
 #include "core/lis.h"
 #include "core/util.h"
 #include "core/Coverage.h"
@@ -20,6 +21,7 @@ using namespace std;
 
 DEFINE_string(long_read_algorithm, "coverage", "Algorithm for long reads (naive|lis|coverage|ssw)");
 DEFINE_bool(multiple_hits, true, "Allow multiple placements on a single gene.");
+DEFINE_double(windowed_alignment_size, 2, "Windowed alignment size.");
 
 const int kBeginEstimateGroupDist = 15;
 
@@ -202,12 +204,15 @@ void windowedAlignment(shared_ptr<Read> read,
       }
 
       while (end < positions.size() && 
-	     positions[start].first + 2 * read->size() > positions[end].first) {
+	     positions[start].first + FLAGS_windowed_alignment_size * read->size()
+	     > positions[end].first) {
 	++end;
       }
 
       assert(start <= end);
 
+      // TODO(fpavetic): After klcs stabilize, remove
+      //                 lis and coverage.
       if (FLAGS_long_read_algorithm == "lis") {
 	vector<pair<int, int> > lisPrepare;
 	for (int i = start; i < end; ++i) {
@@ -242,6 +247,36 @@ void windowedAlignment(shared_ptr<Read> read,
 
 	read->updateMapping(score, begin, end, rc, geneIdx,
 			    genes[geneIdx]->description(), "");	
+      } else if (FLAGS_long_read_algorithm == "klcs") {
+	vector<pair<int, int> > match_pairs(positions.begin()+start,
+					    positions.begin()+end);
+	sort(match_pairs.begin(), match_pairs.end());
+
+	if (!match_pairs.empty()) {
+	  int gene_offset = match_pairs[0].first;
+	  int mx1 = 0, mx2 = 0;
+	  for (size_t i = 0; i < match_pairs.size(); ++i) {
+	    match_pairs[i].first -= gene_offset;
+	    assert(match_pairs[i].first >= 0);
+	    mx1 = max(mx1, match_pairs[i].first);
+	    mx2 = max(mx2, match_pairs[i].second);
+	  }
+	  // printf("start=%d, end=%d, mp_size=%d, mx1=%d, mx2=%d\n", 
+	  // 	 start, end, match_pairs.size(), mx1, mx2);  
+	  // fflush(stdout);
+	  
+	  int seedLen = idx->getSeedLen();
+	  int klcs_score = -1;
+	  
+	  // TODO: rekonstrukcija
+	  vector<pair<int, int> > klcs_recon;
+	  klcs(match_pairs, seedLen, &klcs_score, NULL);
+	  // printf("score=%d\n", score); fflush(stdout);
+	  int begin = gene_offset;
+	  int end = begin + read->size();
+	  read->updateMapping(klcs_score, begin, end, rc, geneIdx,
+			      genes[geneIdx]->description(), "");
+	}
       }
     }
   }

@@ -29,7 +29,9 @@ struct OneMapping {
              std::string geneDescriptor, std::string geneSegment) :
     score(score), geneBegin(geneBegin), geneEnd(geneEnd), 
     isRC(isRC), geneIdx(geneIdx), geneDescriptor(geneDescriptor), 
-    geneSegment(geneSegment) {}
+    geneSegment(geneSegment) {
+      editDistance = -1;
+    }
 
   void print(FILE* out) {
     fprintf(out, "on gene %s (idx=%d), at position %d-%d (RC=%d), score=%lf\n",

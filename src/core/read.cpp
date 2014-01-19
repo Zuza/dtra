@@ -99,12 +99,15 @@ void Read::updateMapping(double score, int geneBegin, int geneEnd,
 			 string geneSegment) {
   topMappings_.insert(OneMapping(score, geneBegin, geneEnd, isRC, geneIdx,
 				 geneDescriptor, geneSegment));
-  
+  // printf("Umecem score %lf\n", score); fflush(stderr);
+
   while (topMappings_.size() > 1 && 
 	 topMappings_.rbegin()->score / topMappings_.begin()->score > 
 	 FLAGS_mapping_keep_ratio) {
     topMappings_.erase(topMappings_.begin());
   }
+  // printf("Nakon ciscenja ostalo %d\n", (int)topMappings_.size());
+  // fflush(stdout);
 }
 
 
