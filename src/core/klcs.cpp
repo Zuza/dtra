@@ -4,7 +4,9 @@
 #include "monotonic_queue.h"
 
 #include <algorithm>
+#include <map>
 #include <memory>
+//#include <threads>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -144,7 +146,9 @@ static void klcs_sparse_fast(vector<pair<int, int> > matches,
     
     // get<0>:row, get<1>:col, get<2>:dp value, get<3>: index in matches
     queue<std::tuple<int, int, int, int> > update_queue;
-    vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_k(2*n);
+
+    //thread_local vector<MonotonicQueue<DiagonalDpVal> > diag_lcs_k(2*nestonesto);
+    map<int, MonotonicQueue<DiagonalDpVal> > diag_lcs_k;
     vector<int> recon(matches.size());
     int best_idx = 0;
     
