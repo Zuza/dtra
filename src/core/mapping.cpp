@@ -23,8 +23,6 @@ DEFINE_string(long_read_algorithm, "coverage", "Algorithm for long reads (naive|
 DEFINE_bool(multiple_hits, true, "Allow multiple placements on a single gene.");
 DEFINE_double(windowed_alignment_size, 2, "Windowed alignment size.");
 
-const int kBeginEstimateGroupDist = 15;
-
 namespace {
 
 void printUsageAndExit() {
@@ -237,21 +235,21 @@ void windowedAlignment(shared_ptr<Read> read,
 	  intervals.push_back(Interval(a,b,c));
 	}
 
-	int score = 0;
-	vector<Interval> coverage;
-	cover(&coverage, &score, intervals);
-
-	assert(!coverage.empty());
-	int begin = coverage[0].left - coverage[0].value;
-	int end = coverage.back().right+read->size()-coverage.back().value;
-
-	read->updateMapping(score, begin, end, rc, geneIdx,
-			    genes[geneIdx]->description(), "");	
+	if (!intervals.empty()) {
+	  int score = 0;
+	  vector<Interval> coverage;
+	  cover(&coverage, &score, intervals);
+	  
+	  assert(!coverage.empty());
+	  int begin = coverage[0].left - coverage[0].value;
+	  int end = coverage.back().right+read->size()-coverage.back().value;
+	  
+	  read->updateMapping(score, begin, end, rc, geneIdx,
+			      genes[geneIdx]->description(), "");	
+	}
       } else if (FLAGS_long_read_algorithm == "klcs") {
 	vector<pair<int, int> > match_pairs(positions.begin()+start,
 					    positions.begin()+end);
-	sort(match_pairs.begin(), match_pairs.end());
-
 	if (!match_pairs.empty()) {
 	  int gene_offset = match_pairs[0].first;
 	  int mx1 = 0, mx2 = 0;
@@ -261,20 +259,18 @@ void windowedAlignment(shared_ptr<Read> read,
 	    mx1 = max(mx1, match_pairs[i].first);
 	    mx2 = max(mx2, match_pairs[i].second);
 	  }
-	  // printf("start=%d, end=%d, mp_size=%d, mx1=%d, mx2=%d\n", 
-	  // 	 start, end, match_pairs.size(), mx1, mx2);  
-	  // fflush(stdout);
-	  
+
 	  int seedLen = idx->getSeedLen();
-	  int klcs_score = -1;
-	  
-	  // TODO: rekonstrukcija
+	  int klcs_score = 0;
 	  vector<pair<int, int> > klcs_recon;
-	  klcs(match_pairs, seedLen, &klcs_score, NULL);
-	  // printf("score=%d\n", score); fflush(stdout);
-	  int begin = gene_offset;
-	  int end = begin + read->size();
-	  read->updateMapping(klcs_score, begin, end, rc, geneIdx,
+	  klcs(match_pairs, seedLen, &klcs_score, &klcs_recon);
+
+	  int beg = gene_offset + klcs_recon[0].first - klcs_recon[0].second;
+	  // TODO: za sada se ne koristi, ali treba testirati izraz za end
+	  int end = gene_offset + klcs_recon.back().first - 
+	    read->size() - klcs_recon.back().second;
+
+	  read->updateMapping(klcs_score, beg, end, rc, geneIdx,
 			      genes[geneIdx]->description(), "");
 	}
       }

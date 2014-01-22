@@ -57,14 +57,19 @@ static void get_matches(const string& a, const string& b,
       }
     }
   }
+
+  sort(matches->begin(), matches->end());
 }
 
 static void fill_klcs_reconstruction(const vector<pair<int, int> >& matches,
 				     const int k,
 				     const vector<int>& prev_idx,
 				     const int last_idx,
+				     const int klcs_len,
 				     vector<pair<int, int> >* klcs_recon) {
   klcs_recon->clear();
+  klcs_recon->reserve(klcs_len);
+
   for (int i = last_idx; i != -1; i = prev_idx[i]) {
     int r = matches[i].first+k-1;
     int c = matches[i].second+k-1;
@@ -95,6 +100,7 @@ static void fill_klcs_reconstruction(const vector<pair<int, int> >& matches,
   reverse(klcs_recon->begin(), klcs_recon->end());
 }
 
+// Assume matches is sorted by standard pair ordering.
 static void klcs_sparse_fast(vector<pair<int, int> > matches,
 			     const int k, int* klcs_length,
 			     vector<pair<int, int> >* klcs_reconstruction) {
@@ -124,8 +130,6 @@ static void klcs_sparse_fast(vector<pair<int, int> > matches,
     *klcs_length = 0;
     klcs_reconstruction->clear();
   } else {
-    sort(matches.begin(), matches.end());
-
     int n = 0;
     for (auto it = matches.begin(); it != matches.end(); ++it) {
       n = max(n, it->first+k);
@@ -200,21 +204,23 @@ static void klcs_sparse_fast(vector<pair<int, int> > matches,
     
     if (klcs_reconstruction) {
       fill_klcs_reconstruction(matches, k, recon, best_idx, 
+			       *klcs_length,
 			       klcs_reconstruction);
     }    
   }
 }
 
+// Assume matches is sorted by standard pair ordering.
 static void klcs_sparse_slow(vector<pair<int, int> > matches,
 			     const int k, int* klcs_length,
 			     vector<pair<int, int> >* klcs_reconstruction) {
-  sort(matches.begin(), matches.end());
-  int n = matches.size();
+  assert(is_sorted(matches.begin(), matches.end()));
 
-  if (n == 0) {
+  if (matches.empty()) {
     *klcs_length = 0;
     klcs_reconstruction->clear(); 
   } else {
+    int n = matches.size();
     vector<int> dp(n);
     vector<int> recon(n);
     int best_idx = 0;
@@ -230,28 +236,28 @@ static void klcs_sparse_slow(vector<pair<int, int> > matches,
       int secondary_diagonal_i = (end_row_i + end_col_i)/2;
 
       for (int j = i-1; j >= 0; --j) {
-	// 1) Uzimam cijeli match interval i nastavljam neki
-	// match koji je ranije vec zavrsio.
 	if (matches[j].first + k <= matches[i].first &&
 	    matches[j].second + k <= matches[i].second) {
+	  // 1) Uzimam cijeli match interval i nastavljam neki
+	  // match koji je ranije vec zavrsio.
 	  if (dp[j] + k > dp[i]) {
 	    dp[i] = dp[j] + k;
 	    recon[i] = j;
 	  }
-	}
-
-	// 2) Nastavak po istoj dijagonali.
-	int end_row_j = matches[j].first+k-1;
-	int end_col_j = matches[j].second+k-1;
-	int primary_diagonal_j = end_row_j - end_col_j;
-	int secondary_diagonal_j = (end_row_j + end_col_j)/2;
-
-	if (primary_diagonal_i == primary_diagonal_j &&
-	    secondary_diagonal_i > secondary_diagonal_j &&
-	    secondary_diagonal_i - secondary_diagonal_j < k) {
-	  if (dp[j] + secondary_diagonal_i - secondary_diagonal_j > dp[i]) {
-	    dp[i] = dp[j] + secondary_diagonal_i - secondary_diagonal_j;
-	    recon[i] = j;
+	} else {
+	  // 2) Nastavak po istoj dijagonali.
+	  int end_row_j = matches[j].first+k-1;
+	  int end_col_j = matches[j].second+k-1;
+	  int primary_diagonal_j = end_row_j - end_col_j;
+	  int secondary_diagonal_j = (end_row_j + end_col_j)/2;
+	  
+	  if (primary_diagonal_i == primary_diagonal_j &&
+	      secondary_diagonal_i > secondary_diagonal_j &&
+	      secondary_diagonal_i - secondary_diagonal_j < k) {
+	    if (dp[j] + secondary_diagonal_i - secondary_diagonal_j > dp[i]) {
+	      dp[i] = dp[j] + secondary_diagonal_i - secondary_diagonal_j;
+	      recon[i] = j;
+	    }
 	  }
 	}
       }
@@ -264,6 +270,7 @@ static void klcs_sparse_slow(vector<pair<int, int> > matches,
 
     if (klcs_reconstruction) {
       fill_klcs_reconstruction(matches, k, recon, best_idx, 
+			       *klcs_length,
  			       klcs_reconstruction);
     }
   }
@@ -285,10 +292,11 @@ void klcs_sparse_fast(const string& a, const string& b,
   klcs_sparse_fast(matches, k, klcs_length, klcs_reconstruction);  
 }
 
+// Assume matches is sorted by standard pair ordering.
 void klcs(const vector<pair<int, int> >& matches,
 	  const int k, int* klcs_length,
 	  vector<pair<int, int> >* klcs_reconstruction) {
-  if (matches.size() < 500) {
+  if (matches.size() < 700) {
     klcs_sparse_slow(matches, k, klcs_length, klcs_reconstruction);
   } else {
     klcs_sparse_fast(matches, k, klcs_length, klcs_reconstruction);

@@ -33,8 +33,7 @@ DEFINE_string(validate_wgsim, "", "report/full");
 DEFINE_int32(no_reads, -1, "Number of reads to process.");
 DEFINE_double(confidence, 0.5, "Confidence threshold.h");
 
-// TODO: ovo se iz nekog razloga krsi s klcsom, privremeno gasim
-DEFINE_bool(calc_edit_distance, false, "Calculate actual edit-distance for read placements?");
+DEFINE_bool(calc_edit_distance, true, "Calculate actual edit-distance for read placements?");
 
 // readovi se citaju sa stdin-a i salju na stdout
 void printUsageAndExit() {
