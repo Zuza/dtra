@@ -2,8 +2,6 @@
 *.o~
 *.o
 *.h~
-client
-reducer
 *.log
 *.aux
 *.out
@@ -11,3 +9,4 @@ reducer
 _region_.tex
 *.bbl
 *.blg
+bin/

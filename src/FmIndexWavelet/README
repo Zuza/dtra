@@ -1,0 +1,6 @@
+Install divsufsort (https://code.google.com/p/libdivsufsort/source/browse/trunk/lib/divsufsort.c?r=21)
+
+make (g++ version > 4.8.1)
+
+./main
+./main_simple

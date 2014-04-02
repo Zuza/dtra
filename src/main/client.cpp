@@ -78,14 +78,16 @@ void inputReads(vector<shared_ptr<Read> >* reads,
 }
 
 int solveRead(vector<shared_ptr<Gene> >& genes, 
-              shared_ptr<Index> idx, 
+              shared_ptr<Index> idx,
+              const int seedLen,
               shared_ptr<Read> read,
               bool fillEditDistance) {
-  performMapping(genes, idx, read, fillEditDistance);
+  performMapping(genes, idx, seedLen, read, fillEditDistance);
   return 0;
 }
 
 void solveReads(Database& db, 
+                const int seedLen,
                 vector<shared_ptr<Read> >& reads,
                 bool fillEditDistance) {
   int index_file_count = db.getIndexFilesCount();
@@ -106,8 +108,8 @@ void solveReads(Database& db,
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
       results.push_back(
-        pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads, fillEditDistance] {
-            return solveRead(currentGenes, activeIndex, reads[i], fillEditDistance);
+        pool.enqueue<int>([i, seedLen, &currentGenes, &activeIndex, &reads, fillEditDistance] {
+            return solveRead(currentGenes, activeIndex, seedLen, reads[i], fillEditDistance);
           }));
     } 
 
@@ -119,10 +121,11 @@ void solveReads(Database& db,
 }
 
 void solveReads(Database& db, 
+                const int seedLen,
                 vector<shared_ptr<Read> >& reads) {
-  solveReads(db, reads, false);
+  solveReads(db, seedLen, reads, false);
   if (FLAGS_calc_edit_distance) {
-    solveReads(db, reads, true);
+    solveReads(db, seedLen, reads, true);
   }
 }
 
@@ -286,7 +289,7 @@ void clusterSolve(int argc, char* argv[]) {
     inputReadsFileChunk(&reads, readsInputPath, myChunkBegin, myChunkEnd);
     
     Database db(databasePath, indexPath, FLAGS_seed_len, true);
-    solveReads(db, reads);
+    solveReads(db, FLAGS_seed_len, reads);
   }
 
   // ... i ispise u privremeni file
@@ -378,7 +381,7 @@ int main(int argc, char* argv[]) {
     Database db(argv[2], argv[3], FLAGS_seed_len, true);
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4], FLAGS_no_reads); 
-    solveReads(db, reads);
+    solveReads(db, FLAGS_seed_len, reads);
     printReads(reads, argv[5]);
   } else if (command == "cluster") {
     clusterSolve(argc-2, argv+2);

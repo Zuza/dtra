@@ -14,7 +14,7 @@ DECLARE_bool(discard_freq_seeds);
 class Database {
  public:
 
-  Database(const std::string& databasePath, // pass anything if you're only reading index files
+  Database(const std::string& databasePath, // ignored if you're only reading index files
            const std::string& indexFilePath,
            const int seedLen,
            const bool indexCreated);

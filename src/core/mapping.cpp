@@ -319,10 +319,12 @@ namespace {
 
 
   void performMappingLong(vector<shared_ptr<Gene> >& genes,
-                          shared_ptr<Index> idx, shared_ptr<Read> read) {
+                          shared_ptr<Index> idx,
+                          const int seedLen,
+                          shared_ptr<Read> read) {
     for (int rc = 0; rc < 2; ++rc) {
       map<int, shared_ptr<vector<pair<int, int> > > > positionsByGene;
-      populatePositions(positionsByGene, genes, idx, idx->getSeedLen(), read, rc);
+      populatePositions(positionsByGene, genes, idx, seedLen, read, rc);
     
       if (!FLAGS_multiple_hits) {
         if (FLAGS_long_read_algorithm == "lis") {
@@ -335,7 +337,7 @@ namespace {
           printUsageAndExit();
         }
       } else { // --multiple_hits
-        windowedAlignment(read, positionsByGene, idx->getSeedLen(), genes, rc);
+        windowedAlignment(read, positionsByGene, seedLen, genes, rc);
       }
     }
   }
@@ -397,11 +399,12 @@ void calcEditDistance(vector<shared_ptr<Gene> >& genes,
 // baze na ulazu programa. Zatim se ponovno nad svim blokovima baze poziva ova
 // funkcija s fillEditDistance = true
 void performMapping(vector<shared_ptr<Gene> >& genes,
-                    shared_ptr<Index> idx, 
+                    shared_ptr<Index> idx,
+                    const int seedLen, 
                     shared_ptr<Read> read,
                     bool fillEditDistance) {
   if (!fillEditDistance) {
-    performMappingLong(genes, idx, read);
+    performMappingLong(genes, idx, seedLen, read);
   } else {
     // najgori slucaj podrazumijevam 10% greske pa tako podesavam MAXD
     if (read->size() <= 100) {
