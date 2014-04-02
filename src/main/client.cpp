@@ -62,7 +62,7 @@ void createIndex(string databasePath, string indexFilePath) {
 }
 
 void inputReads(vector<shared_ptr<Read> >* reads, 
-		const string& readsPath, const int limit=-1) {
+                const string& readsPath, const int limit=-1) {
   FILE* readsIn = fopen(readsPath.c_str(), "rt");
   assert(readsIn);
 
@@ -78,16 +78,16 @@ void inputReads(vector<shared_ptr<Read> >* reads,
 }
 
 int solveRead(vector<shared_ptr<Gene> >& genes, 
-	      shared_ptr<Index> idx, 
-	      shared_ptr<Read> read,
-	      bool fillEditDistance) {
+              shared_ptr<Index> idx, 
+              shared_ptr<Read> read,
+              bool fillEditDistance) {
   performMapping(genes, idx, read, fillEditDistance);
   return 0;
 }
 
 void solveReads(Database& db, 
-		vector<shared_ptr<Read> >& reads,
-		bool fillEditDistance) {
+                vector<shared_ptr<Read> >& reads,
+                bool fillEditDistance) {
   int index_file_count = db.getIndexFilesCount();
 
   clock_t starting_time;
@@ -97,6 +97,7 @@ void solveReads(Database& db,
     shared_ptr<Index> activeIndex = db.readIndexFile(index_no);
     vector<shared_ptr<Gene> >& currentGenes = db.getGenes();
 
+    // Find the number of cores on this machine
     // http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
     int threads = FLAGS_solver_threads;
     assert(threads >= 1 && threads < 100); // sanity check
@@ -105,8 +106,8 @@ void solveReads(Database& db,
     vector<future<int> > results;
     for (int i = 0; i < reads.size(); ++i) {
       results.push_back(
-     pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads, fillEditDistance] {
-	 return solveRead(currentGenes, activeIndex, reads[i], fillEditDistance);
+        pool.enqueue<int>([i, &currentGenes, &activeIndex, &reads, fillEditDistance] {
+            return solveRead(currentGenes, activeIndex, reads[i], fillEditDistance);
           }));
     } 
 
@@ -118,7 +119,7 @@ void solveReads(Database& db,
 }
 
 void solveReads(Database& db, 
-		vector<shared_ptr<Read> >& reads) {
+                vector<shared_ptr<Read> >& reads) {
   solveReads(db, reads, false);
   if (FLAGS_calc_edit_distance) {
     solveReads(db, reads, true);
@@ -153,16 +154,16 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
       // blokove pa u svakom bloku mozemo naci jedinstvenu poziciju
       // i uzeti blok s najvecim scoreom
       if (read->topMappings().size() >= 2) {
-	OneMapping top1 = *(read->topMappings().begin());
-	OneMapping top2 = *(++read->topMappings().begin());
-	confidence2 = top1.score / top2.score;
+        OneMapping top1 = *(read->topMappings().begin());
+        OneMapping top2 = *(++read->topMappings().begin());
+        confidence2 = top1.score / top2.score;
       }
 
       if (confidence1 > FLAGS_confidence) {
-	++stats[-3];
+        ++stats[-3];
       }
       if (confidence2 > 0.2) {
-	++stats[-4];
+        ++stats[-4];
       }
     }
 
@@ -198,7 +199,7 @@ void printStats(const vector<shared_ptr<Read> >& reads, const string& what) {
 
 
 void printReads(const vector<shared_ptr<Read> >& reads,
-		const string& resultFilePath) {
+                const string& resultFilePath) {
   FILE* resultOut = fopen(resultFilePath.c_str(), "wt"); 
   // format outputa: read_id,top_aln_num;nucl_id,score,start,stop,strand;...
   assert(resultOut);
@@ -207,14 +208,14 @@ void printReads(const vector<shared_ptr<Read> >& reads,
     shared_ptr<Read> read = reads[i];
 
     fprintf(resultOut, "%s,%d", read->id().c_str(), 
-	    (int)read->topMappings().size());
+            (int)read->topMappings().size());
 
     for (auto onemap : read->topMappings()) {
       fprintf(resultOut, ";%s,%lf,%d,%d,%d,%d", 
-	      onemap.geneDescriptor.c_str(),
+              onemap.geneDescriptor.c_str(),
       	      onemap.score, onemap.geneBegin, 
       	      onemap.geneEnd, onemap.isRC, 
-	      onemap.editDistance);
+              onemap.editDistance);
     }
     fprintf(resultOut, "\n");
   }
@@ -272,9 +273,9 @@ void clusterSolve(int argc, char* argv[]) {
     // ostali ce primiti
     MPI_Status stat;
     MPI_Recv(&myChunkBegin, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_ANY_TAG,
-	     MPI_COMM_WORLD, &stat);
+             MPI_COMM_WORLD, &stat);
     MPI_Recv(&myChunkEnd, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_ANY_TAG,
-	     MPI_COMM_WORLD, &stat);
+             MPI_COMM_WORLD, &stat);
   }
   
   // svatko ucita svoj dio ...
@@ -377,7 +378,7 @@ int main(int argc, char* argv[]) {
     Database db(argv[2], argv[3], FLAGS_seed_len, true);
     vector<shared_ptr<Read> > reads;
     inputReads(&reads, argv[4], FLAGS_no_reads); 
-    solveReads(db, reads); 
+    solveReads(db, reads);
     printReads(reads, argv[5]);
   } else if (command == "cluster") {
     clusterSolve(argc-2, argv+2);

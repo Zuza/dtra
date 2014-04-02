@@ -161,6 +161,21 @@ pair<unsigned int, unsigned int> Index::position_to_gene_position(size_t positio
   return make_pair<unsigned int, unsigned int>(it - geneStartingPos_.begin(), position - *it);
 }
 
+void Index::get_substring_pos(vector<pair<ullint, ullint> >& results, const char* query, int query_len, int limit) {
+  hash_t hsh = 0;
+  hash_t andMask = (1LL<<(2*getSeedLen()))-1;
+  for (int i = 0; i < query_len; ++i) {
+    hsh = hsh*4+baseToInt(query[i]);
+    hsh &= andMask;
+  }
+
+  results.clear();
+  for (iterator it = getPositions(hsh, getSeedLen()); !it.done(); it.advance()) {
+    pair<unsigned int, unsigned int> x = it.get();
+    results.push_back(make_pair<ullint, ullint>(x.first, x.second));
+  }
+}
+
 Index::iterator Index::getPositions(const hash_t& hash,
 				    const int& querySeedLen) {
 #ifdef DEBUG

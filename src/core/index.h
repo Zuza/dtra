@@ -14,6 +14,7 @@
 #include "gene.h"
 
 typedef unsigned long long hash_t;
+typedef unsigned long long ullint;
 
 class Index {
 public:
@@ -40,7 +41,7 @@ public:
   };
 
   friend class iterator;
-
+  
   void insertGene(Gene* gene);
   void prepareIndex(); // sort the hashes
 
@@ -48,6 +49,10 @@ public:
   // out: retval
   //   -> vector of pairs -> first is the gene number
   //                         second is the position with the gene
+
+  // in order to have the same API as FmIndexWavelet library (https://github.com/Zuza/FmIndexWavelet)
+  void get_substring_pos(std::vector<std::pair<ullint, ullint> >& results, const char* query, int query_len, int limit = 100);
+
   Index::iterator getPositions(const hash_t& hash, 
 			       const int& querySeedLen);
 
