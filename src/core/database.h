@@ -5,11 +5,8 @@
 #include <vector>
 #include <memory>
 
-#include "BufferedBinaryReader.h"
+#include "FmIndexWavelet/DnaIndex.hpp"
 #include "gene.h"
-#include "index.h"
-
-DECLARE_bool(discard_freq_seeds);
 
 class Database {
  public:
@@ -21,9 +18,10 @@ class Database {
 
   ~Database();
 
-  bool readDbStoreIndex();
+  // read from the fasta file and store the corresponding index
+  void readDbStoreIndex();
   int getIndexFilesCount();
-  std::shared_ptr<Index> readIndexFile(int which);
+  std::shared_ptr<DnaIndex> readIndexFile(int which);
 
   size_t getCurrentBlockNoBytes() {
     return currentBlockNoBytes_;
@@ -51,6 +49,7 @@ class Database {
   void update_statistics(Gene* gene);
   void clear_statistics();
   void read_index_summaries();
+  void write_one_block(const DnaIndex& dna_index);
 
   int indexFilesCount_;
 
@@ -62,12 +61,6 @@ class Database {
 
   std::string indexFolderPath_;
 
-  // koristi se kod izgradnje indeksa
-  std::shared_ptr<BufferedBinaryWriter> bufferedWriter_;
-
-  // koristi se kod ucitavanja indeksa
-  std::shared_ptr<BufferedBinaryReader> bufferedReader_;
-  
   // first = ftell of the index start in the database
   // second = number of genes in the index file
   std::vector<std::pair<long int, int> > indexSummaries_;

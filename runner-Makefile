@@ -27,3 +27,6 @@ client-index:
 
 client-solve:
 	$(BIN_DIR)/client --validate_wgsim report solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/hello.fq $(READS_DIR)/hello.out
+
+gdb-client-solve:
+	gdb --args $(BIN_DIR)/client --validate_wgsim report solve $(DB_DIR)/nt.part $(DB_DIR)/index.part/ $(READS_DIR)/hello.fq $(READS_DIR)/hello.out

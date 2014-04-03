@@ -6,6 +6,8 @@
 #ifndef MAPPER_GENOME
 #define MAPPER_GENOME
 
+#include "core/bioinf_util.h"
+
 #include <cstring>
 #include <string>
 #include <vector>
@@ -23,6 +25,10 @@ class Gene {
 
   const size_t dataSize() const { return data_len_; }
   const size_t nameSize() const { return name_len_; }
+
+  void subNonAcgtWithRandom() {
+    ::subNonAcgtWithRandom(data_, data_len_);
+  }
 
   void clear() { 
     if (name_) { 

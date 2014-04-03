@@ -18,7 +18,7 @@ TEST_H_FILES := $(wildcard $(TEST_DIR)/*.h)
 TEST_CPP_FILES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJ_FILES := $(addprefix obj/test/,$(notdir $(TEST_CPP_FILES:.cpp=.o)))
 FMINDEX_H_FILES := $(wildcard $(FMINDEX_DIR)/*.hpp)
-FMINDEX_CPP_FILES := $(filter-out $(wildcard $(FMINDEX_DIR)/main_*.cpp),$(wildcard $(FMINDEX_DIR)/*.cpp))  # remove main files
+FMINDEX_CPP_FILES := $(filter-out $(wildcard $(FMINDEX_DIR)/main*.cpp),$(wildcard $(FMINDEX_DIR)/*.cpp))  # remove main files
 FMINDEX_OBJ_FILES := $(addprefix obj/FmIndexWavelet/,$(notdir $(FMINDEX_CPP_FILES:.cpp=.o)))
 
 CC := mpiCC.openmpi
@@ -32,20 +32,20 @@ forceall: clean all
 client: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/client.o $(LD_FLAGS)
 
-reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/DataReducer.o $(LD_FLAGS)
+reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/DataReducer.o $(LD_FLAGS)
 
-lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/lisa.o $(LD_FLAGS)
+lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/lisa.o $(LD_FLAGS)
 
-simulator: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/rand_lcs_distr.o $(LD_FLAGS)
+simulator: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/rand_lcs_distr.o $(LD_FLAGS)
 
 test: test_coverage
 
-test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
+test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	mkdir -p obj/test
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/test/testCoverage.o $(LD_FLAGS)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/test/testCoverage.o $(LD_FLAGS)
 
 $(CORE_OBJ_FILES): $(CORE_CPP_FILES) $(CORE_H_FILES)
 	mkdir -p obj/core

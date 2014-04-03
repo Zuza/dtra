@@ -16,9 +16,9 @@
 
 #include <gflags/gflags.h>
 
+#include "FmIndexWavelet/DnaIndex.hpp"
 #include "core/ThreadPool.h"
 #include "core/database.h"
-#include "core/index.h"
 #include "core/mapping.h"
 #include "core/read.h"
 #include "core/util.h"
@@ -45,20 +45,7 @@ void printUsageAndExit() {
 
 void createIndex(string databasePath, string indexFilePath) {
   Database db(databasePath, indexFilePath, FLAGS_seed_len, false);
-  size_t totalRead = 0;
-
-  for (int indexNumber = 0; db.readDbStoreIndex(); ++indexNumber) {
-    size_t byteLen = db.getCurrentBlockNoBytes();
-
-    totalRead += byteLen;
-    size_t minLen, maxLen; db.getMinMaxGeneLength(&minLen, &maxLen);
-    fprintf(stderr, "Read %0.3lf Gb.\n", totalRead/1e9);
-    fprintf(stderr, "Duljine gena [%lu, %lu]\n", minLen, maxLen);
-    fprintf(stderr, "U ovom bloku je bilo %d gena.\n", 
-            (int)db.getCurrentBlockNoGenes());
-    fprintf(stderr, "Prosjecna duljina gena je %lf.\n",
-            db.getAverageGeneLength());
-  }
+  db.readDbStoreIndex(); // creates and stores the index
 }
 
 void inputReads(vector<shared_ptr<Read> >* reads, 
@@ -78,7 +65,7 @@ void inputReads(vector<shared_ptr<Read> >* reads,
 }
 
 int solveRead(vector<shared_ptr<Gene> >& genes, 
-              shared_ptr<Index> idx,
+              shared_ptr<DnaIndex> idx,
               const int seedLen,
               shared_ptr<Read> read,
               bool fillEditDistance) {
@@ -93,10 +80,11 @@ void solveReads(Database& db,
   int index_file_count = db.getIndexFilesCount();
 
   clock_t starting_time;
+  TRACE(index_file_count);
   for (int index_no = 0; index_no < index_file_count; ++index_no) {
     starting_time = clock();
     fprintf(stderr, "Processing block %d/%d... ", index_no+1, index_file_count);
-    shared_ptr<Index> activeIndex = db.readIndexFile(index_no);
+    shared_ptr<DnaIndex> activeIndex = db.readIndexFile(index_no);
     vector<shared_ptr<Gene> >& currentGenes = db.getGenes();
 
     // Find the number of cores on this machine

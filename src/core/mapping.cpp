@@ -12,6 +12,7 @@
 #include "core/util.h"
 #include "core/Coverage.h"
 #include "ssw/ssw_cpp.h"
+#include <iostream>
 
 #include "core/BoundedStringDistance.h"
 using namespace std;
@@ -138,12 +139,12 @@ namespace {
 
   void populatePositions(map<int, shared_ptr<vector<pair<int, int> > > >& positionsByGene,
                          const vector<shared_ptr<Gene> >& genes,
-                         const shared_ptr<Index>& idx,
+                         const shared_ptr<DnaIndex>& idx,
                          const int seedLen,
                          const shared_ptr<Read>& read,
                          const int rc) {
     int noN = 0; // sluzi da bih mogao preskociti seedove s N-ovima, Y-onima i sl.
-    
+
     typedef unsigned long long ullint;
     thread_local vector<pair<ullint, ullint> > positions;
     assert(seedLen < 256-1);
@@ -168,13 +169,12 @@ namespace {
             positionsByGene[geneId];
 	
           if (!posVec) {
-            posVec = shared_ptr<vector<pair<int, int> > > (
-              new vector<pair<int, int> >());
+            posVec.reset(new vector<pair<int, int> >());
           }
 
           assert(positionsByGene.count(geneId));
           posVec->push_back(make_pair(position, i+1-seedLen));
-        } 
+        }
       }
     }
   }
@@ -319,7 +319,7 @@ namespace {
 
 
   void performMappingLong(vector<shared_ptr<Gene> >& genes,
-                          shared_ptr<Index> idx,
+                          shared_ptr<DnaIndex> idx,
                           const int seedLen,
                           shared_ptr<Read> read) {
     for (int rc = 0; rc < 2; ++rc) {
@@ -399,7 +399,7 @@ void calcEditDistance(vector<shared_ptr<Gene> >& genes,
 // baze na ulazu programa. Zatim se ponovno nad svim blokovima baze poziva ova
 // funkcija s fillEditDistance = true
 void performMapping(vector<shared_ptr<Gene> >& genes,
-                    shared_ptr<Index> idx,
+                    shared_ptr<DnaIndex> idx,
                     const int seedLen, 
                     shared_ptr<Read> read,
                     bool fillEditDistance) {

@@ -1,0 +1,3 @@
+[submodule "src/FmIndexWavelet"]
+	path = src/FmIndexWavelet
+	url = git@github.com:Zuza/FmIndexWavelet.git

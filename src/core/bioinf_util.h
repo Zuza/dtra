@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <random>
 
 inline bool isBase(char isit) {
   isit = toupper(isit);
@@ -17,8 +18,8 @@ inline bool isBase(char isit) {
 
 // translate bases (ie. 'Y' -> C or T), ref: http://www.bioinformatics.org/sms/iupac.html
 inline char randBaseToBase(char base) {
-  static int len[26] = {1, 3, 1, 3, 0, 0, 1, 3, 0, 0, 2, 0, 2, 4, 0, 0, 0, 2, 2, 1, 1, 3, 2, 0, 2, 0};
-  static char trans[26][5] = {"A",
+  thread_local int len[26] = {1, 3, 1, 3, 0, 0, 1, 3, 0, 0, 2, 0, 2, 4, 0, 0, 0, 2, 2, 1, 1, 3, 2, 0, 2, 0};
+  thread_local char trans[26][5] = {"A",
                               "CGT",
                               "C",
                               "AGT",
@@ -88,6 +89,14 @@ inline char intToBase(const int num) {
   return 0;
 }
 
+// substitute every occurence of 'N' with another random
+inline void subNonAcgtWithRandom(char* data, size_t data_len) {
+  for (size_t i = 0; i < data_len; ++i) {
+    if (data[i] != 'A' && data[i] != 'C' && data[i] != 'G' && data[i] != 'T') {
+      data[i] = randBaseToBase(data[i]);
+    }
+  }
+}
 
 inline char getBaseComplement(char base) {
   base = toupper(base);
