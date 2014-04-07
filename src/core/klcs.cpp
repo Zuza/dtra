@@ -61,6 +61,11 @@ static void get_matches(const string& a, const string& b,
   }
 
   sort(matches->begin(), matches->end());
+
+  // printf("matches size: %d\n", (int)matches->size());
+  // for (int i = 0; i < matches->size(); ++i) {
+  //   printf("%d %d\n", (*matches)[i].first, (*matches)[i].second);
+  // }
 }
 
 static void fill_klcs_reconstruction(const vector<pair<int, int> >& matches,
@@ -112,23 +117,22 @@ static void klcs_sparse_fast(const vector<pair<int, int> >& matches,
     return;
   }
 
-  vector<tuple<int, int, char> > events;
+  vector<tuple<int, int, int> > events;
   events.reserve(2*matches.size());
 
   int n = 0;
   for (auto it = matches.begin(); it != matches.end(); ++it) {
     int idx = it - matches.begin();
-    events.push_back(make_tuple(it->first, it->second, +idx)); // begin
-    events.push_back(make_tuple(it->first+k, it->second+k, -idx)); // end
+    events.push_back(make_tuple(it->first, it->second, 
+				idx+matches.size())); // begin
+    events.push_back(make_tuple(it->first+k, it->second+k, idx)); // end
     
     n = max(n, it->first+k);
     n = max(n, it->second+k);
   }
   sort(events.begin(), events.end());
-  *klcs_length = 0;
 
-  // Indexed by column:
-  // first:dp value, second:index in matches
+  // Indexed by column, first:dp value, second:index in matches
   FenwickMax<pair<int, int> > dp_col_max(n+1); // TODO: *
   vector<int> dp(matches.size());              // TODO: *
   vector<int> recon(matches.size());           // TODO: *
@@ -144,20 +148,23 @@ static void klcs_sparse_fast(const vector<pair<int, int> >& matches,
       }
     }
   }
+
   int best_idx = 0;
+  *klcs_length = 0;
     
   for (auto event = events.begin(); event != events.end(); ++event) {
-    int idx = abs(get<2>(*event));
+    int idx = get<2>(*event) % matches.size();
+    bool is_beginning = (get<2>(*event) >= matches.size());
     int i = get<0>(*event);
     int j = get<1>(*event);
     int primary_diagonal = n-1+i-j;
 
-    if (idx > 0) { // begin
+    if (is_beginning) { // begin
       pair<int, int> prev_dp = dp_col_max.get(j);
-      dp[idx] = 0;
+      dp[idx] = k;
       recon[idx] = -1;
-      
-      if (prev_dp.first + k > dp[idx]) {
+
+      if (prev_dp.first > 0) {
 	dp[idx] = prev_dp.first + k;
 	recon[idx] = prev_dp.second;
       }
@@ -199,6 +206,7 @@ static void klcs_sparse_slow(const vector<pair<int, int> >& matches,
     vector<int> dp(n);
     vector<int> recon(n);
     int best_idx = 0;
+    *klcs_length = 0;
     
     for (int i = 0; i < n; ++i) {
       dp[i] = k;
@@ -237,7 +245,7 @@ static void klcs_sparse_slow(const vector<pair<int, int> >& matches,
         }
       }
 
-      if (dp[i] > dp[best_idx]) {
+      if (dp[i] > *klcs_length) {
         best_idx = i;
         *klcs_length = dp[i];
       }

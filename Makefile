@@ -41,15 +41,14 @@ lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 simulator: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/rand_lcs_distr.o $(LD_FLAGS)
 
-stats: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
-	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/stats.o $(LD_FLAGS)
-
-
-test: test_coverage simulator
+stats: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/stats.o $(LD_FLAGS)
 
 test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	mkdir -p obj/test
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/test/testCoverage.o $(LD_FLAGS)
+
+test: test_coverage simulator
 
 $(CORE_OBJ_FILES): $(CORE_CPP_FILES) $(CORE_H_FILES)
 	mkdir -p obj/core
