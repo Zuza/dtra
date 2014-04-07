@@ -25,7 +25,7 @@ CC := mpiCC.openmpi
 LD_FLAGS := -pthread -lgflags -ldivsufsort
 CC_FLAGS := -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
 
-all: client reducer lisa simulator test
+all: client reducer lisa simulator test stats
 
 forceall: clean all
 
@@ -40,6 +40,10 @@ lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 
 simulator: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/rand_lcs_distr.o $(LD_FLAGS)
+
+stats: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/stats.o $(LD_FLAGS)
+
 
 test: test_coverage
 

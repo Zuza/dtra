@@ -1,4 +1,4 @@
-BOWTIE2="bowtie2"
+BOWTIE2="~/bowtie2-2.1.0/bowtie2"
 
 if [ $# -ne 2 ]
 then
