@@ -19,7 +19,6 @@
 
 #include "core/ThreadPool.h"
 #include "core/database.h"
-#include "core/index.h"
 #include "core/mapping.h"
 #include "core/read.h"
 #include "core/util.h"

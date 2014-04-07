@@ -45,7 +45,7 @@ stats: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/main/stats.o $(LD_FLAGS)
 
 
-test: test_coverage
+test: test_coverage simulator
 
 test_coverage: $(TEST_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	mkdir -p obj/test

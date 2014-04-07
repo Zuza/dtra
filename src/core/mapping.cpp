@@ -20,7 +20,7 @@ using namespace std;
 // ovdje saram s intovima i size_t-ovima, iako je
 // 32 bitni int dovoljan svuda
 
-DEFINE_string(long_read_algorithm, "coverage", "Algorithm for long reads (naive|lis|coverage|ssw)");
+DEFINE_string(long_read_algorithm, "klcs", "Algorithm for long reads (naive|lis|coverage|ssw|klcs)");
 DEFINE_bool(multiple_hits, true, "Allow multiple placements on a single gene.");
 DEFINE_double(windowed_alignment_size, 2, "Windowed alignment size.");
 
