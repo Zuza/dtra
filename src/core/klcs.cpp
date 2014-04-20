@@ -133,10 +133,10 @@ static void klcs_sparse_fast(const vector<pair<int, int> >& matches,
   sort(events.begin(), events.end());
 
   // Indexed by column, first:dp value, second:index in matches
-  FenwickMax<pair<int, int> > dp_col_max(n+1); // TODO: *
-  vector<int> dp(matches.size());              // TODO: *
-  vector<int> recon(matches.size());           // TODO: *
-  vector<int> continues(matches.size(), -1);   // TODO: *
+  FenwickMax<pair<int, int> > dp_col_max(n); // TODO: *
+  vector<int> dp(matches.size());            // TODO: *
+  vector<int> recon(matches.size());         // TODO: *
+  vector<int> continues(matches.size(), -1); // TODO: *
   // * when we have g++ 4.8, make this thread_local to
   //   avoid memory reinitialization.
   if (k > 1) {
