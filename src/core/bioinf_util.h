@@ -107,7 +107,7 @@ inline char getBaseComplement(char base) {
   if (base == 'G') return 'C';
 
   if (base != 'N') {
-    fprintf(stderr, "BASE: %c\n", base);
+    fprintf(stderr, "invalid base in getBaseComplement: %c\n", base);
     return base;
   }
   assert(base == 'N');

@@ -7,21 +7,21 @@ void klcs(const std::vector<std::pair<int, int> >& matches,
 	  const int k, int* klcs_length,
 	  std::vector<std::pair<int, int> >* klcs_reconstruction);
 
-void klcs(const std::string& a, const std::string& b, 
+void klcs(const char* aString, size_t aLen, const char* bString, size_t bLen,
 	  const int k, int* klcs_length,
 	  std::vector<std::pair<int, int> >* klcs_reconstruction);
 
-void klcs_sparse_slow(const std::string& a, const std::string& b, 
+void klcs_sparse_slow(const char* aString, size_t aLen, const char* bString, size_t bLen,
 		      const int k, int* klcs_length,
 		      std::vector<std::pair<int, int> >* klcs_reconstruction);
 
-void klcs_sparse_fast(const std::string& a, const std::string& b, 
+void klcs_sparse_fast(const char* aString, size_t aLen, const char* bString, size_t bLen,
 		      const int k, int* klcs_length,
 		      std::vector<std::pair<int, int> >* klcs_reconstruction);
 
-bool valid_klcs(const std::string& a, const std::string& b,
+bool valid_klcs(const char* aString, size_t aLen, const char* bString, size_t bLen,
 		const int k, const int klcs_len,
 		const std::vector<std::pair<int, int> >& klcs_recon);
 
-void klcs_slow(const std::string& a, const std::string& b, const int K,
+void klcs_slow(const char* aString, size_t aLen, const char* bString, size_t bLen, const int K,
 	       int* klcs_length);

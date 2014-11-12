@@ -3,22 +3,18 @@
 #include "klcs.h"
 #include "monotonic_queue.h"
 
-#include <algorithm>
 #include <map>
 #include <memory>
 //#include <threads>
 #include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include <cassert>
 using namespace std;
 
 /**
  * In case <matches> is a vector<pair<int, int> >, it is filled with 
  * pairs (i,j) meaning that for every such pair a[i...i+k-1] == b[j...j+k-1]
  */
-static void get_matches(const string& a, const string& b,
+static void get_matches(const char* aString, int aLen, const char* bString, size_t bLen,
                         const int k, vector<pair<int, int> >* matches) {
   assert(k < 32);
 
@@ -34,10 +30,10 @@ static void get_matches(const string& a, const string& b,
 
   uint64_t hash_mod = (1LL<<(2*k))-1;
   uint64_t rolling_hash = 0;
-  for (int i = 0; i < a.size(); ++i) {
-    assert(isBase(a[i]));
+  for (int i = 0; i < aLen; ++i) {
+    assert(isBase(aString[i]));
 
-    rolling_hash = rolling_hash * 4 + baseToInt(a[i]);
+    rolling_hash = rolling_hash * 4 + baseToInt(aString[i]);
     rolling_hash &= hash_mod;
 
     if (i+1 >= k) {
@@ -46,10 +42,10 @@ static void get_matches(const string& a, const string& b,
   }
 
   rolling_hash = 0;
-  for (int i = 0; i < b.size(); ++i) {
-    assert(isBase(b[i]));
+  for (int i = 0; i < bLen; ++i) {
+    assert(isBase(bString[i]));
     
-    rolling_hash = rolling_hash * 4 + baseToInt(b[i]);
+    rolling_hash = rolling_hash * 4 + baseToInt(bString[i]);
     rolling_hash &= hash_mod;
 
     if (i+1 >= k) {
@@ -81,7 +77,7 @@ static void fill_klcs_reconstruction(const vector<pair<int, int> >& matches,
     int r = matches[i].first+k-1;
     int c = matches[i].second+k-1;
 
-    if (prev_idx[i] == -1 || 
+    if (prev_idx[i] == -1 ||
         (matches[prev_idx[i]].first + k <= matches[i].first &&
          matches[prev_idx[i]].second + k <= matches[i].second)) {
       // Uzimam sigurno cijelog
@@ -259,20 +255,28 @@ static void klcs_sparse_slow(const vector<pair<int, int> >& matches,
   }
 }
 
-void klcs_sparse_slow(const string& a, const string& b,
+void klcs_sparse_slow(const char* aString, size_t aLen, const char* bString, size_t bLen,
                       const int k, int* klcs_length,
                       vector<pair<int, int> >* klcs_reconstruction) {
   vector<pair<int, int> > matches;
-  get_matches(a, b, k, &matches);
+  get_matches(aString, aLen, bString, bLen, k, &matches);
   klcs_sparse_slow(matches, k, klcs_length, klcs_reconstruction);  
 }
 
-void klcs_sparse_fast(const string& a, const string& b,
+void klcs_sparse_fast(const char* aString, size_t aLen, const char* bString, size_t bLen,
                       const int k, int* klcs_length,
                       vector<pair<int, int> >* klcs_reconstruction) {
   vector<pair<int, int> > matches;
-  get_matches(a, b, k, &matches);
+  get_matches(aString, aLen, bString, bLen, k, &matches);
   klcs_sparse_fast(matches, k, klcs_length, klcs_reconstruction);  
+}
+
+void klcs(const char* aString, size_t aLen, const char* bString, size_t bLen,
+        const int k, int* klcs_length,
+        vector<pair<int, int> >* klcs_reconstruction) {
+  vector<pair<int, int> > matches;
+  get_matches(aString, aLen, bString, bLen, k, &matches);
+  klcs(matches, k, klcs_length, klcs_reconstruction);
 }
 
 // Assume matches is sorted by standard pair ordering.
@@ -286,15 +290,7 @@ void klcs(const vector<pair<int, int> >& matches,
   }
 }
 
-void klcs(const string& a, const string& b,
-          const int k, int* klcs_length,
-          vector<pair<int, int> >* klcs_reconstruction) {
-  vector<pair<int, int> > matches;
-  get_matches(a, b, k, &matches);
-  klcs(matches, k, klcs_length, klcs_reconstruction);  
-}
-
-bool valid_klcs(const string& a, const string& b,
+bool valid_klcs(const char* aString, size_t aLen, const char* bString, size_t bLen,
                 const int k, const int klcs_len,
                 const vector<pair<int, int> >& klcs_recon) {
   // 1) Ensure correct length.
@@ -307,9 +303,9 @@ bool valid_klcs(const string& a, const string& b,
     int i = match.first;
     int j = match.second;
     
-    if (i < 0 || i >= a.size()) { return false; }
-    if (j < 0 || j >= b.size()) { return false; }
-    if (a[i] != b[j]) { return false; }
+    if (i < 0 || i >= aLen) { return false; }
+    if (j < 0 || j >= bLen) { return false; }
+    if (aString[i] != bString[j]) { return false; }
   }
 
   // 3) Ensure runs of indices have at least length of k.
@@ -340,27 +336,27 @@ bool valid_klcs(const string& a, const string& b,
 
 static int min3(int a, int b, int c) { return min(min(a,b),c); }
 
-void klcs_slow(const string& a, const string& b, const int K,
-               int* klcs_length) {
+void klcs_slow(const char* aString, size_t aLen, const char* bString, size_t bLen,
+               const int K, int* klcs_length) {
   // Svaka dretva ce ponovno alocirati ovo polje. 
   // Tako je napravljeno zbog jednostavnosti. Ovaj proces 
   // cemo ionako pokretati samo malen broj puta,
   // tek toliko da generiramo simulacijske rezultate.
-  vector<vector<int> > dp(a.size()+1, 
-                          vector<int>(b.size()+1));
+  vector<vector<int> > dp(aLen+1,
+                          vector<int>(bLen+1));
 
-  for (int i = 0; i <= a.size(); ++i) dp[i][0] = 0;
-  for (int j = 0; j <= b.size(); ++j) dp[0][j] = 0;
+  for (int i = 0; i <= aLen; ++i) dp[i][0] = 0;
+  for (int j = 0; j <= bLen; ++j) dp[0][j] = 0;
 
-  for (int i = 1; i <= a.size(); ++i) {
-    for (int j = 1; j <= b.size(); ++j) {
+  for (int i = 1; i <= aLen; ++i) {
+    for (int j = 1; j <= bLen; ++j) {
       dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
 
       // 2*K je mislim dovoljna granica jer ce sve iznad toga
       // biti pokriveno nekim prethodnim seedom
       for (int k = 1; k <= min3(i, j, 2*K); ++k) {
-        char aa = a[i-k];
-        char bb = b[j-k];
+        char aa = aString[i-k];
+        char bb = bString[j-k];
         if (aa != bb) {
           break;
         }
@@ -373,5 +369,5 @@ void klcs_slow(const string& a, const string& b, const int K,
     }
   }
 
-  *klcs_length = dp[a.size()][b.size()];
+  *klcs_length = dp[aLen][bLen];
 }

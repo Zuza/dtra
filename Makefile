@@ -22,6 +22,7 @@ FMINDEX_CPP_FILES := $(filter-out $(wildcard $(FMINDEX_DIR)/main*.cpp),$(wildcar
 FMINDEX_OBJ_FILES := $(addprefix obj/FmIndexWavelet/,$(notdir $(FMINDEX_CPP_FILES:.cpp=.o)))
 
 CC := mpiCC.openmpi
+# CC := g++
 LD_FLAGS := -pthread -lgflags -ldivsufsort
 CC_FLAGS := -fopenmp -O2 --std=c++0x -Wno-unused-result -D_FILE_OFFSET_BITS=64 $(INCLUDES)
 
@@ -37,6 +38,10 @@ reducer: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILE
 
 lisa: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/lisa.o $(LD_FLAGS)
+
+# Watch out! This is a hack currently!!
+glis: obj/main/glis.o $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
+	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/glis.o $(LD_FLAGS)
 
 simulator: $(MAIN_OBJ_FILES) $(CORE_OBJ_FILES) $(SSW_OBJ_FILES) $(FMINDEX_OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o bin/$@ obj/core/*.o obj/ssw/*.o obj/FmIndexWavelet/*.o obj/main/rand_lcs_distr.o $(LD_FLAGS)

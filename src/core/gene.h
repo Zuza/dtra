@@ -1,7 +1,7 @@
 /**
- * @authors: Goran Zuzic (zuza777@gmail.com)
- *           Filip Pavetic (fpavetic@gmail.com)
- */
+* @authors: Goran Zuzic (zuza777@gmail.com)
+*           Filip Pavetic (fpavetic@gmail.com)
+*/
 
 #ifndef MAPPER_GENOME
 #define MAPPER_GENOME
@@ -13,44 +13,45 @@
 #include <vector>
 
 class Gene {
- public:
-  Gene() { name_ = data_ = 0; }
-  ~Gene() { clear(); }
+public:
+    Gene() { name_ = data_ = 0; }
+    ~Gene() { clear(); }
 
-  const char* name() const { return name_; }
-  const char name(size_t i) const { return name_[i]; }
-  const char* data() const { return data_; }
-  const char data(size_t i) const { return data_[i]; }
-  const std::string& description() const { return description_; }
+    const char* name() const { return name_; }
+    const char name(size_t i) const { return name_[i]; }
+    const char* data() const { return data_; }
+    const char data(size_t i) const { return data_[i]; }
+    const std::string& description() const { return description_; }
 
-  const size_t dataSize() const { return data_len_; }
-  const size_t nameSize() const { return name_len_; }
+    const size_t dataSize() const { return data_len_; }
+    const size_t nameSize() const { return name_len_; }
 
-  void subNonAcgtWithRandom() {
-    ::subNonAcgtWithRandom(data_, data_len_);
-  }
-
-  void clear() { 
-    if (name_) { 
-      free(name_);
+    void subNonAcgtWithRandom() {
+        ::subNonAcgtWithRandom(data_, data_len_);
     }
-    if (data_) {
-      free(data_);
+    void reverseAndComplement();
+
+    void clear() {
+        if (name_) {
+            free(name_);
+        }
+        if (data_) {
+            free(data_);
+        }
+        name_ = data_ = 0;
+        name_len_ = 0;
+        data_len_ = 0;
     }
-    name_ = data_ = 0;
-    name_len_ = 0;
-    data_len_ = 0;
-  }
 
-  friend bool readGene(Gene* g, FILE* inputFilePointer);
+    friend bool readGene(Gene* g, FILE* inputFilePointer);
 
- private:
-  void createDescription();
+private:
+    void createDescription();
 
- private:                                   
-  char* name_; size_t name_len_;
-  char* data_; size_t data_len_;
-  std::string description_;
+private:
+    char* name_; size_t name_len_;
+    char* data_; size_t data_len_;
+    std::string description_;
 };
 
 bool readGene(Gene* g, FILE* inputFilePointer);

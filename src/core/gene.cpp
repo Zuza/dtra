@@ -135,3 +135,14 @@ size_t printGene(Gene* g, FILE* outputFilePointer, int width) {
   return printed;
 }
 
+void Gene::reverseAndComplement() {
+  size_t a, b; for (a = 0, b = dataSize() - 1; a < b; ++a, --b) {
+    char a_sub = getBaseComplement(data_[a]);
+    char b_sub = getBaseComplement(data_[b]);
+    data_[a] = b_sub;
+    data_[b] = a_sub;
+  }
+  if (a == b) { // midpoint
+    data_[a] = getBaseComplement(data_[a]);
+  }
+}

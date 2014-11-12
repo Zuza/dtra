@@ -172,15 +172,15 @@ int seeded_lcs(const string& a, const string& b, const int K) {
   int klcs_length = 0;
 
   if (FLAGS_test_all_implementations) {
-    klcs_slow(a, b, K, &klcs_length);
+    klcs_slow(a.c_str(), a.size(), b.c_str(), b.size(), K, &klcs_length);
 
     int klcs_sparse_slow_len = 0;
     vector<pair<int, int> > klcs_sparse_slow_recon;
-    klcs_sparse_slow(a, b, K, &klcs_sparse_slow_len, &klcs_sparse_slow_recon);
+    klcs_sparse_slow(a.c_str(), a.size(), b.c_str(), b.size(), K, &klcs_sparse_slow_len, &klcs_sparse_slow_recon);
 
     int klcs_sparse_fast_len = 0;
     vector<pair<int, int> > klcs_sparse_fast_recon;
-    klcs_sparse_fast(a, b, K, &klcs_sparse_fast_len, &klcs_sparse_fast_recon);
+    klcs_sparse_fast(a.c_str(), a.size(), b.c_str(), b.size(), K, &klcs_sparse_fast_len, &klcs_sparse_fast_recon);
 
     printf("%d %d %d\n", 
 	   klcs_length, 
@@ -189,12 +189,12 @@ int seeded_lcs(const string& a, const string& b, const int K) {
     //printf("%s\n%s\n", a.c_str(), b.c_str());
     assert(klcs_length == klcs_sparse_slow_len);
     assert(klcs_length == klcs_sparse_fast_len);
-    assert(valid_klcs(a, b, K, klcs_sparse_slow_len, 
+    assert(valid_klcs(a.c_str(), a.size(), b.c_str(), b.size(), K, klcs_sparse_slow_len,
 		      klcs_sparse_slow_recon));
-    assert(valid_klcs(a, b, K, klcs_sparse_fast_len,
+    assert(valid_klcs(a.c_str(), a.size(), b.c_str(), b.size(), K, klcs_sparse_fast_len,
     		      klcs_sparse_fast_recon));
   } else {
-    klcs(a, b, K, &klcs_length, NULL);
+    klcs(a.c_str(), a.size(), b.c_str(), b.size(), K, &klcs_length, NULL);
   }
   
   return klcs_length;
