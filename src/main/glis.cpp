@@ -51,11 +51,12 @@ int main(int argc, char* argv[]) {
   vector<shared_ptr<Gene> > A = readGenesFromFile(fopen(argv[1], "r"));
   vector<shared_ptr<Gene> > B = readGenesFromFile(fopen(argv[2], "r"));
 
-  printf("%lu %lu\n", A.size(), B.size());
+  printf("Input reading finished... %lu %lu\n", A[0]->dataSize(), B[0]->dataSize());
 
   A[0]->subNonAcgtWithRandom();
   B[0]->subNonAcgtWithRandom();
 
+  printf("Starting forward strand...\n");
   {
     vector<pair<int, int> > matches;
     int klcs_len; klcs(A[0]->data(), A[0]->dataSize(), B[0]->data(), B[0]->dataSize(), 31, &klcs_len, &matches);
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
     fclose(out);
   }
 
-
+  printf("Forward strand finished. Starting reverse...\n");
   {
     A[0]->reverseAndComplement();
 
@@ -91,5 +92,6 @@ int main(int argc, char* argv[]) {
     fclose(out);
   }
 
+  printf("Finished\n");
   return 0;
 }

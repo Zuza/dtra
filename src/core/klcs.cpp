@@ -2,6 +2,7 @@
 #include "fenwick.h"
 #include "klcs.h"
 #include "monotonic_queue.h"
+#include "suffix_array.h"
 
 #include <map>
 #include <memory>
@@ -11,11 +12,13 @@
 using namespace std;
 
 /**
- * In case <matches> is a vector<pair<int, int> >, it is filled with 
- * pairs (i,j) meaning that for every such pair a[i...i+k-1] == b[j...j+k-1]
- */
-static void get_matches(const char* aString, int aLen, const char* bString, size_t bLen,
-                        const int k, vector<pair<int, int> >* matches) {
+* In case <matches> is a vector<pair<int, int> >, it is filled with
+* pairs (i,j) meaning that for every such pair a[i...i+k-1] == b[j...j+k-1]
+*
+* Sorts the matches in lexicographical order
+*/
+static void get_matches_hash(const char *aString, int aLen, const char *bString, size_t bLen,
+        const int k, vector<pair<int, int> > *matches) {
   assert(k < 32);
 
   if (matches != NULL) {
@@ -26,7 +29,7 @@ static void get_matches(const char* aString, int aLen, const char* bString, size
 
   typedef unordered_multimap<uint64_t, int> MatchIndexType;
   unique_ptr<MatchIndexType> match_index =
-    unique_ptr<MatchIndexType>(new MatchIndexType());
+          unique_ptr<MatchIndexType>(new MatchIndexType());
 
   uint64_t hash_mod = (1LL<<(2*k))-1;
   uint64_t rolling_hash = 0;
@@ -44,7 +47,7 @@ static void get_matches(const char* aString, int aLen, const char* bString, size
   rolling_hash = 0;
   for (int i = 0; i < bLen; ++i) {
     assert(isBase(bString[i]));
-    
+
     rolling_hash = rolling_hash * 4 + baseToInt(bString[i]);
     rolling_hash &= hash_mod;
 
@@ -63,6 +66,37 @@ static void get_matches(const char* aString, int aLen, const char* bString, size
   //   printf("%d %d\n", (*matches)[i].first, (*matches)[i].second);
   // }
 }
+
+/**
+* In case <matches> is a vector<pair<int, int> >, it is filled with
+* pairs (i,j) meaning that for every such pair a[i...i+k-1] == b[j...j+k-1]
+*
+* Sorts the matches in lexicographical order
+*/
+static void get_matches_suffix_array(const char *aString, int aLen, const char *bString, size_t bLen,
+        const int k, vector<pair<int, int> > *matches) {
+
+  if (matches != NULL) {
+    matches->clear();
+  } else {
+    return;
+  }
+
+  SuffixArray suffixArray(aString, aLen);
+
+  for (int i = 0; i+k <= bLen; ++i) {
+    int numOccurrences;
+    const int *resultPtr;
+    resultPtr = suffixArray.search(bString + i, k, &numOccurrences);
+
+    for (int j = 0; j < numOccurrences; ++j) {
+      matches->push_back(make_pair(resultPtr[j], i));
+    }
+  }
+
+  sort(matches->begin(), matches->end());
+}
+
 
 static void fill_klcs_reconstruction(const vector<pair<int, int> >& matches,
                                      const int k,
@@ -259,7 +293,7 @@ void klcs_sparse_slow(const char* aString, size_t aLen, const char* bString, siz
                       const int k, int* klcs_length,
                       vector<pair<int, int> >* klcs_reconstruction) {
   vector<pair<int, int> > matches;
-  get_matches(aString, aLen, bString, bLen, k, &matches);
+  get_matches_hash(aString, aLen, bString, bLen, k, &matches);
   klcs_sparse_slow(matches, k, klcs_length, klcs_reconstruction);  
 }
 
@@ -267,7 +301,7 @@ void klcs_sparse_fast(const char* aString, size_t aLen, const char* bString, siz
                       const int k, int* klcs_length,
                       vector<pair<int, int> >* klcs_reconstruction) {
   vector<pair<int, int> > matches;
-  get_matches(aString, aLen, bString, bLen, k, &matches);
+  get_matches_hash(aString, aLen, bString, bLen, k, &matches);
   klcs_sparse_fast(matches, k, klcs_length, klcs_reconstruction);  
 }
 
@@ -275,7 +309,7 @@ void klcs(const char* aString, size_t aLen, const char* bString, size_t bLen,
         const int k, int* klcs_length,
         vector<pair<int, int> >* klcs_reconstruction) {
   vector<pair<int, int> > matches;
-  get_matches(aString, aLen, bString, bLen, k, &matches);
+  get_matches_suffix_array(aString, aLen, bString, bLen, k, &matches);
   klcs(matches, k, klcs_length, klcs_reconstruction);
 }
 
